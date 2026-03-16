@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #169 - 多数元素 | Boyer-Moore投票算法精讲</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --primary-dark: #4f46e5;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-hover: #263449;
+      --text: #f1f5f9; 
+      --text-secondary: #94a3b8;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+      --accent-blue: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .badge-easy { background: #22c55e33; color: #22c55e; }
+    .badge-medium { background: #f59e0b33; color: #f59e0b; }
+    .badge-hard { background: #ef444433; color: #ef4444; }
+    .badge-topic { background: #6366f133; color: #818cf8; }
+    
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 0;
+      overflow-x: auto;
+      border: 1px solid #30363d;
+    }
+    .code-wrapper { padding: 20px; }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left-color: var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+    }
+    .line-content { 
+      flex: 1; 
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.95rem;
+    }
+    
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0;
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    
+    .viz-steps { 
+      max-height: 450px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-track {
+      background: var(--bg);
+      border-radius: 3px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 10px 0; 
+      border-radius: 12px; 
+      background: var(--bg); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.25s ease;
+    }
+    .viz-step:hover { 
+      border-color: #475569;
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    .viz-step-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .viz-state {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-label { color: var(--accent-orange); }
+    .state-value { color: var(--accent-green); }
+    
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid #475569; 
+      transition: all 0.3s ease; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .problem-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card:hover::before {
+      opacity: 1;
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th,
+    .complexity-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    .complexity-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .example-box {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      border-left: 4px solid var(--primary);
+    }
+    .example-label {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .insight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .insight-box h4 {
+      margin: 0 0 12px 0;
+      color: var(--primary);
+    }
+    
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .class { color: #ffa657; }
+    .variable { color: #ffa657; }
+    .operator { color: #f97583; }
+    
+    .algo-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      background: var(--bg);
+      border-radius: 12px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .array-element {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      border: 2px solid #475569;
+      background: var(--surface);
+    }
+    .array-element.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+    }
+    .array-element.candidate {
+      border-color: var(--accent-green);
+      background: rgba(34, 197, 94, 0.3);
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .step-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #169 - 多数元素</h1>
+  <p class="subtitle">Boyer-Moore 投票算法 · 时间 O(n) 空间 O(1) 的最优解法</p>
+  
+  <div style="margin-bottom: 24px;">
+    <span class="badge badge-easy">Easy</span>
+    <span class="badge badge-topic">数组</span>
+    <span class="badge badge-topic">投票算法</span>
+    <span class="badge badge-topic">计数</span>
+  </div>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个大小为 n 的数组 <code>nums</code>，返回其中的<strong>多数元素</strong>。</p>
+    <p>多数元素是指在数组中出现次数 <strong>大于 ⌊ n/2 ⌋</strong> 的元素。</p>
+    <p>你可以假设数组是非空的，并且给定的数组总是存在多数元素。</p>
+    
+    <div class="example-box">
+      <div class="example-label">示例 1</div>
+      <p><strong>输入：</strong>nums = [3,2,3]</p>
+      <p><strong>输出：</strong>3</p>
+    </div>
+    
+    <div class="example-box">
+      <div class="example-label">示例 2</div>
+      <p><strong>输入：</strong>nums = [2,2,1,1,1,2,2]</p>
+      <p><strong>输出：</strong>2</p>
+      <p><strong>解释：</strong>2 出现 4 次，1 出现 3 次，2 是多数元素</p>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <h4>💡 核心洞察</h4>
+    <p>如果数组中存在一个元素出现次数超过 n/2，那么它的票数<strong>一定大于其他所有元素票数之和</strong>。</p>
+    <p>想象一场投票：每当两个不同的候选人「对决」时，他们互相抵消一票。最后剩下的，必定是得票过半的候选人。</p>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px;">点击下方步骤或代码行查看对应关系 · 数组: [2,2,1,1,1,2,2]</p>
+    
+    <div class="algo-visual" id="arrayViz">
+      <div class="array-element" data-index="0">2</div>
+      <div class="array-element" data-index="1">2</div>
+      <div class="array-element" data-index="2">1</div>
+      <div class="array-element" data-index="3">1</div>
+      <div class="array-element" data-index="4">1</div>
+      <div class="array-element" data-index="5">2</div>
+      <div class="array-element" data-index="6">2</div>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="color: var(--primary); margin-bottom: 12px;">Python 实现</h3>
+        <pre><div class="code-wrapper" id="codeBlock"></div></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⏱️ 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>解法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>哈希表计数</td>
+        <td>O(n)</td>
+        <td>O(n)</td>
+        <td>简单直观，但空间不是最优</td>
+      </tr>
+      <tr>
+        <td>排序</td>
+        <td>O(n log n)</td>
+        <td>O(1) / O(log n)</td>
+        <td>排序后中间元素必为多数元素</td>
+      </tr>
+      <tr style="background: rgba(99, 102, 241, 0.1);">
+        <td><strong>Boyer-Moore投票</strong></td>
+        <td><strong>O(n)</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td>🔥 最优解法，面试首选</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/majority-element-ii/" class="problem-card" target="_blank">
+        <span class="badge badge-medium" style="position: absolute; top: 12px; right: 12px;">Medium</span>
+        <h4>#229 求众数 II</h4>
+        <p>找出所有出现次数大于 n/3 的元素。需要改进投票算法，维护两个候选人。</p>
+      </a>
+      <a href="https://leetcode.cn/problems/find-majority-element-lcci/" class="problem-card" target="_blank">
+        <span class="badge badge-easy" style="position: absolute; top: 12px; right: 12px;">Easy</span>
+        <h4>面试题 17.10 主要元素</h4>
+        <p>与169题几乎相同，但数组中可能不存在多数元素，需要二次验证。</p>
+      </a>
+      <a href="https://leetcode.cn/problems/check-if-a-number-is-majority-element-in-a-sorted-array/" class="problem-card" target="_blank">
+        <span class="badge badge-easy" style="position: absolute; top: 12px; right: 12px;">Easy</span>
+        <h4>#1150 检查一个数是否在数组中占绝大多数</h4>
+        <p>数组已排序，用二分查找确认目标元素出现次数是否超过 n/2。</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📝 算法证明（为什么正确？）</h2>
+    <p><strong>核心思想：</strong>设多数元素为 <code>maj</code>，出现次数为 <code>m > n/2</code>。</p>
+    <ol style="line-height: 2;">
+      <li>每次遇到 <code>maj</code>，计数器 +1</li>
+      <li>每次遇到非 <code>maj</code>，计数器 -1</li>
+      <li>最坏情况下，<code>maj</code> 与其他所有元素「配对抵消」</li>
+      <li>剩余未抵消的 <code>maj</code> 数量 = <code>m - (n-m) = 2m - n > 0</code></li>
+      <li>因此最后 <code>count > 0</code>，<code>candidate</code> 必为 <code>maj</code></li>
+    </ol>
+  </div>
+
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">majorityElement</span>(<span class="variable">self</span>, nums: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:' },
+      { num: 3, content: '        candidate = <span class="keyword">None</span>  <span class="comment"># 当前候选人</span>' },
+      { num: 4, content: '        count = <span class="number">0</span>       <span class="comment"># 当前票数</span>' },
+      { num: 5, content: '        ' },
+      { num: 6, content: '        <span class="keyword">for</span> num <span class="keyword">in</span> nums:  <span class="comment"># 遍历数组</span>' },
+      { num: 7, content: '            <span class="keyword">if</span> count == <span class="number">0</span>:  <span class="comment"># 票数为0，更换候选人</span>' },
+      { num: 8, content: '                candidate = num' },
+      { num: 9, content: '            ' },
+      { num: 10, content: '            <span class="keyword">if</span> num == candidate:  <span class="comment"># 投票</span>' },
+      { num: 11, content: '                count += <span class="number">1</span>   <span class="comment"># 支持票</span>' },
+      { num: 12, content: '            <span class="keyword">else</span>:' },
+      { num: 13, content: '                count -= <span class="number">1</span>   <span class="comment"># 反对票（抵消）</span>' },
+      { num: 14, content: '        ' },
+      { num: 15, content: '        <span class="keyword">return</span> candidate  <span class="comment"># 返回多数元素</span>' },
+    ];
+
+    // 可视化步骤数据
+    const steps = [
+      { title: "初始化", desc: "candidate=None, count=0，准备开始投票", line: 3, arrIdx: -1, state: { candidate: "None", count: 0 } },
+      { title: "遍历第1个元素 2", desc: "count==0，设置candidate=2，count+=1", line: 7, arrIdx: 0, state: { candidate: 2, count: 1 } },
+      { title: "遍历第2个元素 2", desc: "num==candidate，count+=1 → 2", line: 10, arrIdx: 1, state: { candidate: 2, count: 2 } },
+      { title: "遍历第3个元素 1", desc: "num≠candidate，count-=1 → 1", line: 12, arrIdx: 2, state: { candidate: 2, count: 1 } },
+      { title: "遍历第4个元素 1", desc: "num≠candidate，count-=1 → 0", line: 12, arrIdx: 3, state: { candidate: 2, count: 0 } },
+      { title: "遍历第5个元素 1", desc: "count==0，更换candidate=1，count+=1", line: 7, arrIdx: 4, state: { candidate: 1, count: 1 } },
+      { title: "遍历第6个元素 2", desc: "num≠candidate，count-=1 → 0", line: 12, arrIdx: 5, state: { candidate: 1, count: 0 } },
+      { title: "遍历第7个元素 2", desc: "count==0，更换candidate=2，count+=1", line: 7, arrIdx: 6, state: { candidate: 2, count: 1 } },
+      { title: "返回结果", desc: "candidate=2 是多数元素", line: 15, arrIdx: 6, state: { candidate: 2, count: 1 } },
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      div.addEventListener('click', () => activateByLine(line.num));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.innerHTML = `
+        <div class="viz-step-title"><span class="step-indicator">${idx + 1}</span>${step.title}</div>
+        <div class="viz-step-desc">${step.desc}</div>
+        <div class="viz-state">
+          <span class="state-label">candidate</span> = <span class="state-value">${step.state.candidate}</span>, 
+          <span class="state-label">count</span> = <span class="state-value">${step.state.count}</span>
+        </div>
+      `;
+      div.addEventListener('click', () => activateByStep(idx));
+      vizSteps.appendChild(div);
+    });
+
+    let currentStep = -1;
+
+    function activateByStep(stepIdx) {
+      currentStep = stepIdx;
+      const step = steps[stepIdx];
+      
+      // 更新步骤高亮
+      document.querySelectorAll('.viz-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === stepIdx);
+      });
+      
+      // 更新代码行高亮
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.remove('active');
+      });
+      const targetLine = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (targetLine) targetLine.classList.add('active');
+      
+      // 更新数组可视化
+      document.querySelectorAll('.array-element').forEach((el, idx) => {
+        el.classList.remove('active', 'candidate');
+        if (idx === step.arrIdx) el.classList.add('active');
+        if (step.state.candidate !== "None" && parseInt(el.textContent) === step.state.candidate) {
+          el.classList.add('candidate');
+        }
+      });
+      
+      // 滚动到可视区域
+      vizSteps.children[stepIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function activateByLine(lineNum) {
+      // 找到包含该代码行的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        activateByStep(stepIdx);
+      }
+    }
+
+    // 自动播放功能
+    let autoPlayInterval = null;
+    function startAutoPlay() {
+      if (autoPlayInterval) return;
+      let idx = 0;
+      activateByStep(idx);
+      autoPlayInterval = setInterval(() => {
+        idx++;
+        if (idx >= steps.length) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        } else {
+          activateByStep(idx);
+        }
+      }, 1500);
+    }
+
+    // 初始化第一个步骤
+    activateByStep(0);
+    
+    // 3秒后自动演示
+    setTimeout(startAutoPlay, 2000);
+  </script>
+</body>
+</html>
