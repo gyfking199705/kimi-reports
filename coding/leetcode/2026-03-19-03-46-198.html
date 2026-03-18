@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #198 - 打家劫舍</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --accent: #22d3ee; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 0; }
+    .code-line { display: flex; padding: 4px 8px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid var(--primary); }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { padding: 16px; margin: 12px 0; border-radius: 12px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #3d4f5f; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); transform: translateX(5px); }
+    .viz-step-title { font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+    .viz-step-desc { font-size: 14px; color: #94a3b8; }
+    .dp-array { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+    .dp-cell { width: 50px; height: 50px; border: 2px solid #475569; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #1e293b; transition: all 0.3s; }
+    .dp-cell.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.4); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    .dp-cell.current { border-color: var(--accent); background: rgba(34, 211, 238, 0.3); }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 16px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    .complexity-table th { color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+    .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; background: rgba(99, 102, 241, 0.2); color: var(--primary); margin-right: 8px; }
+    .example-box { background: #0d1117; border-radius: 8px; padding: 16px; margin: 12px 0; font-family: monospace; }
+    .subtitle { color: #94a3b8; margin-top: -8px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🎯 LeetCode #198 - 打家劫舍</h1>
+  <p class="subtitle">动态规划经典入门题 | 状态转移的优雅典范</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，<strong>如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警</strong>。</p>
+    <p>给定一个代表每个房屋存放金额的非负整数数组 <code>nums</code>，计算你 <strong>不触动警报装置的情况下</strong> ，今晚能够偷窃到的最高金额。</p>
+    <div class="example-box">
+      <strong>示例 1：</strong><br>
+      输入：nums = [1,2,3,1]<br>
+      输出：4<br>
+      解释：偷窃第 1 间房屋 (金额 = 1) 和第 3 间房屋 (金额 = 3)，偷窃到的最高金额 = 1 + 3 = 4
+    </div>
+    <div class="example-box">
+      <strong>示例 2：</strong><br>
+      输入：nums = [2,7,9,3,1]<br>
+      输出：12<br>
+      解释：偷窃第 1 间房屋 (金额 = 2)、第 3 间房屋 (金额 = 9) 和第 5 间房屋 (金额 = 1)，偷窃到的最高金额 = 2 + 9 + 1 = 12
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="dp-array" id="dpArray">
+      <!-- DP数组可视化 -->
+    </div>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🧠 解题思路</h2>
+    <h3>核心问题</h3>
+    <p>对于第 <code>i</code> 间房子，我们有两个选择：</p>
+    <ul>
+      <li><strong>偷：</strong>不能偷第 <code>i-1</code> 间，最大金额 = dp[i-2] + nums[i]</li>
+      <li><strong>不偷：</strong>最大金额 = dp[i-1]</li>
+    </ul>
+    <h3>状态转移方程</h3>
+    <div class="example-box" style="text-align: center; font-size: 18px;">
+      <strong>dp[i] = max(dp[i-1], dp[i-2] + nums[i])</strong>
+    </div>
+    <h3>空间优化</h3>
+    <p>注意到我们每次只需要 dp[i-1] 和 dp[i-2]，可以用两个变量滚动更新，将空间复杂度从 O(n) 优化到 O(1)。</p>
+  </div>
+
+  <div class="section">
+    <h2>⏱️ 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>解法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>DP数组版</td>
+        <td>O(n)</td>
+        <td>O(n)</td>
+        <td>易于理解，适合初学者</td>
+      </tr>
+      <tr>
+        <td>滚动变量版 ⭐</td>
+        <td>O(n)</td>
+        <td>O(1)</td>
+        <td>空间优化，面试推荐</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/house-robber-ii/" target="_blank" class="problem-card">
+        <span class="tag">Medium</span>
+        <h4>213. 打家劫舍 II</h4>
+        <p>房屋围成环，首末相邻，如何分解为两个线性问题？</p>
+      </a>
+      <a href="https://leetcode.cn/problems/house-robber-iii/" target="_blank" class="problem-card">
+        <span class="tag">Medium</span>
+        <h4>337. 打家劫舍 III</h4>
+        <p>二叉树结构，树形DP入门经典</p>
+      </a>
+      <a href="https://leetcode.cn/problems/coin-change/" target="_blank" class="problem-card">
+        <span class="tag">Medium</span>
+        <h4>322. 零钱兑换</h4>
+        <p>完全背包问题，另一种经典DP</p>
+      </a>
+      <a href="https://leetcode.cn/problems/climbing-stairs/" target="_blank" class="problem-card">
+        <span class="tag">Easy</span>
+        <h4>70. 爬楼梯</h4>
+        <p>斐波那契式DP，状态转移更简单</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码内容
+    const codeLines = [
+      { line: 1, code: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { line: 2, code: '    <span class="keyword">def</span> <span class="function">rob</span>(self, nums: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:' },
+      { line: 3, code: '        <span class="comment"># 处理边界情况</span>' },
+      { line: 4, code: '        <span class="keyword">if</span> <span class="keyword">not</span> nums:' },
+      { line: 5, code: '            <span class="keyword">return</span> <span class="number">0</span>' },
+      { line: 6, code: '        <span class="keyword">if</span> len(nums) == <span class="number">1</span>:' },
+      { line: 7, code: '            <span class="keyword">return</span> nums[<span class="number">0</span>]' },
+      { line: 8, code: '        ' },
+      { line: 9, code: '        <span class="comment"># 初始化：dp[i] 表示偷窃前i间房子的最大金额</span>' },
+      { line: 10, code: '        prev2 = nums[<span class="number">0</span>]  <span class="comment"># dp[i-2]</span>' },
+      { line: 11, code: '        prev1 = max(nums[<span class="number">0</span>], nums[<span class="number">1</span>])  <span class="comment"># dp[i-1]</span>' },
+      { line: 12, code: '        ' },
+      { line: 13, code: '        <span class="comment"># 从第3间房子开始遍历</span>' },
+      { line: 14, code: '        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>, len(nums)):' },
+      { line: 15, code: '            <span class="comment"># 状态转移：偷当前房子 vs 不偷当前房子</span>' },
+      { line: 16, code: '            curr = max(prev1, prev2 + nums[i])' },
+      { line: 17, code: '            prev2 = prev1  <span class="comment"># 滚动更新</span>' },
+      { line: 18, code: '            prev1 = curr' },
+      { line: 19, code: '        ' },
+      { line: 20, code: '        <span class="keyword">return</span> prev1' }
+    ];
+
+    // 步骤与代码行映射（以 nums = [2,7,9,3,1] 为例）
+    const steps = [
+      { title: "初始化", desc: "数组长度 n=5，prev2=nums[0]=2（只偷第0间），prev1=max(2,7)=7（偷前两间的最大）", line: 10, dp: [2, 7, '-', '-', '-'] },
+      { title: "遍历第2间房子 (i=2, nums[2]=9)", desc: "curr = max(prev1=7, prev2+9=2+9=11) = 11\n偷当前房子（2+9=11）比不偷（7）更优", line: 16, dp: [2, 7, 11, '-', '-'] },
+      { title: "滚动更新 (i=2)", desc: "prev2 = prev1 = 7\nprev1 = curr = 11", line: 17, dp: [2, 7, 11, '-', '-'] },
+      { title: "遍历第3间房子 (i=3, nums[3]=3)", desc: "curr = max(prev1=11, prev2+3=7+3=10) = 11\n不偷当前房子（保持11）比偷（10）更优", line: 16, dp: [2, 7, 11, 11, '-'] },
+      { title: "滚动更新 (i=3)", desc: "prev2 = prev1 = 11\nprev1 = curr = 11", line: 18, dp: [2, 7, 11, 11, '-'] },
+      { title: "遍历第4间房子 (i=4, nums[4]=1)", desc: "curr = max(prev1=11, prev2+1=11+1=12) = 12\n偷当前房子（11+1=12）比不偷（11）更优", line: 16, dp: [2, 7, 11, 11, 12] },
+      { title: "滚动更新 (i=4)", desc: "prev2 = prev1 = 11\nprev1 = curr = 12", line: 18, dp: [2, 7, 11, 11, 12] },
+      { title: "返回结果", desc: "遍历结束，返回 prev1 = 12\n最优方案：偷第0、2、4间（2+9+1=12）", line: 20, dp: [2, 7, 11, 11, 12] }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({ line, code }) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span>${code}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, index) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.index = index;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="viz-step-title">步骤 ${index + 1}: ${step.title}</div>
+        <div class="viz-step-desc">${step.desc.replace(/\n/g, '<br>')}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(index));
+      vizSteps.appendChild(div);
+    });
+
+    // 渲染DP数组
+    function renderDPArray(dpValues, currentIndex) {
+      const dpArray = document.getElementById('dpArray');
+      dpArray.innerHTML = '';
+      dpValues.forEach((val, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'dp-cell';
+        if (val !== '-') cell.classList.add('active');
+        if (idx === currentIndex) cell.classList.add('current');
+        cell.textContent = val;
+        dpArray.appendChild(cell);
+      });
+    }
+
+    // 高亮步骤
+    function highlightStep(index) {
+      // 清除所有高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-index="${index}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 高亮对应代码行
+      const step = steps[index];
+      const lineEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (lineEl) {
+        lineEl.classList.add('active');
+        lineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 更新DP数组显示
+      renderDPArray(step.dp, index < 2 ? index : index - 1);
+    }
+
+    // 通过代码行高亮步骤
+    function highlightStepByLine(line) {
+      const stepIndex = steps.findIndex(s => s.line === line);
+      if (stepIndex !== -1) {
+        highlightStep(stepIndex);
+      }
+    }
+
+    // 初始化显示
+    renderDPArray(['-', '-', '-', '-', '-'], -1);
+  </script>
+</body>
+</html>
