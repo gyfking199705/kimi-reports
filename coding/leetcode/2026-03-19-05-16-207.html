@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #207 - 课程表</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { 
+      font-size: 2.2em; 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .subtitle { color: var(--text-muted); margin-bottom: 30px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75em;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    .badge-medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-size: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left: 3px solid var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    .viz-steps { 
+      max-height: 450px; 
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .viz-steps::-webkit-scrollbar { width: 6px; }
+    .viz-steps::-webkit-scrollbar-thumb { 
+      background: var(--primary); 
+      border-radius: 3px;
+    }
+    .viz-step { 
+      padding: 14px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.25s;
+    }
+    .viz-step:hover { 
+      border-color: var(--text-muted);
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+    .viz-step .step-title { 
+      font-weight: 600; 
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .viz-step .step-desc { 
+      font-size: 0.9em; 
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .state-box {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+    .state-box .state-item {
+      display: flex;
+      gap: 10px;
+      margin: 4px 0;
+    }
+    .state-label { color: var(--text-muted); }
+    .state-value { color: var(--success); }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .problem-id {
+      font-size: 0.8em;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .problem-card .problem-title {
+      font-weight: 600;
+      margin: 8px 0;
+    }
+    .problem-card .problem-desc {
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .complexity-table tr:last-child td {
+      border-bottom: none;
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      margin: 2px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+    }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .class { color: #ffa657; }
+    .graph-viz {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .graph-nodes {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+    .graph-node {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1em;
+      background: #334155;
+      border: 3px solid var(--text-muted);
+      transition: all 0.3s;
+    }
+    .graph-node.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    }
+    .graph-node.visited {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    .arrow {
+      display: flex;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 1.5em;
+    }
+    .algo-highlight {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 15px 20px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #207 - 课程表</h1>
+  <p class="subtitle">拓扑排序经典入门题 | 图论基础
+    <span class="badge badge-medium">Medium</span>
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>你这个学期必须选修 <code>numCourses</code> 门课程，记为 <code>0</code> 到 <code>numCourses - 1</code>。</p>
+    <p>在选修某些课程之前需要一些先修课程。先修课程按数组 <code>prerequisites</code> 给出，其中 <code>prerequisites[i] = [a, b]</code>，表示如果要学习课程 <strong>a</strong> 则 <strong>必须先</strong> 学习课程 <strong>b</strong>。</p>
+    <p>请判断是否可能完成所有课程的学习？如果可以，返回 <code>true</code>；否则，返回 <code>false</code>。</p>
+    
+    <div class="algo-highlight">
+      <strong>核心问题：</strong>判断有向图中是否存在环 —— 如果存在环（如 A→B→C→A），则无法完成所有课程。
+    </div>
+    
+    <p><strong>示例：</strong></p>
+    <ul>
+      <li><code>numCourses = 2</code>, <code>prerequisites = [[1,0]]</code> → <code>true</code>（先学0再学1）</li>
+      <li><code>numCourses = 2</code>, <code>prerequisites = [[1,0],[0,1]]</code> → <code>false</code>（循环依赖）</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🧠 算法思路：Kahn算法（BFS拓扑排序）</h2>
+    <p>拓扑排序用于解决有向图的先后顺序问题。Kahn算法基于<strong>入度</strong>（有多少课程依赖于它）的思想：</p>
+    <ol>
+      <li>计算每个课程的入度（有多少前置课程）</li>
+      <li>将入度为0的课程加入队列（没有前置依赖，可以直接学）</li>
+      <li>依次学习这些课程，并将它们的后置课程的入度减1</li>
+      <li>如果某后置课程入度变为0，说明前置都学完了，可以入队</li>
+      <li>最后统计能学完的课程数，等于总数则无环</li>
+    </ol>
+    
+    <div class="graph-viz" id="graphViz">
+      <div>课程依赖图示例</div>
+      <div class="graph-nodes">
+        <div class="graph-node" data-node="0">0</div>
+        <div class="arrow">→</div>
+        <div class="graph-node" data-node="1">1</div>
+        <div class="arrow">→</div>
+        <div class="graph-node" data-node="2">2</div>
+        <div class="arrow">→</div>
+        <div class="graph-node" data-node="3">3</div>
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.9em;">
+        课程0是课程1的前置 → 课程1是课程2的前置 → 课程2是课程3的前置
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程</h2>
+    <p style="color: var(--text-muted); font-size: 0.9em;">点击左侧步骤或右侧代码行查看对应关系</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top: 0;">Python 实现 - Kahn算法</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>维度</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>Kahn算法（BFS）</td>
+        <td>O(V + E)</td>
+        <td>O(V + E)</td>
+        <td>V=课程数，E=先修关系数。每个节点和边只访问一次</td>
+      </tr>
+      <tr>
+        <td>DFS检测环</td>
+        <td>O(V + E)</td>
+        <td>O(V)</td>
+        <td>递归栈空间，可以优化到O(V)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>💡 关键点总结</h2>
+    <ul>
+      <li><strong>入度数组</strong>：记录每门课程的前置依赖数量</li>
+      <li><strong>邻接表</strong>：记录每门课程的后置课程（学完它能解锁哪些课）</li>
+      <li><strong>队列</strong>：维护当前可以学习的课程（入度为0）</li>
+      <li><strong>计数器</strong>：统计实际学习的课程数量，用于最后判断</li>
+    </ul>
+    <div class="algo-highlight">
+      <strong>易错点：</strong>构建图时，<code>[a, b]</code> 表示 b→a（先学b才能学a），不要把方向搞反！
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <p style="color: var(--text-muted); margin-bottom: 15px;">点击卡片跳转到LeetCode练习</p>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/course-schedule-ii/" class="problem-card" target="_blank">
+        <div class="problem-id">#210</div>
+        <div class="problem-title">课程表 II</div>
+        <div class="problem-desc">本题升级版，需要返回具体的课程学习顺序</div>
+        <span class="tag">拓扑排序</span>
+        <span class="tag">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/find-eventual-safe-states/" class="problem-card" target="_blank">
+        <div class="problem-id">#802</div>
+        <div class="problem-title">找到最终的安全状态</div>
+        <div class="problem-desc">反向拓扑排序，找出不会进入环的节点</div>
+        <span class="tag">图</span>
+        <span class="tag">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/alien-dictionary/" class="problem-card" target="_blank">
+        <div class="problem-id">#269</div>
+        <div class="problem-title">火星词典 🔒</div>
+        <div class="problem-desc">根据单词顺序推断字母表顺序，拓扑排序应用</div>
+        <span class="tag">拓扑排序</span>
+        <span class="tag">Hard</span>
+      </a>
+      <a href="https://leetcode.cn/problems/sequence-reconstruction/" class="problem-card" target="_blank">
+        <div class="problem-id">#444</div>
+        <div class="problem-title">序列重建 🔒</div>
+        <div class="problem-desc">判断原序列是否能由子序列唯一确定</div>
+        <span class="tag">拓扑排序</span>
+        <span class="tag">Medium</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Python代码（按行分割用于高亮）
+    const codeLines = [
+      {line: 1, text: '<span class="keyword">from</span> collections <span class="keyword">import</span> deque'},
+      {line: 2, text: ''},
+      {line: 3, text: '<span class="keyword">class</span> <span class="class">Solution</span>:'},
+      {line: 4, text: '    <span class="keyword">def</span> <span class="function">canFinish</span>(<span class="keyword">self</span>, numCourses: <span class="keyword">int</span>, prerequisites: List[List[<span class="keyword">int</span>]]) -> <span class="keyword">bool</span>:'},
+      {line: 5, text: '        <span class="comment"># 构建邻接表和入度数组</span>'},
+      {line: 6, text: '        graph = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="function">range</span>(numCourses)]  <span class="comment"># 邻接表</span>'},
+      {line: 7, text: '        in_degree = [<span class="number">0</span>] * numCourses  <span class="comment"># 入度数组</span>'},
+      {line: 8, text: ''},
+      {line: 9, text: '        <span class="comment"># 遍历所有先修关系，构建图</span>'},
+      {line: 10, text: '        <span class="keyword">for</span> a, b <span class="keyword">in</span> prerequisites:'},
+      {line: 11, text: '            graph[b].append(a)  <span class="comment"># b -> a (先学b才能学a)</span>'},
+      {line: 12, text: '            in_degree[a] += <span class="number">1</span>  <span class="comment"># a的入度+1</span>'},
+      {line: 13, text: ''},
+      {line: 14, text: '        <span class="comment"># 将所有入度为0的课程入队</span>'},
+      {line: 15, text: '        queue = deque()'},
+      {line: 16, text: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(numCourses):'},
+      {line: 17, text: '            <span class="keyword">if</span> in_degree[i] == <span class="number">0</span>:'},
+      {line: 18, text: '                queue.append(i)'},
+      {line: 19, text: ''},
+      {line: 20, text: '        <span class="comment"># 统计已学习的课程数</span>'},
+      {line: 21, text: '        studied = <span class="number">0</span>'},
+      {line: 22, text: ''},
+      {line: 23, text: '        <span class="comment"># BFS拓扑排序</span>'},
+      {line: 24, text: '        <span class="keyword">while</span> queue:'},
+      {line: 25, text: '            cur = queue.popleft()  <span class="comment"># 学一门课</span>'},
+      {line: 26, text: '            studied += <span class="number">1</span>'},
+      {line: 27, text: ''},
+      {line: 28, text: '            <span class="comment"># 解锁后置课程</span>'},
+      {line: 29, text: '            <span class="keyword">for</span> next_course <span class="keyword">in</span> graph[cur]:'},
+      {line: 30, text: '                in_degree[next_course] -= <span class="number">1</span>  <span class="comment"># 入度减1</span>'},
+      {line: 31, text: '                <span class="keyword">if</span> in_degree[next_course] == <span class="number">0</span>:'},
+      {line: 32, text: '                    queue.append(next_course)  <span class="comment"># 可以学了</span>'},
+      {line: 33, text: ''},
+      {line: 34, text: '        <span class="comment"># 判断是否能学完所有课程</span>'},
+      {line: 35, text: '        <span class="keyword">return</span> studied == numCourses'}
+    ];
+
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "Step 1: 初始化数据结构",
+        desc: "创建邻接表存储课程依赖关系，入度数组记录每门课的前置课程数量",
+        line: 6,
+        state: {graph: "[[], [], [], []]", in_degree: "[0, 0, 0, 0]", queue: "[]"}
+      },
+      {
+        title: "Step 2: 构建依赖图",
+        desc: "遍历prerequisites，填充邻接表和入度数组。例如[1,0]表示0→1",
+        line: 10,
+        state: {示例: "prerequisites=[[1,0],[2,1],[3,2]]", graph: "[[1],[2],[3],[]]", in_degree: "[0,1,1,1]"}
+      },
+      {
+        title: "Step 3: 找入度为0的课程",
+        desc: "课程0没有前置依赖，可以直接学习，加入队列",
+        line: 17,
+        state: {检查: "in_degree[0] == 0", queue: "[0]", studied: 0}
+      },
+      {
+        title: "Step 4: 开始学习课程0",
+        desc: "从队列取出课程0，学习计数+1。课程0的后置课程是[1]",
+        line: 25,
+        state: {当前学习: "课程0", studied: 1, 后置课程: "[1]"}
+      },
+      {
+        title: "Step 5: 解锁课程1",
+        desc: "课程1的入度减1（从1变0），现在可以学习了，加入队列",
+        line: 30,
+        state: {in_degree: "[0,0,1,1]", queue: "[1]", studied: 1}
+      },
+      {
+        title: "Step 6: 学习课程1并解锁课程2",
+        desc: "课程1学完，它的后置课程2入度减1变为0，可以入队",
+        line: 29,
+        state: {当前学习: "课程1", in_degree: "[0,0,0,1]", queue: "[2]", studied: 2}
+      },
+      {
+        title: "Step 7: 学习课程2并解锁课程3",
+        desc: "课程2学完，课程3入度减1变为0，加入队列",
+        line: 29,
+        state: {当前学习: "课程2", in_degree: "[0,0,0,0]", queue: "[3]", studied: 3}
+      },
+      {
+        title: "Step 8: 学习最后一门课程",
+        desc: "课程3没有后置课程，直接学习完成",
+        line: 25,
+        state: {当前学习: "课程3", studied: 4, queue: "[]"}
+      },
+      {
+        title: "Step 9: 判断结果",
+        desc: "studied(4) == numCourses(4)，返回true，可以完成所有课程！",
+        line: 35,
+        state: {studied: 4, numCourses: 4, 结果: "true ✓"}
+      }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({line, text}) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span>${text}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, index) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = index;
+      div.dataset.line = step.line;
+      
+      let stateHtml = '';
+      if (step.state) {
+        stateHtml = '<div class="state-box">';
+        Object.entries(step.state).forEach(([k, v]) => {
+          stateHtml += `<div class="state-item"><span class="state-label">${k}:</span><span class="state-value">${v}</span></div>`;
+        });
+        stateHtml += '</div>';
+      }
+      
+      div.innerHTML = `
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div style="margin-top: 8px; font-size: 0.8em; color: #6366f1;">→ 代码行 ${step.line}</div>
+        ${stateHtml}
+      `;
+      div.addEventListener('click', () => highlightStep(index));
+      vizSteps.appendChild(div);
+    });
+
+    let currentStep = -1;
+
+    function highlightStep(stepIndex) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+      
+      currentStep = stepIndex;
+      const step = steps[stepIndex];
+      
+      // 高亮步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepIndex}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const lineEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 滚动到可视区域
+      stepEl?.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      lineEl?.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+
+    function highlightStepByLine(lineNum) {
+      const stepIndex = steps.findIndex(s => s.line === lineNum);
+      if (stepIndex !== -1) {
+        highlightStep(stepIndex);
+      }
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
