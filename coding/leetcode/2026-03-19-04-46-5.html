@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #5 - 最长回文子串</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-hover: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.6;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: var(--text-muted); margin-bottom: 32px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .difficulty-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 12px;
+    }
+    .difficulty-medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 0;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .code-wrapper { padding: 20px; }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left-color: var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 13px;
+    }
+    .code-content {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 14px;
+      white-space: pre;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      max-height: 450px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar { width: 6px; }
+    .viz-steps::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 3px; }
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 8px 0; 
+      border-radius: 10px; 
+      background: var(--surface-hover); 
+      cursor: pointer; 
+      border: 2px solid transparent; 
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      transform: translateX(4px);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .viz-step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .viz-step-state {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-family: 'SF Mono', monospace;
+      font-size: 12px;
+      color: var(--success);
+    }
+    .string-visual {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .char-box {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-hover);
+      border-radius: 6px;
+      font-weight: 600;
+      font-family: monospace;
+      transition: all 0.3s;
+    }
+    .char-box.center {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.1);
+    }
+    .char-box.expand {
+      background: var(--success);
+      color: white;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 16px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 15px;
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    .boolean { color: #ff7b72; }
+    .operator { color: #ff7b72; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-hover);
+    }
+    th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+    .method-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .method-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--surface-hover);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .method-tab.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #5 - 最长回文子串</h1>
+  <p class="subtitle">Longest Palindromic Substring <span class="difficulty-tag difficulty-medium">Medium</span></p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个字符串 <code>s</code>，找到 <code>s</code> 中最长的回文子串。</p>
+    
+    <div class="highlight-box">
+      <strong>回文串定义：</strong>正读和反读都相同的字符串，如 "aba"、"racecar"
+    </div>
+    
+    <p><strong>示例 1：</strong></p>
+    <pre style="padding: 16px;">输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。</pre>
+    
+    <p><strong>示例 2：</strong></p>
+    <pre style="padding: 16px;">输入：s = "cbbd"
+输出："bb"</pre>
+    
+    <p><strong>提示：</strong></p>
+    <ul>
+      <li><code>1 <= s.length <= 1000</code></li>
+      <li><code>s</code> 仅由数字和英文字母组成</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心思路：中心扩展法</h2>
+    <p>回文串的精髓在于<strong>对称性</strong>。我们可以枚举每个可能的"中心"，然后向两边扩展，直到不能再扩展为止。</p>
+    
+    <div class="highlight-box">
+      <strong>关键点：</strong>回文中心有两种情况<br>
+      • 奇数长度：中心是一个字符（如 "aba" 的中心是 'b'）<br>
+      • 偶数长度：中心是两个相同字符之间（如 "abba" 的中心在两个 'b' 之间）
+    </div>
+    
+    <p>因此，对于长度为 n 的字符串，我们有 <code>2n-1</code> 个可能的中心位置需要枚举。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div>
+        <div class="string-visual" id="stringViz"></div>
+        <div class="viz-steps" id="vizSteps"></div>
+      </div>
+      <div class="code-container">
+        <h3>Python 实现 - 中心扩展法</h3>
+        <pre><div class="code-wrapper" id="codeBlock"></div></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <tr>
+        <th>方法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>暴力枚举</td>
+        <td>O(n³)</td>
+        <td>O(1)</td>
+        <td>枚举所有子串，判断是否为回文</td>
+      </tr>
+      <tr style="background: rgba(99, 102, 241, 0.1);">
+        <td><strong>中心扩展法</strong></td>
+        <td><strong>O(n²)</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td><strong>⭐ 推荐，代码简洁高效</strong></td>
+      </tr>
+      <tr>
+        <td>动态规划</td>
+        <td>O(n²)</td>
+        <td>O(n²)</td>
+        <td>dp[i][j] 表示子串 s[i:j+1] 是否为回文</td>
+      </tr>
+      <tr>
+        <td>Manacher算法</td>
+        <td>O(n)</td>
+        <td>O(n)</td>
+        <td>理论最优，但代码复杂，面试不推荐</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🎯 面试技巧</h2>
+    <ul>
+      <li><strong>先想暴力解法：</strong>确认理解题意，给出一个可行方案作为保底</li>
+      <li><strong>利用对称性优化：</strong>发现回文的中心扩展特性，将复杂度降至 O(n²)</li>
+      <li><strong>处理奇偶：</strong>用统一的辅助函数处理奇数长度和偶数长度两种情况</li>
+      <li><strong>边界处理：</strong>注意防止索引越界（l >= 0 && r < n）</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/longest-palindromic-subsequence/" class="problem-card" target="_blank">
+        <h4>📘 516. 最长回文子序列</h4>
+        <p>动态规划经典题，求子序列而非子串</p>
+      </a>
+      <a href="https://leetcode.cn/problems/palindromic-substrings/" class="problem-card" target="_blank">
+        <h4>📗 647. 回文子串</h4>
+        <p>统计回文子串个数，同样可用中心扩展</p>
+      </a>
+      <a href="https://leetcode.cn/problems/valid-palindrome/" class="problem-card" target="_blank">
+        <h4>📙 125. 验证回文串</h4>
+        <p>基础回文判断，双指针入门题</p>
+      </a>
+      <a href="https://leetcode.cn/problems/palindrome-partitioning/" class="problem-card" target="_blank">
+        <h4>📕 131. 分割回文串</h4>
+        <p>回溯+回文判断，综合考察</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码内容
+    const codeLines = [
+      { line: 1, content: '<span class="class">class</span> <span class="function">Solution</span>:' },
+      { line: 2, content: '    <span class="keyword">def</span> <span class="function">longestPalindrome</span>(<span class="keyword">self</span>, s: <span class="class">str</span>) -> <span class="class">str</span>:' },
+      { line: 3, content: '        n = <span class="function">len</span>(s)' },
+      { line: 4, content: '        <span class="keyword">if</span> n < <span class="number">2</span>:' },
+      { line: 5, content: '            <span class="keyword">return</span> s' },
+      { line: 6, content: '        ' },
+      { line: 7, content: '        start, max_len = <span class="number">0</span>, <span class="number">1</span>  <span class="comment"># 记录最长回文起点和长度</span>' },
+      { line: 8, content: '        ' },
+      { line: 9, content: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):' },
+      { line: 10, content: '            <span class="comment"># 奇数长度：中心是单个字符</span>' },
+      { line: 11, content: '            len1 = <span class="keyword">self</span>.<span class="function">expandAroundCenter</span>(s, i, i)' },
+      { line: 12, content: '            <span class="comment"># 偶数长度：中心在两个字符之间</span>' },
+      { line: 13, content: '            len2 = <span class="keyword">self</span>.<span class="function">expandAroundCenter</span>(s, i, i + <span class="number">1</span>)' },
+      { line: 14, content: '            ' },
+      { line: 15, content: '            curr_len = <span class="function">max</span>(len1, len2)' },
+      { line: 16, content: '            <span class="keyword">if</span> curr_len > max_len:' },
+      { line: 17, content: '                max_len = curr_len' },
+      { line: 18, content: '                start = i - (curr_len - <span class="number">1</span>) // <span class="number">2</span>' },
+      { line: 19, content: '        ' },
+      { line: 20, content: '        <span class="keyword">return</span> s[start : start + max_len]' },
+      { line: 21, content: '    ' },
+      { line: 22, content: '    <span class="keyword">def</span> <span class="function">expandAroundCenter</span>(<span class="keyword">self</span>, s: <span class="class">str</span>, left: <span class="class">int</span>, right: <span class="class">int</span>) -> <span class="class">int</span>:' },
+      { line: 23, content: '        <span class="comment"># 从中心向两边扩展，返回回文长度</span>' },
+      { line: 24, content: '        <span class="keyword">while</span> left >= <span class="number">0</span> <span class="keyword">and</span> right < <span class="function">len</span>(s) <span class="keyword">and</span> s[left] == s[right]:' },
+      { line: 25, content: '            left -= <span class="number">1</span>' },
+      { line: 26, content: '            right += <span class="number">1</span>' },
+      { line: 27, content: '        <span class="keyword">return</span> right - left - <span class="number">1</span>  <span class="comment"># 实际长度</span>' }
+    ];
+
+    // 步骤数据
+    const steps = [
+      { title: "初始化", desc: "获取字符串长度，处理边界情况（n < 2时直接返回）", line: 3, state: "n = 5, s = 'babad'", chars: [] },
+      { title: "设置全局变量", desc: "start记录最长回文起点，max_len记录当前最大长度", line: 7, state: "start = 0, max_len = 1", chars: [{i: 0, cls: 'center'}] },
+      { title: "开始枚举中心 i=0", desc: "以第一个字符 'b' 为中心，尝试扩展", line: 9, state: "i = 0, char = 'b'", chars: [{i: 0, cls: 'center'}] },
+      { title: "奇数扩展 expand(0,0)", desc: "中心是 'b'，向两边扩展：左边越界，停止。回文长度=1", line: 11, state: "left=-1, right=1, len1=1", chars: [{i: 0, cls: 'center'}] },
+      { title: "偶数扩展 expand(0,1)", desc: "中心在 'b' 和 'a' 之间，s[0]!=s[1]，回文长度=0", line: 13, state: "left=0, right=1, len2=0", chars: [{i: 0, cls: 'center'}, {i: 1, cls: 'center'}] },
+      { title: "更新最大值", desc: "curr_len = max(1, 0) = 1，不大于 max_len，不更新", line: 16, state: "max_len 保持 1", chars: [] },
+      { title: "枚举中心 i=1", desc: "以字符 'a' 为中心", line: 9, state: "i = 1, char = 'a'", chars: [{i: 1, cls: 'center'}] },
+      { title: "奇数扩展 expand(1,1)", desc: "从 'a' 向两边扩展：左边 'b' == 右边 'b'，匹配！继续扩展", line: 11, state: "扩展成功，left=0, right=2", chars: [{i: 0, cls: 'expand'}, {i: 1, cls: 'center'}, {i: 2, cls: 'expand'}] },
+      { title: "继续扩展", desc: "左边再移一位越界，停止。回文 'bab'，长度=3", line: 24, state: "left=-1, right=3, len1=3", chars: [{i: 0, cls: 'expand'}, {i: 1, cls: 'center'}, {i: 2, cls: 'expand'}] },
+      { title: "偶数扩展 expand(1,2)", desc: "中心在 'a' 和 'b' 之间，s[1]!=s[2]，长度=0", line: 13, state: "len2 = 0", chars: [{i: 1, cls: 'center'}, {i: 2, cls: 'center'}] },
+      { title: "更新最大值！", desc: "curr_len = 3 > max_len = 1，更新 start 和 max_len", line: 16, state: "max_len = 3, start = 0", chars: [{i: 0, cls: 'expand'}, {i: 1, cls: 'center'}, {i: 2, cls: 'expand'}] },
+      { title: "继续枚举其他中心", desc: "i=2,3,4 继续执行类似逻辑...", line: 9, state: "继续循环", chars: [] },
+      { title: "返回结果", desc: "最终最长回文子串是 s[0:3] = 'bab'", line: 20, state: "结果: 'bab'", chars: [{i: 0, cls: 'expand'}, {i: 1, cls: 'center'}, {i: 2, cls: 'expand'}] }
+    ];
+
+    const s = "babad";
+
+    // 渲染字符串可视化
+    function renderStringViz(activeChars) {
+      const container = document.getElementById('stringViz');
+      container.innerHTML = '';
+      for (let i = 0; i < s.length; i++) {
+        const box = document.createElement('div');
+        box.className = 'char-box';
+        box.textContent = s[i];
+        const active = activeChars.find(c => c.i === i);
+        if (active) box.classList.add(active.cls);
+        container.appendChild(box);
+      }
+    }
+
+    // 渲染代码
+    function renderCode() {
+      const container = document.getElementById('codeBlock');
+      codeLines.forEach(({ line, content }) => {
+        const div = document.createElement('div');
+        div.className = 'code-line';
+        div.dataset.line = line;
+        div.innerHTML = `<span class="line-number">${line}</span><span class="code-content">${content}</span>`;
+        div.addEventListener('click', () => activateByLine(line));
+        container.appendChild(div);
+      });
+    }
+
+    // 渲染步骤
+    function renderSteps() {
+      const container = document.getElementById('vizSteps');
+      steps.forEach((step, idx) => {
+        const div = document.createElement('div');
+        div.className = 'viz-step';
+        div.dataset.idx = idx;
+        div.innerHTML = `
+          <div class="viz-step-title">${idx + 1}. ${step.title}</div>
+          <div class="viz-step-desc">${step.desc}</div>
+          <div class="viz-step-state">${step.state}</div>
+        `;
+        div.addEventListener('click', () => activateByStep(idx));
+        container.appendChild(div);
+      });
+    }
+
+    // 激活步骤
+    function activateByStep(idx) {
+      // 清除之前的状态
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 激活当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-idx="${idx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const step = steps[idx];
+      const codeEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (codeEl) {
+        codeEl.classList.add('active');
+        codeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
+      // 更新字符串可视化
+      renderStringViz(step.chars);
+    }
+
+    // 激活代码行
+    function activateByLine(line) {
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === line);
+      if (stepIdx !== -1) {
+        activateByStep(stepIdx);
+      }
+    }
+
+    // 初始化
+    renderCode();
+    renderSteps();
+    renderStringViz([]);
+    
+    // 默认激活第一步
+    activateByStep(0);
+  </script>
+</body>
+</html>
