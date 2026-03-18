@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode #215 - 数组中的第K个最大元素</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --accent: #f59e0b; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    h1 { color: var(--primary); font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 30px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; font-size: 1.3rem; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    .complexity-table th { color: var(--primary); font-weight: 600; }
+    .complexity-table tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-medium { background: #f59e0b33; color: #f59e0b; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-radius: 0 4px 4px 0; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.25); border-left: 3px solid var(--primary); margin-left: -3px; }
+    .line-number { color: #6e7681; min-width: 40px; text-align: right; padding-right: 16px; font-family: monospace; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    .viz-steps { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; }
+    .viz-step { padding: 14px; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(4px); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+    .viz-step h4 { margin: 0 0 6px 0; color: var(--primary); font-size: 0.95rem; }
+    .viz-step p { margin: 0; font-size: 0.85rem; color: #cbd5e1; }
+    .viz-step .state { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; font-family: monospace; font-size: 0.8rem; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.25s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99,102,241,0.2); }
+    .problem-card h3 { margin: 0 0 8px 0; color: var(--primary); font-size: 1rem; }
+    .problem-card p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .array-viz { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin: 12px 0; }
+    .array-item { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #334155; border-radius: 6px; font-family: monospace; font-size: 0.85rem; transition: all 0.3s; }
+    .array-item.pivot { background: var(--primary); font-weight: bold; }
+    .array-item.active { background: var(--accent); }
+    .array-item.sorted { background: #10b981; }
+    .pointer-label { text-align: center; font-size: 0.75rem; margin-top: 4px; color: #94a3b8; }
+    .k-badge { position: absolute; top: -8px; right: -8px; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; }
+    .array-item-wrapper { position: relative; }
+    .algo-tabs { display: flex; gap: 12px; margin-bottom: 20px; }
+    .algo-tab { padding: 10px 20px; border-radius: 8px; background: #334155; border: none; color: var(--text); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+    .algo-tab.active { background: var(--primary); }
+    .algo-content { display: none; }
+    .algo-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #215 - 数组中的第K个最大元素</h1>
+  <p class="subtitle">Kth Largest Element in an Array <span class="badge badge-medium">Medium</span></p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定整数数组 <code>nums</code> 和整数 <code>k</code>，请返回数组中第 <code>k</code> 个最大的元素。</p>
+    <p style="color: #94a3b8; margin-top: 12px;">请注意，你需要找的是数组排序后的第 <code>k</code> 个最大的元素，而不是第 <code>k</code> 个不同的元素。</p>
+    <p style="color: #94a3b8;">你必须设计并实现时间复杂度为 <code>O(n)</code> 的算法解决此问题。</p>
+    
+    <h3 style="color: var(--accent); margin-top: 24px;">示例</h3>
+    <pre style="background: #1a1f2e;"><code>输入: nums = [3,2,1,5,6,4], k = 2
+输出: 5
+解释: 排序后数组为 [6,5,4,3,2,1]，第2大的元素是5
+
+输入: nums = [3,2,3,1,2,4,5,5,6], k = 4
+输出: 4</code></pre>
+    
+    <h3 style="color: var(--accent); margin-top: 24px;">约束</h3>
+    <ul style="color: #94a3b8;">
+      <li>1 ≤ k ≤ nums.length ≤ 10⁵</li>
+      <li>-10⁴ ≤ nums[i] ≤ 10⁴</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    <div class="algo-tabs">
+      <button class="algo-tab active" onclick="switchAlgo('quickselect')">方法一：快速选择 (O(n))</button>
+      <button class="algo-tab" onclick="switchAlgo('heap')">方法二：最小堆 (O(n log k))</button>
+    </div>
+    
+    <div id="quickselect" class="algo-content active">
+      <p>利用快速排序的分区思想，每次将数组分为两部分：大于 pivot 和小于等于 pivot 的元素。</p>
+      <ul>
+        <li>如果 pivot 的位置正好是第 k 大（即 len - k 索引），直接返回</li>
+        <li>如果 pivot 位置在目标左边，在右半部分继续查找</li>
+        <li>如果 pivot 位置在目标右边，在左半部分继续查找</li>
+      </ul>
+    </div>
+    
+    <div id="heap" class="algo-content">
+      <p>维护一个大小为 k 的最小堆，遍历数组：</p>
+      <ul>
+        <li>堆未满时，直接加入元素</li>
+        <li>堆满时，如果当前元素大于堆顶，弹出堆顶并加入当前元素</li>
+        <li>最终堆顶就是第 k 大的元素</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行可视化（点击步骤或代码行互动）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现 - 快速选择</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>方法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>适用场景</th>
+      </tr>
+      <tr>
+        <td>排序</td>
+        <td>O(n log n)</td>
+        <td>O(1) / O(log n)</td>
+        <td>简单实现，面试不推荐</td>
+      </tr>
+      <tr>
+        <td><strong>快速选择</strong></td>
+        <td><strong>O(n) 平均 / O(n²) 最坏</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td><strong>最优解，面试首选</strong></td>
+      </tr>
+      <tr>
+        <td>最小堆</td>
+        <td>O(n log k)</td>
+        <td>O(k)</td>
+        <td>k 较小，或数据流场景</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/find-median-from-data-stream/" class="problem-card" target="_blank">
+        <h3>#295 数据流的中位数</h3>
+        <p>双堆经典题，维护大顶堆和小顶堆</p>
+      </a>
+      <a href="https://leetcode.cn/problems/k-closest-points-to-origin/" class="problem-card" target="_blank">
+        <h3>#973 最接近原点的 K 个点</h3>
+        <p>最大堆应用，距离排序</p>
+      </a>
+      <a href="https://leetcode.cn/problems/top-k-frequent-elements/" class="problem-card" target="_blank">
+        <h3>#347 前 K 个高频元素</h3>
+        <p>哈希表 + 堆 / 快速选择</p>
+      </a>
+      <a href="https://leetcode.cn/problems/wiggle-sort-ii/" class="problem-card" target="_blank">
+        <h3>#324 摆动排序 II</h3>
+        <p>先找中位数，再交错排列</p>
+      </a>
+      <a href="https://leetcode.cn/problems/kth-smallest-element-in-a-sorted-matrix/" class="problem-card" target="_blank">
+        <h3>#378 有序矩阵中第 K 小的元素</h3>
+        <p>二分查找或堆</p>
+      </a>
+      <a href="https://leetcode.cn/problems/sort-colors/" class="problem-card" target="_blank">
+        <h3>#75 颜色分类</h3>
+        <p>荷兰国旗问题，三路快排思想</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    const pythonCode = `<span class="keyword">import</span> random
+
+<span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:
+        <span class="comment"># 转换为第 (n-k) 小的元素索引</span>
+        <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, <span class="number">0</span>, <span class="keyword">len</span>(nums) - <span class="number">1</span>, <span class="keyword">len</span>(nums) - k)
+    
+    <span class="keyword">def</span> <span class="function">quickSelect</span>(<span class="keyword">self</span>, nums, left, right, target_idx):
+        <span class="keyword">if</span> left == right:
+            <span class="keyword">return</span> nums[left]
+        
+        <span class="comment"># 随机选择 pivot 避免最坏情况</span>
+        pivot_idx = random.randint(left, right)
+        pivot_idx = <span class="keyword">self</span>.partition(nums, left, right, pivot_idx)
+        
+        <span class="keyword">if</span> pivot_idx == target_idx:
+            <span class="keyword">return</span> nums[pivot_idx]
+        <span class="keyword">elif</span> pivot_idx < target_idx:
+            <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, pivot_idx + <span class="number">1</span>, right, target_idx)
+        <span class="keyword">else</span>:
+            <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, left, pivot_idx - <span class="number">1</span>, target_idx)
+    
+    <span class="keyword">def</span> <span class="function">partition</span>(<span class="keyword">self</span>, nums, left, right, pivot_idx):
+        pivot_val = nums[pivot_idx]
+        <span class="comment"># 将 pivot 移到最右边</span>
+        nums[pivot_idx], nums[right] = nums[right], nums[pivot_idx]
+        store_idx = left
+        
+        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(left, right):
+            <span class="keyword">if</span> nums[i] < pivot_val:
+                nums[store_idx], nums[i] = nums[i], nums[store_idx]
+                store_idx += <span class="number">1</span>
+        
+        <span class="comment"># 将 pivot 放到正确位置</span>
+        nums[right], nums[store_idx] = nums[store_idx], nums[right]
+        <span class="keyword">return</span> store_idx`;
+
+    const steps = [
+      {title: "初始化", desc: "调用 findKthLargest，目标：找第 k 大", line: 5, state: {nums: "[3,2,1,5,6,4]", k: 2, target_idx: "4 (第5小)"}},
+      {title: "进入 quickSelect", desc: "左=0, 右=5, 目标索引=4", line: 8, state: {left: 0, right: 5, target_idx: 4}},
+      {title: "随机选择 pivot", desc: "假设随机到索引 3，值=5", line: 12, state: {pivot_idx: 3, pivot_val: 5}},
+      {title: "开始分区", desc: "调用 partition，将 pivot 移到最右", line: 13, state: {nums: "[3,2,1,4,6,5]", pivot: "移到位置5"}},
+      {title: "遍历分区", desc: "i=0, nums[0]=3 < 5，与 store_idx=0 交换", line: 20, state: {i: 0, store_idx: 0, nums: "[3,2,1,4,6,5]"}},
+      {title: "遍历分区", desc: "i=1, nums[1]=2 < 5，与 store_idx=1 交换", line: 20, state: {i: 1, store_idx: 1, nums: "[3,2,1,4,6,5]"}},
+      {title: "遍历分区", desc: "i=2, nums[2]=1 < 5，与 store_idx=2 交换", line: 20, state: {i: 2, store_idx: 2, nums: "[3,2,1,4,6,5]"}},
+      {title: "遍历分区", desc: "i=3, nums[3]=4 < 5，与 store_idx=3 交换", line: 20, state: {i: 3, store_idx: 3, nums: "[3,2,1,4,6,5]"}},
+      {title: "遍历分区", desc: "i=4, nums[4]=6 > 5，跳过", line: 19, state: {i: 4, store_idx: 3, action: "跳过"}},
+      {title: "放置 pivot", desc: "store_idx=4，将 pivot(5) 放到位置 4", line: 24, state: {nums: "[3,2,1,4,5,6]", pivot_final: 4}},
+      {title: "返回 pivot 位置", desc: "分区完成，返回 4", line: 25, state: {return_value: 4}},
+      {title: "比较位置", desc: "pivot_idx(4) == target_idx(4) ✓", line: 15, state: {result: "找到答案！"}},
+      {title: "返回答案", desc: "nums[4] = 5 就是第 2 大的元素", line: 16, state: {answer: 5}}
+    ];
+
+    // 渲染代码
+    const codeLines = pythonCode.split('\n');
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach((line, idx) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = idx + 1;
+      div.innerHTML = `<span class="line-number">${idx + 1}</span><span>${line || ' '}</span>`;
+      div.onclick = () => highlightStepByLine(idx + 1);
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.innerHTML = `
+        <h4>步骤 ${idx + 1}: ${step.title}</h4>
+        <p>${step.desc}</p>
+        <div class="state">${Object.entries(step.state).map(([k,v]) => `${k}: ${v}`).join('<br>')}</div>
+      `;
+      div.onclick = () => highlightStep(idx);
+      vizSteps.appendChild(div);
+    });
+
+    let activeStep = -1;
+
+    function highlightStep(idx) {
+      activeStep = idx;
+      document.querySelectorAll('.viz-step').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line) === steps[idx].line);
+      });
+      document.querySelectorAll('.viz-step')[idx].scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      document.querySelector(`.code-line[data-line="${steps[idx].line}"]`)?.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    }
+
+    function highlightStepByLine(lineNum) {
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) highlightStep(stepIdx);
+    }
+
+    function switchAlgo(algo) {
+      document.querySelectorAll('.algo-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.algo-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(algo).classList.add('active');
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
