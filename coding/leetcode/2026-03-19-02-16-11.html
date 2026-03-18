@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #11 - 盛最多水的容器</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #475569;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+    }
+    .section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .section h2 {
+      color: var(--primary);
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h3 {
+      color: var(--text);
+      font-size: 1.1rem;
+      margin: 20px 0 12px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .tag-difficulty { background: var(--warning); color: #000; }
+    .tag-topic { background: var(--surface-light); color: var(--text); }
+    pre {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+    }
+    .code-line {
+      display: flex;
+      padding: 3px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+    }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-left-color: var(--primary);
+    }
+    .line-number {
+      color: #484f58;
+      min-width: 45px;
+      text-align: right;
+      padding-right: 16px;
+      user-select: none;
+    }
+    .viz-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 20px 0;
+    }
+    .viz-steps { display: flex; flex-direction: column; gap: 12px; }
+    .viz-step {
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--surface-light);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { border-color: var(--border); }
+    .viz-step.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .viz-step-line {
+      font-size: 0.8rem;
+      color: var(--primary);
+    }
+    .viz-step-desc { color: var(--text-muted); font-size: 0.9rem; }
+    .state-vars {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .state-var {
+      background: var(--bg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: monospace;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .problem-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+    }
+    .problem-title { font-weight: 600; margin-bottom: 6px; }
+    .problem-info { color: var(--text-muted); font-size: 0.9rem; }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .complexity-table th { color: var(--primary); font-weight: 600; }
+    .complexity-table tr:hover { background: rgba(255,255,255,0.03); }
+    .example-box {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      border-left: 4px solid var(--primary);
+    }
+    .example-title { font-weight: 600; margin-bottom: 8px; }
+    .insight-box {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(167,139,250,0.1));
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .visual-box {
+      font-family: monospace;
+      background: var(--bg);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 16px 0;
+      line-height: 2;
+    }
+    .bar {
+      display: inline-block;
+      width: 20px;
+      background: var(--primary);
+      margin: 0 2px;
+      border-radius: 2px;
+    }
+    .bar-highlight { background: var(--success); }
+    .arrow { color: var(--warning); font-size: 1.2rem; }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 LeetCode #11 - 盛最多水的容器</h1>
+  <p class="subtitle">Container With Most Water | 双指针 | 贪心算法经典入门</p>
+
+  <div class="section">
+    <div style="margin-bottom: 16px;">
+      <span class="tag tag-difficulty">Medium</span>
+      <span class="tag tag-topic">双指针</span>
+      <span class="tag tag-topic">贪心</span>
+      <span class="tag tag-topic">数组</span>
+    </div>
+    <h2>📋 题目描述</h2>
+    <p>给定一个长度为 <code>n</code> 的整数数组 <code>height</code> 。有 <code>n</code> 条垂线，第 <code>i</code> 条线的两个端点是 <code>(i, 0)</code> 和 <code>(i, height[i])</code> 。</p>
+    <p style="margin-top: 12px;">找出其中的两条线，使得它们与 <code>x</code> 轴共同构成的容器可以容纳最多的水。</p>
+    <p style="margin-top: 12px; color: var(--text-muted);">返回容器可以储存的最大水量。</p>
+    
+    <div class="example-box">
+      <div class="example-title">示例 1</div>
+      <p><strong>输入:</strong> height = [1,8,6,2,5,4,8,3,7]</p>
+      <p><strong>输出:</strong> 49</p>
+      <p><strong>解释:</strong> 选择第1条线(高度8)和第8条线(高度7)，宽度为7，高度为min(8,7)=7，面积=7×7=49</p>
+    </div>
+    
+    <div class="example-box">
+      <div class="example-title">示例 2</div>
+      <p><strong>输入:</strong> height = [1,1]</p>
+      <p><strong>输出:</strong> 1</p>
+    </div>
+
+    <div class="visual-box">
+      <div>height = [1, 8, 6, 2, 5, 4, 8, 3, 7]</div>
+      <div style="margin-top: 12px;">
+        <span class="bar" style="height: 10px;"></span>
+        <span class="bar bar-highlight" style="height: 80px;"></span>
+        <span class="bar" style="height: 60px;"></span>
+        <span class="bar" style="height: 20px;"></span>
+        <span class="bar" style="height: 50px;"></span>
+        <span class="bar" style="height: 40px;"></span>
+        <span class="bar bar-highlight" style="height: 80px;"></span>
+        <span class="bar" style="height: 30px;"></span>
+        <span class="bar" style="height: 70px;"></span>
+      </div>
+      <div style="margin-top: 8px; color: var(--primary);">← 选这两根线，面积最大 = 49</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <h3>💡 核心洞察</h3>
+    <p><strong>水的容量 = min(height[left], height[right]) × (right - left)</strong></p>
+    <p style="margin-top: 12px;">由两根线中较矮的那根决定高度，两线之间的距离决定宽度。</p>
+    <p style="margin-top: 8px;">关键观察：<strong>移动较高的线不可能得到更大的面积</strong>（宽度减小，高度受限于较矮的线）</p>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>解法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>暴力枚举</td>
+        <td>O(n²)</td>
+        <td>O(1)</td>
+        <td>枚举所有两两组合</td>
+      </tr>
+      <tr style="background: rgba(99,102,241,0.1);">
+        <td><strong>双指针（最优）</strong></td>
+        <td><strong>O(n)</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td>左右指针向中间移动</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🧠 为什么双指针是正确的？</h2>
+    <h3>贪心策略证明</h3>
+    <p>假设当前左指针在 <code>i</code>，右指针在 <code>j</code>，且 <code>height[i] < height[j]</code>。</p>
+    <p style="margin-top: 12px;"><strong>为什么移动右指针不会漏掉最优解？</strong></p>
+    <ul style="margin: 12px 0 0 20px; color: var(--text-muted);">
+      <li>当前面积 = <code>height[i] × (j - i)</code></li>
+      <li>如果固定 <code>i</code>，任何 <code>k &lt; j</code> 的位置，面积 = <code>min(height[i], height[k]) × (k - i)</code></li>
+      <li>宽度 <code>(k - i) &lt; (j - i)</code>，且高度 ≤ <code>height[i]</code></li>
+      <li>所以所有以 <code>i</code> 为左边界、<code>k</code> 为右边界的面积，都不可能超过当前面积</li>
+      <li>因此可以安全地放弃 <code>i</code>，移动左指针</li>
+    </ul>
+    <p style="margin-top: 16px;">这就是<strong>贪心</strong>的精髓：每一步都做出局部最优选择，最终得到全局最优。</p>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/two-sum/" class="problem-card" target="_blank">
+        <div class="problem-title">1. 两数之和</div>
+        <div class="problem-info">Easy | 哈希表/双指针基础</div>
+      </a>
+      <a href="https://leetcode.cn/problems/3sum/" class="problem-card" target="_blank">
+        <div class="problem-title">15. 三数之和</div>
+        <div class="problem-info">Medium | 排序+双指针</div>
+      </a>
+      <a href="https://leetcode.cn/problems/trapping-rain-water/" class="problem-card" target="_blank">
+        <div class="problem-title">42. 接雨水</div>
+        <div class="problem-info">Hard | 双指针经典难题</div>
+      </a>
+      <a href="https://leetcode.cn/problems/move-zeroes/" class="problem-card" target="_blank">
+        <div class="problem-title">283. 移动零</div>
+        <div class="problem-info">Easy | 双指针原地修改</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-duplicates-from-sorted-array/" class="problem-card" target="_blank">
+        <div class="problem-title">26. 删除有序数组中的重复项</div>
+        <div class="problem-info">Easy | 快慢指针</div>
+      </a>
+      <a href="https://leetcode.cn/problems/sort-colors/" class="problem-card" target="_blank">
+        <div class="problem-title">75. 颜色分类</div>
+        <div class="problem-info">Medium | 荷兰国旗问题</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📝 代码详解</h2>
+    <pre><code><span class="comment"># 双指针解法 - 时间O(n) 空间O(1)</span>
+<span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">maxArea</span>(<span class="keyword">self</span>, height: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:
+        <span class="comment"># 初始化双指针</span>
+        left, right = <span class="number">0</span>, <span class="keyword">len</span>(height) - <span class="number">1</span>
+        max_area = <span class="number">0</span>
+        
+        <span class="comment"># 当左右指针未相遇时继续</span>
+        <span class="keyword">while</span> left < right:
+            <span class="comment"># 计算当前面积：高度取较小值，宽度为下标差</span>
+            width = right - left
+            h = <span class="function">min</span>(height[left], height[right])
+            current_area = width * h
+            
+            <span class="comment"># 更新最大面积</span>
+            max_area = <span class="function">max</span>(max_area, current_area)
+            
+            <span class="comment"># 贪心：移动高度较小的指针</span>
+            <span class="keyword">if</span> height[left] < height[right]:
+                left += <span class="number">1</span>
+            <span class="keyword">else</span>:
+                right -= <span class="number">1</span>
+        
+        <span class="keyword">return</span> max_area</code></pre>
+  </div>
+
+  <script>
+    // 算法步骤定义
+    const steps = [
+      {
+        title: "① 初始化双指针",
+        desc: "左指针指向数组开头，右指针指向数组末尾，max_area初始化为0",
+        line: 3,
+        state: { left: 0, right: 8, max_area: 0 }
+      },
+      {
+        title: "② 进入循环",
+        desc: "当left < right时继续，当前left=0, right=8，满足条件",
+        line: 6,
+        state: { left: 0, right: 8, width: 8 }
+      },
+      {
+        title: "③ 计算当前面积",
+        desc: "width = 8-0 = 8, h = min(1, 7) = 1, area = 8×1 = 8",
+        line: 8,
+        state: { width: 8, h: 1, current_area: 8 }
+      },
+      {
+        title: "④ 更新最大值",
+        desc: "max_area = max(0, 8) = 8",
+        line: 11,
+        state: { max_area: 8 }
+      },
+      {
+        title: "⑤ 移动指针",
+        desc: "height[0]=1 < height[8]=7，移动左指针，left变为1",
+        line: 14,
+        state: { left: 1, right: 8 }
+      },
+      {
+        title: "⑥ 下一轮迭代",
+        desc: "left=1, right=8，width=7, h=min(8,7)=7, area=49",
+        line: 8,
+        state: { width: 7, h: 7, current_area: 49 }
+      },
+      {
+        title: "⑦ 更新最大值",
+        desc: "max_area = max(8, 49) = 49（找到最优解！）",
+        line: 11,
+        state: { max_area: 49 }
+      },
+      {
+        title: "⑧ 继续移动",
+        desc: "height[1]=8 > height[8]=7，移动右指针，right变为7",
+        line: 16,
+        state: { left: 1, right: 7 }
+      },
+      {
+        title: "⑨ 最终返回",
+        desc: "当left >= right时退出循环，返回max_area = 49",
+        line: 18,
+        state: { result: 49 }
+      }
+    ];
+
+    // 代码行
+    const codeLines = [
+      `<span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">maxArea</span>(<span class="keyword">self</span>, height: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:`,
+      `        <span class="comment"># 初始化双指针</span>`,
+      `        left, right = <span class="number">0</span>, <span class="keyword">len</span>(height) - <span class="number">1</span>`,
+      `        max_area = <span class="number">0</span>`,
+      `        `,
+      `        <span class="comment"># 当左右指针未相遇时继续</span>`,
+      `        <span class="keyword">while</span> left < right:`,
+      `            <span class="comment"># 计算当前面积</span>`,
+      `            width = right - left`,
+      `            h = <span class="function">min</span>(height[left], height[right])`,
+      `            current_area = width * h`,
+      `            `,
+      `            <span class="comment"># 更新最大面积</span>`,
+      `            max_area = <span class="function">max</span>(max_area, current_area)`,
+      `            `,
+      `            <span class="comment"># 贪心：移动高度较小的指针</span>`,
+      `            <span class="keyword">if</span> height[left] < height[right]:`,
+      `                left += <span class="number">1</span>`,
+      `            <span class="keyword">else</span>:`,
+      `                right -= <span class="number">1</span>`,
+      `        `,
+      `        <span class="keyword">return</span> max_area`
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach((line, idx) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.dataset.line = idx;
+      lineDiv.innerHTML = `<span class="line-number">${idx + 1}</span><span>${line}</span>`;
+      lineDiv.addEventListener('click', () => highlightStepByLine(idx));
+      codeBlock.appendChild(lineDiv);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.step = idx;
+      stepDiv.dataset.line = step.line;
+      
+      let stateHtml = '';
+      if (step.state) {
+        const vars = Object.entries(step.state).map(([k, v]) => 
+          `<span class="state-var">${k} = ${v}</span>`
+        ).join('');
+        stateHtml = `<div class="state-vars">${vars}</div>`;
+      }
+      
+      stepDiv.innerHTML = `
+        <div class="viz-step-title">
+          ${step.title}
+          <span class="viz-step-line">第${step.line + 1}行</span>
+        </div>
+        <div class="viz-step-desc">${step.desc}</div>
+        ${stateHtml}
+      `;
+      stepDiv.addEventListener('click', () => highlightStep(idx));
+      vizSteps.appendChild(stepDiv);
+    });
+
+    let activeStep = -1;
+
+    function highlightStep(stepIdx) {
+      // 移除所有active
+      document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+      
+      if (stepIdx === activeStep) {
+        activeStep = -1;
+        return;
+      }
+      
+      activeStep = stepIdx;
+      const step = steps[stepIdx];
+      
+      // 高亮步骤
+      document.querySelector(`.viz-step[data-step="${stepIdx}"]`).classList.add('active');
+      // 高亮代码行
+      document.querySelector(`.code-line[data-line="${step.line}"]`).classList.add('active');
+    }
+
+    function highlightStepByLine(lineIdx) {
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineIdx);
+      if (stepIdx !== -1) {
+        highlightStep(stepIdx);
+      }
+    }
+  </script>
+</body>
+</html>
