@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #141 - 环形链表</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --accent: #22d3ee; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    h1 { font-size: 2.2em; margin-bottom: 8px; background: linear-gradient(90deg, #6366f1, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #94a3b8; font-size: 1.1em; margin-bottom: 30px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; border: 1px solid #334155; }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .section h2::before { content: ''; display: inline-block; width: 4px; height: 24px; background: var(--primary); border-radius: 2px; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; border: 1px solid #30363d; margin: 0; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.25); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 45px; text-align: right; padding-right: 16px; user-select: none; }
+    .line-content { flex: 1; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { max-height: 400px; overflow-y: auto; }
+    .viz-step { padding: 14px 16px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #475569; transform: translateX(4px); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+    .viz-step .step-title { font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+    .viz-step .step-desc { font-size: 0.9em; color: #cbd5e1; }
+    .state-display { background: #0d1117; border-radius: 8px; padding: 12px; margin-top: 8px; font-family: monospace; font-size: 0.85em; }
+    .state-display .var { color: #ff7b72; }
+    .state-display .val { color: #79c0ff; }
+    .diagram { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 20px 0; flex-wrap: wrap; }
+    .node { width: 40px; height: 40px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: 3px solid #475569; transition: all 0.3s; }
+    .node.slow { border-color: #f59e0b; background: rgba(245, 158, 11, 0.2); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+    .node.fast { border-color: #ef4444; background: rgba(239, 68, 68, 0.2); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+    .node.meet { border-color: #22c55e; background: rgba(34, 197, 94, 0.3); box-shadow: 0 0 15px rgba(34, 197, 94, 0.6); }
+    .arrow { color: #64748b; font-size: 20px; }
+    .arrow.loop { color: #ef4444; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2); }
+    .problem-card .title { font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+    .problem-card .desc { font-size: 0.9em; color: #94a3b8; }
+    .tag { display: inline-block; background: rgba(99, 102, 241, 0.2); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.75em; margin-right: 6px; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .complexity-table th, .complexity-table td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    .complexity-table th { color: var(--accent); font-weight: 600; }
+    .complexity-table tr:hover { background: rgba(255,255,255,0.02); }
+    .highlight { background: rgba(34, 211, 238, 0.15); padding: 2px 6px; border-radius: 4px; }
+    .code-keyword { color: #ff7b72; }
+    .code-function { color: #d2a8ff; }
+    .code-class { color: #ffa657; }
+    .code-string { color: #a5d6ff; }
+    .code-number { color: #79c0ff; }
+    .code-comment { color: #8b949e; }
+    .code-bool { color: #ff7b72; }
+    .play-controls { display: flex; gap: 10px; margin: 16px 0; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
+    .btn:hover { background: #4f46e5; transform: translateY(-1px); }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #141 - 环形链表</h1>
+  <p class="subtitle">Linked List Cycle · Easy · 快慢指针经典入门</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个链表的头节点 <code>head</code>，判断链表中是否有环。</p>
+    <p>如果链表中有某个节点，可以通过连续跟踪 <code>next</code> 指针再次到达，则链表中存在环。为了表示给定链表中的环，评测系统内部使用整数 <code>pos</code> 来表示链表尾连接到链表中的位置（索引从 0 开始）。注意：<code>pos</code> 不作为参数进行传递。仅仅是为了标识链表的实际情况。</p>
+    <p><strong>如果链表中存在环，则返回 <code class="highlight">true</code>；否则，返回 <code class="highlight">false</code>。</strong></p>
+    <br>
+    <p><span class="tag">哈希表</span> <span class="tag">链表</span> <span class="tag">双指针</span></p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程</h2>
+    <p style="color: #94a3b8; margin-bottom: 16px;">👆 点击左侧步骤或右侧代码行，查看对应关系。快慢指针在环中必定会相遇！</p>
+    
+    <div class="diagram" id="diagram">
+      <div class="node" id="node0">3</div>
+      <span class="arrow">→</span>
+      <div class="node" id="node1">2</div>
+      <span class="arrow">→</span>
+      <div class="node" id="node2">0</div>
+      <span class="arrow">→</span>
+      <div class="node" id="node3">-4</div>
+      <span class="arrow loop">↩</span>
+    </div>
+    
+    <div class="play-controls">
+      <button class="btn" onclick="nextStep()">▶ 下一步</button>
+      <button class="btn btn-secondary" onclick="resetViz()">⟲ 重置</button>
+      <button class="btn btn-secondary" onclick="autoPlay()">⏵ 自动播放</button>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="color: var(--accent); margin-bottom: 12px;">Python 实现</h3>
+        <pre><code id="codeBlock">
+<div class="code-line" data-line="1"><span class="line-number">1</span><span class="line-content"><span class="code-comment"># Definition for singly-linked list.</span></span></div>
+<div class="code-line" data-line="2"><span class="line-number">2</span><span class="line-content"><span class="code-comment"># class ListNode:</span></span></div>
+<div class="code-line" data-line="3"><span class="line-number">3</span><span class="line-content"><span class="code-comment">#     def __init__(self, x):</span></span></div>
+<div class="code-line" data-line="4"><span class="line-number">4</span><span class="line-content"><span class="code-comment">#         self.val = x</span></span></div>
+<div class="code-line" data-line="5"><span class="line-number">5</span><span class="line-content"><span class="code-comment">#         self.next = None</span></span></div>
+<div class="code-line" data-line="6"><span class="line-number">6</span><span class="line-content"></span></div>
+<div class="code-line" data-line="7"><span class="line-number">7</span><span class="line-content"><span class="code-keyword">class</span> <span class="code-class">Solution</span>:</span></div>
+<div class="code-line" data-line="8"><span class="line-number">8</span><span class="line-content">    <span class="code-keyword">def</span> <span class="code-function">hasCycle</span>(self, head: Optional[ListNode]) -> <span class="code-bool">bool</span>:</span></div>
+<div class="code-line" data-line="9"><span class="line-number">9</span><span class="line-content">        <span class="code-comment"># 初始化快慢指针</span></span></div>
+<div class="code-line" data-line="10"><span class="line-number">10</span><span class="line-content">        slow = fast = head</span></div>
+<div class="code-line" data-line="11"><span class="line-number">11</span><span class="line-content">        </span></div>
+<div class="code-line" data-line="12"><span class="line-number">12</span><span class="line-content">        <span class="code-keyword">while</span> fast <span class="code-keyword">and</span> fast.next:</span></div>
+<div class="code-line" data-line="13"><span class="line-number">13</span><span class="line-content">            <span class="code-comment"># 慢指针走一步</span></span></div>
+<div class="code-line" data-line="14"><span class="line-number">14</span><span class="line-content">            slow = slow.next</span></div>
+<div class="code-line" data-line="15"><span class="line-number">15</span><span class="line-content">            <span class="code-comment"># 快指针走两步</span></span></div>
+<div class="code-line" data-line="16"><span class="line-number">16</span><span class="line-content">            fast = fast.next.next</span></div>
+<div class="code-line" data-line="17"><span class="line-number">17</span><span class="line-content">            </span></div>
+<div class="code-line" data-line="18"><span class="line-number">18</span><span class="line-content">            <span class="code-comment"># 相遇则说明有环</span></span></div>
+<div class="code-line" data-line="19"><span class="line-number">19</span><span class="line-content">            <span class="code-keyword">if</span> slow == fast:</span></div>
+<div class="code-line" data-line="20"><span class="line-number">20</span><span class="line-content">                <span class="code-keyword">return</span> <span class="code-bool">True</span></span></div>
+<div class="code-line" data-line="21"><span class="line-number">21</span><span class="line-content">        </span></div>
+<div class="code-line" data-line="22"><span class="line-number">22</span><span class="line-content">        <span class="code-keyword">return</span> <span class="code-bool">False</span></span></div>
+        </code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>维度</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td><code class="highlight">O(n)</code></td>
+        <td>最坏情况下遍历整个链表一次。当快指针追上慢指针时，最多需要 n 步。</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td><code class="highlight">O(1)</code></td>
+        <td>只使用两个指针，无需额外数据结构。这是快慢指针相比哈希表的优势！</td>
+      </tr>
+      <tr>
+        <td>为什么快指针走2步？</td>
+        <td><code class="highlight">最优</code></td>
+        <td>走2步是时间和实现复杂度的平衡。走更多步可能跳过，走1步无法区分环。</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心原理解析</h2>
+    <h3 style="color: var(--accent);">为什么快慢指针一定会相遇？</h3>
+    <p>假设链表有环，设环的长度为 <code>L</code>。当慢指针进入环时，快指针已经在环中某个位置。</p>
+    <p>此时快指针追赶慢指针，每次循环：</p>
+    <ul>
+      <li>慢指针前进1步，快指针前进2步</li>
+      <li>两者距离 <strong>减少1</strong>（相对速度为1）</li>
+    </ul>
+    <p>由于相对速度为1，快指针一定会追上慢指针，且最多需要 <code>L</code> 步。</p>
+    <br>
+    <h3 style="color: var(--accent);">无环的情况</h3>
+    <p>如果链表无环，快指针会先到达链表末尾（<code>fast</code> 或 <code>fast.next</code> 为 <code>None</code>），循环结束返回 <code>False</code>。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/linked-list-cycle-ii/" class="problem-card" target="_blank">
+        <div class="title">#142. 环形链表 II</div>
+        <div class="desc">进阶：不仅要判断是否有环，还要找到环的入口节点。需要数学推导。</div>
+      </a>
+      <a href="https://leetcode.cn/problems/happy-number/" class="problem-card" target="_blank">
+        <div class="title">#202. 快乐数</div>
+        <div class="desc">快慢指针的另一经典应用。判断数字变换是否会陷入循环。</div>
+      </a>
+      <a href="https://leetcode.cn/problems/middle-of-the-linked-list/" class="problem-card" target="_blank">
+        <div class="title">#876. 链表的中间结点</div>
+        <div class="desc">快指针走到底时，慢指针正好在中间。快慢指针求中点。</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-nth-node-from-end-of-list/" class="problem-card" target="_blank">
+        <div class="title">#19. 删除链表的倒数第 N 个结点</div>
+        <div class="desc">双指针技巧：先让快指针走N步，再一起移动。</div>
+      </a>
+      <a href="https://leetcode.cn/problems/palindrome-linked-list/" class="problem-card" target="_blank">
+        <div class="title">#234. 回文链表</div>
+        <div class="desc">结合快慢指针找中点 + 反转链表。常数空间复杂度解法。</div>
+      </a>
+      <a href="https://leetcode.cn/problems/reorder-list/" class="problem-card" target="_blank">
+        <div class="title">#143. 重排链表</div>
+        <div class="desc">综合题：找中点 + 反转后半部分 + 交替合并。</div>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎯 面试高频考点</h2>
+    <ul>
+      <li><strong>证明快指针为什么一定会追上慢指针</strong> —— 考察相对速度的理解</li>
+      <li><strong>如果快指针一次走3步可以吗？</strong> —— 可能跳过慢指针导致检测失败</li>
+      <li><strong>如何找到环的入口？</strong> —— 推导：相遇后，一个指针回到头，同步走再次相遇即为入口</li>
+      <li><strong>空间复杂度优化</strong> —— 强调 O(1) 空间是快慢指针的核心优势</li>
+    </ul>
+  </div>
+  
+  <script>
+    // 步骤定义
+    const steps = [
+      { title: "初始化", desc: "快慢指针都指向链表头部", line: 10, slowPos: 0, fastPos: 0 },
+      { title: "第1轮循环", desc: "slow走1步→节点1, fast走2步→节点2", line: 14, slowPos: 1, fastPos: 2 },
+      { title: "检查相遇", desc: "slow(1) ≠ fast(2), 继续循环", line: 19, slowPos: 1, fastPos: 2 },
+      { title: "第2轮循环", desc: "slow走1步→节点2, fast走2步→节点1(绕环)", line: 14, slowPos: 2, fastPos: 1 },
+      { title: "检查相遇", desc: "slow(2) ≠ fast(1), 继续循环", line: 19, slowPos: 2, fastPos: 1 },
+      { title: "第3轮循环", desc: "slow走1步→节点3, fast走2步→节点3", line: 14, slowPos: 3, fastPos: 3 },
+      { title: "检查相遇 ✓", desc: "slow == fast! 发现环, 返回True", line: 20, slowPos: 3, fastPos: 3, meet: true }
+    ];
+    
+    let currentStep = -1;
+    let autoPlayInterval = null;
+    
+    // 初始化步骤显示
+    function initSteps() {
+      const container = document.getElementById('vizSteps');
+      container.innerHTML = steps.map((step, i) => `
+        <div class="viz-step" data-step="${i}" data-line="${step.line}" onclick="goToStep(${i})">
+          <div class="step-title">${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+          ${step.meet ? '<div class="state-display"><span class="var">slow</span> == <span class="var">fast</span> ✓ 有环!</div>' : 
+            `<div class="state-display"><span class="var">slow</span>: <span class="val">节点${step.slowPos}</span> | <span class="var">fast</span>: <span class="val">节点${step.fastPos}</span></div>`}
+        </div>
+      `).join('');
+    }
+    
+    // 更新可视化
+    function updateViz() {
+      // 更新步骤高亮
+      document.querySelectorAll('.viz-step').forEach((el, i) => {
+        el.classList.toggle('active', i === currentStep);
+      });
+      
+      // 更新代码行高亮
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      if (currentStep >= 0) {
+        const line = steps[currentStep].line;
+        const lineEl = document.querySelector(`.code-line[data-line="${line}"]`);
+        if (lineEl) lineEl.classList.add('active');
+        
+        // 更新节点高亮
+        updateNodes(steps[currentStep]);
+      }
+    }
+    
+    function updateNodes(step) {
+      document.querySelectorAll('.node').forEach((node, i) => {
+        node.classList.remove('slow', 'fast', 'meet');
+        if (step.slowPos === i && step.fastPos === i) {
+          node.classList.add('meet');
+        } else {
+          if (step.slowPos === i) node.classList.add('slow');
+          if (step.fastPos === i) node.classList.add('fast');
+        }
+      });
+    }
+    
+    function goToStep(i) {
+      currentStep = i;
+      updateViz();
+    }
+    
+    function nextStep() {
+      if (currentStep < steps.length - 1) {
+        goToStep(currentStep + 1);
+      }
+    }
+    
+    function resetViz() {
+      currentStep = -1;
+      document.querySelectorAll('.node').forEach(n => n.classList.remove('slow', 'fast', 'meet'));
+      document.querySelectorAll('.viz-step, .code-line').forEach(el => el.classList.remove('active'));
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+      }
+    }
+    
+    function autoPlay() {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+        return;
+      }
+      resetViz();
+      autoPlayInterval = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+          nextStep();
+        } else {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        }
+      }, 1200);
+    }
+    
+    // 代码行点击事件
+    document.querySelectorAll('.code-line').forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        const stepIndex = steps.findIndex(s => s.line === lineNum);
+        if (stepIndex >= 0) goToStep(stepIndex);
+      });
+    });
+    
+    // 初始化
+    initSteps();
+  </script>
+</body>
+</html>
