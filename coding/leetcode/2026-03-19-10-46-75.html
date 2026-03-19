@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 75 - 颜色分类</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: background 0.2s; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 45px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    .viz-steps { display: flex; flex-direction: column; gap: 8px; }
+    .viz-step { padding: 14px 16px; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #475569; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.25); }
+    .viz-step .step-title { font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+    .viz-step .step-desc { font-size: 13px; color: #94a3b8; }
+    .step-state { margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 12px; font-family: monospace; }
+    .array-viz { display: flex; gap: 4px; margin: 12px 0; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; justify-content: center; flex-wrap: wrap; }
+    .array-cell { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 16px; transition: all 0.3s; }
+    .cell-0 { background: #ef4444; color: white; }  /* 红色 - 0 */
+    .cell-1 { background: #eab308; color: #0f172a; }  /* 黄色 - 1 */
+    .cell-2 { background: #3b82f6; color: white; }  /* 蓝色 - 2 */
+    .cell-curr { box-shadow: 0 0 0 3px var(--primary); }
+    .cell-p0 { border-bottom: 4px solid #ef4444; }
+    .cell-p2 { border-top: 4px solid #3b82f6; }
+    .pointer-label { display: flex; flex-direction: column; align-items: center; font-size: 10px; margin-top: 2px; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 16px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+    .complexity-table { width: 100%; border-collapse: collapse; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    .complexity-table th { color: var(--primary); font-weight: 600; }
+    .complexity-table tr:last-child td { border-bottom: none; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .algo-explain { background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .algo-explain h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .algo-explain p { margin: 0; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-medium { background: #f59e0b; color: #0f172a; }
+    .badge-tag { background: #334155; color: #94a3b8; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <h1>🚩 LeetCode 75 - 颜色分类</h1>
+  <p>
+    <span class="badge badge-medium">Medium</span>
+    <span class="badge badge-tag">数组</span>
+    <span class="badge badge-tag">双指针</span>
+    <span class="badge badge-tag">荷兰国旗</span>
+    <span class="badge badge-tag">原地排序</span>
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个包含红色、白色和蓝色、共 <code>n</code> 个元素的数组 <code>nums</code> ，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。</p>
+    <p>我们使用整数 <code>0</code>、<code>1</code> 和 <code>2</code> 分别表示红色、白色和蓝色。</p>
+    <p>必须在不使用库内置的 sort 函数的情况下解决这个问题。</p>
+    <div class="algo-explain">
+      <h4>🎯 核心考点</h4>
+      <p>荷兰国旗问题的经典实现。使用三指针法，在 <strong>O(n)</strong> 时间和 <strong>O(1)</strong> 空间内完成原地排序。关键是维护三个区间：[0,p0)全是0，[p0,curr)全是1，(p2,n-1]全是2。</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <div class="viz-step active" data-line="5" data-step="0">
+          <div class="step-title">步骤 0: 初始化三指针</div>
+          <div class="step-desc">p0 = 0 (0的右边界), curr = 0 (当前遍历位置), p2 = n-1 (2的左边界)</div>
+          <div class="step-state">初始数组: [2,0,2,1,1,0]</div>
+        </div>
+        <div class="viz-step" data-line="6" data-step="1">
+          <div class="step-title">步骤 1: 遍历数组</div>
+          <div class="step-desc">当 curr ≤ p2 时继续遍历</div>
+          <div class="step-state">curr=0, p2=5, 继续遍历</div>
+        </div>
+        <div class="viz-step" data-line="7" data-step="2">
+          <div class="step-title">步骤 2: 遇到 2 (nums[curr]==2)</div>
+          <div class="step-desc">交换 nums[curr] 和 nums[p2]，p2 左移。注意：curr 不变，需要重新检查交换后的值</div>
+          <div class="step-state">交换 nums[0]↔nums[5]: [0,0,2,1,1,2], p2=4</div>
+        </div>
+        <div class="viz-step" data-line="9" data-step="3">
+          <div class="step-title">步骤 3: 遇到 0 (nums[curr]==0)</div>
+          <div class="step-desc">交换 nums[curr] 和 nums[p0]，p0 和 curr 都右移</div>
+          <div class="step-state">交换 nums[0]↔nums[0]: [0,0,2,1,1,2], p0=1, curr=1</div>
+        </div>
+        <div class="viz-step" data-line="9" data-step="4">
+          <div class="step-title">步骤 4: 再次遇到 0</div>
+          <div class="step-desc">交换后 p0=2, curr=2</div>
+          <div class="step-state">p0=2, curr=2</div>
+        </div>
+        <div class="viz-step" data-line="7" data-step="5">
+          <div class="step-title">步骤 5: 遇到 2</div>
+          <div class="step-desc">交换 nums[2]↔nums[4]: [0,0,1,1,2,2], p2=3</div>
+          <div class="step-state">注意 curr 保持为 2，需要重新检查</div>
+        </div>
+        <div class="viz-step" data-line="11" data-step="6">
+          <div class="step-title">步骤 6: 遇到 1</div>
+          <div class="step-desc">curr 直接右移，不做交换</div>
+          <div class="step-state">curr=3, nums[3]=1</div>
+        </div>
+        <div class="viz-step" data-line="11" data-step="7">
+          <div class="step-title">步骤 7: 再次遇到 1</div>
+          <div class="step-desc">curr 右移到 4，此时 curr > p2，遍历结束</div>
+          <div class="step-state">最终结果: [0,0,1,1,2,2] ✓</div>
+        </div>
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"><div class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">Solution</span>:</div>
+<div class="code-line" data-line="2"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">sortColors</span>(self, nums: List[<span class="function">int</span>]) -> <span class="keyword">None</span>:</div>
+<div class="code-line" data-line="3"><span class="line-number">3</span>        <span class="comment"># 三指针：荷兰国旗问题</span></div>
+<div class="code-line" data-line="4"><span class="line-number">4</span>        <span class="comment"># p0: 0的右边界, curr: 当前位置, p2: 2的左边界</span></div>
+<div class="code-line active" data-line="5"><span class="line-number">5</span>        p0 = curr = <span class="number">0</span></div>
+<div class="code-line active" data-line="5"><span class="line-number">6</span>        p2 = <span class="function">len</span>(nums) - <span class="number">1</span></div>
+<div class="code-line" data-line="6"><span class="line-number">7</span>        </div>
+<div class="code-line" data-line="6"><span class="line-number">8</span>        <span class="keyword">while</span> curr <= p2:</div>
+<div class="code-line" data-line="7"><span class="line-number">9</span>            <span class="keyword">if</span> nums[curr] == <span class="number">2</span>:</div>
+<div class="code-line" data-line="7"><span class="line-number">10</span>                nums[curr], nums[p2] = nums[p2], nums[curr]</div>
+<div class="code-line" data-line="7"><span class="line-number">11</span>                p2 -= <span class="number">1</span></div>
+<div class="code-line" data-line="7"><span class="line-number">12</span>                <span class="comment"># curr 不变，因为交换过来的元素可能是 0 或 1</span></div>
+<div class="code-line" data-line="9"><span class="line-number">13</span>            <span class="keyword">elif</span> nums[curr] == <span class="number">0</span>:</div>
+<div class="code-line" data-line="9"><span class="line-number">14</span>                nums[curr], nums[p0] = nums[p0], nums[curr]</div>
+<div class="code-line" data-line="9"><span class="line-number">15</span>                p0 += <span class="number">1</span></div>
+<div class="code-line" data-line="9"><span class="line-number">16</span>                curr += <span class="number">1</span></div>
+<div class="code-line" data-line="11"><span class="line-number">17</span>            <span class="keyword">else</span>:  <span class="comment"># nums[curr] == 1</span></div>
+<div class="code-line" data-line="11"><span class="line-number">18</span>                curr += <span class="number">1</span></div>
+<div class="code-line" data-line="11"><span class="line-number">19</span>        <span class="comment"># 结束：数组已按 0,1,2 顺序排列</span></div></code></pre>
+      </div>
+    </div>
+    
+    <div class="algo-explain">
+      <h4>🔑 为什么遇到 2 时 curr 不移动？</h4>
+      <p>当 nums[curr] == 2 时，我们将它与 nums[p2] 交换。但交换过来的元素可能是 0 或 1，需要在本轮继续处理。而遇到 0 时，交换过来的一定是 1（因为 p0 ≤ curr），所以可以直接移动 curr。</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>复杂度类型</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td>O(n)</td>
+        <td>curr 指针最多遍历 2n 次（最坏情况全是 2）</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td>O(1)</td>
+        <td>仅使用三个指针，原地排序</td>
+      </tr>
+      <tr>
+        <td>遍历次数</td>
+        <td>≤ 2n</td>
+        <td>每个元素最多被交换两次</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/sort-an-array/" class="problem-card" target="_blank">
+        <h4>912. 排序数组</h4>
+        <p>经典排序算法练习，要求实现 O(n log n) 的排序</p>
+      </a>
+      <a href="https://leetcode.cn/problems/first-missing-positive/" class="problem-card" target="_blank">
+        <h4>41. 缺失的第一个正数</h4>
+        <p>原地哈希，将数组作为哈希表使用，O(1) 额外空间</p>
+      </a>
+      <a href="https://leetcode.cn/problems/move-zeroes/" class="problem-card" target="_blank">
+        <h4>283. 移动零</h4>
+        <p>双指针法，将 0 移动到数组末尾，保持非零元素相对顺序</p>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-element/" class="problem-card" target="_blank">
+        <h4>27. 移除元素</h4>
+        <p>原地修改数组，双指针法移除指定值的元素</p>
+      </a>
+      <a href="https://leetcode.cn/problems/wiggle-sort-ii/" class="problem-card" target="_blank">
+        <h4>324. 摆动排序 II</h4>
+        <p>原地重排数组，满足 nums[0] < nums[1] > nums[2] < ...</p>
+      </a>
+      <a href="https://leetcode.cn/problems/find-all-numbers-disappeared-in-an-array/" class="problem-card" target="_blank">
+        <h4>448. 找到所有数组中消失的数字</h4>
+        <p>原地标记法，利用数组索引作为标记，O(1) 空间</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 步骤与代码行映射
+    const stepToLines = {
+      0: [5, 6],
+      1: [6, 8],
+      2: [7, 9, 10, 11, 12],
+      3: [9, 13, 14, 15, 16],
+      4: [9, 13, 14, 15, 16],
+      5: [7, 9, 10, 11, 12],
+      6: [11, 17, 18],
+      7: [11, 17, 18]
+    };
+    
+    const lineToSteps = {};
+    Object.entries(stepToLines).forEach(([step, lines]) => {
+      lines.forEach(line => {
+        if (!lineToSteps[line]) lineToSteps[line] = [];
+        lineToSteps[line].push(parseInt(step));
+      });
+    });
+    
+    // 步骤点击事件
+    document.querySelectorAll('.viz-step').forEach(step => {
+      step.addEventListener('click', () => {
+        const stepIdx = parseInt(step.dataset.step);
+        const lines = stepToLines[stepIdx];
+        
+        // 更新步骤高亮
+        document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+        step.classList.add('active');
+        
+        // 更新代码行高亮
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        lines.forEach(line => {
+          const codeLine = document.querySelector(`.code-line[data-line="${line}"]`);
+          if (codeLine) codeLine.classList.add('active');
+        });
+      });
+    });
+    
+    // 代码行点击事件
+    document.querySelectorAll('.code-line').forEach(codeLine => {
+      codeLine.addEventListener('click', () => {
+        const lineNum = parseInt(codeLine.dataset.line);
+        const steps = lineToSteps[lineNum];
+        
+        if (steps && steps.length > 0) {
+          // 更新步骤高亮（取第一个匹配的步骤）
+          document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+          const stepEl = document.querySelector(`.viz-step[data-step="${steps[0]}"]`);
+          if (stepEl) {
+            stepEl.classList.add('active');
+            stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          
+          // 更新代码行高亮
+          document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+          stepToLines[steps[0]].forEach(l => {
+            const el = document.querySelector(`.code-line[data-line="${l}"]`);
+            if (el) el.classList.add('active');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
