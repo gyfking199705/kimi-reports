@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #33 - 搜索旋转排序数组</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --accent: #10b981;
+      --warning: #f59e0b;
+    }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.7;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: #94a3b8; font-size: 1.1rem; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px; 
+      border: 1px solid #334155;
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 0.85rem; 
+      font-weight: 600;
+    }
+    .medium { background: var(--warning); color: #1e293b; }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-size: 14px;
+      border: 1px solid #30363d;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      border-radius: 4px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.08); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: 'SF Mono', monospace;
+    }
+    .line-content { font-family: 'SF Mono', monospace; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px;
+    }
+    .viz-step { 
+      padding: 16px; 
+      border-radius: 12px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      background: #475569; 
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-title { 
+      font-weight: 600; 
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .viz-step-desc { 
+      font-size: 0.9rem; 
+      color: #cbd5e1;
+    }
+    .state-display {
+      background: #0d1117;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-item { display: flex; justify-content: space-between; margin: 4px 0; }
+    .state-key { color: #8b949e; }
+    .state-val { color: var(--accent); }
+    .arrow-highlight { color: var(--warning); font-weight: bold; }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-number {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .problem-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .problem-desc {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .array-viz {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      padding: 20px;
+      background: #0d1117;
+      border-radius: 12px;
+    }
+    .array-item {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+    }
+    .array-item.normal { background: #334155; }
+    .array-item.target { background: var(--accent); color: #0f172a; }
+    .array-item.mid { background: var(--warning); color: #0f172a; }
+    .array-item.out { background: #1e293b; color: #64748b; }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .builtin { color: #79c0ff; }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .key-insight {
+      background: rgba(16, 185, 129, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #33 - 搜索旋转排序数组</h1>
+  <p class="subtitle">Search in Rotated Sorted Array &nbsp;|&nbsp; <span class="difficulty medium">Medium</span></p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>整数数组 <code>nums</code> 按升序排列，数组中的值 <strong>互不相同</strong>。</p>
+    <p>在传递给函数之前，<code>nums</code> 在预先未知的某个下标 <code>k</code>（<code>0 <= k < nums.length</code>）上进行了 <strong>旋转</strong>，使数组变为 <code>[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]</code>（下标 <strong>从 0 开始</strong> 计数）。</p>
+    <p>给你 <strong>旋转后</strong> 的数组 <code>nums</code> 和一个整数 <code>target</code> ，如果 <code>nums</code> 中存在这个目标值 <code>target</code> ，则返回它的下标，否则返回 <code>-1</code>。</p>
+    
+    <div class="key-insight">
+      <strong>💡 核心思路：</strong>虽然数组被旋转了，但至少有一半仍然是有序的。利用这个性质，我们可以判断 target 应该在哪一半，从而继续二分。
+    </div>
+    
+    <p><strong>示例 1：</strong></p>
+    <pre style="background: #1e293b;">输入: nums = [4,5,6,7,0,1,2], target = 0
+输出: 4</pre>
+    
+    <p><strong>示例 2：</strong></p>
+    <pre style="background: #1e293b;">输入: nums = [4,5,6,7,0,1,2], target = 3
+输出: -1</pre>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p style="color: #94a3b8; margin-bottom: 20px;">点击左侧步骤或右侧代码行，查看对应关系。观察二分查找如何在旋转数组中工作。</p>
+    
+    <div class="array-viz" id="arrayViz">
+      <!-- 动态生成 -->
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">🐍 Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>值</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>时间复杂度</td>
+          <td><code style="color: var(--accent);">O(log n)</code></td>
+          <td>标准的二分查找复杂度，每次迭代将搜索区间减半</td>
+        </tr>
+        <tr>
+          <td>空间复杂度</td>
+          <td><code style="color: var(--accent);">O(1)</code></td>
+          <td>只使用常数额外空间（迭代实现）</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="highlight-box">
+      <strong>🎯 算法关键点：</strong>
+      <ul style="margin: 10px 0; padding-left: 20px;">
+        <li>旋转数组的特点是：<strong>一半有序，一半无序</strong></li>
+        <li>通过比较 <code>nums[left]</code> 和 <code>nums[mid]</code> 判断哪一半是有序的</li>
+        <li>在有序的一半中判断 target 是否在范围内，决定收缩哪一侧</li>
+        <li>这个策略保证了每次都能排除一半的元素</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/search-in-rotated-sorted-array-ii/" class="problem-card" target="_blank">
+        <div class="problem-number">LeetCode #81</div>
+        <div class="problem-title">搜索旋转排序数组 II</div>
+        <div class="problem-desc">本题进阶版，数组中可能包含重复元素，时间复杂度变为 O(log n) ~ O(n)</div>
+      </a>
+      <a href="https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/" class="problem-card" target="_blank">
+        <div class="problem-number">LeetCode #153</div>
+        <div class="problem-title">寻找旋转排序数组中的最小值</div>
+        <div class="problem-desc">类似的二分查找思路，但目标是找最小值而非特定 target</div>
+      </a>
+      <a href="https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array-ii/" class="problem-card" target="_blank">
+        <div class="problem-number">LeetCode #154</div>
+        <div class="problem-title">寻找旋转排序数组中的最小值 II</div>
+        <div class="problem-desc">含重复元素的找最小值问题，需要额外处理相等的情况</div>
+      </a>
+      <a href="https://leetcode.cn/problems/binary-search/" class="problem-card" target="_blank">
+        <div class="problem-number">LeetCode #704</div>
+        <div class="problem-title">二分查找</div>
+        <div class="problem-desc">最基础的二分查找模板题，是理解本题的基础</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 代码内容（按行分割）
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">search</span>(<span class="builtin">self</span>, nums: List[<span class="builtin">int</span>], target: <span class="builtin">int</span>) -> <span class="builtin">int</span>:' },
+      { num: 3, content: '        left, right = <span class="number">0</span>, <span class="builtin">len</span>(nums) - <span class="number">1</span>' },
+      { num: 4, content: '        ' },
+      { num: 5, content: '        <span class="keyword">while</span> left <= right:' },
+      { num: 6, content: '            mid = (left + right) // <span class="number">2</span>' },
+      { num: 7, content: '            ' },
+      { num: 8, content: '            <span class="keyword">if</span> nums[mid] == target:' },
+      { num: 9, content: '                <span class="keyword">return</span> mid' },
+      { num: 10, content: '            ' },
+      { num: 11, content: '            <span class="comment"># 判断哪一半是有序的</span>' },
+      { num: 12, content: '            <span class="keyword">if</span> nums[left] <= nums[mid]:  <span class="comment"># 左半部分有序</span>' },
+      { num: 13, content: '                <span class="keyword">if</span> nums[left] <= target < nums[mid]:' },
+      { num: 14, content: '                    right = mid - <span class="number">1</span>  <span class="comment"># target在左半部分</span>' },
+      { num: 15, content: '                <span class="keyword">else</span>:' },
+      { num: 16, content: '                    left = mid + <span class="number">1</span>   <span class="comment"># target在右半部分</span>' },
+      { num: 17, content: '            <span class="keyword">else</span>:  <span class="comment"># 右半部分有序</span>' },
+      { num: 18, content: '                <span class="keyword">if</span> nums[mid] < target <= nums[right]:' },
+      { num: 19, content: '                    left = mid + <span class="number">1</span>   <span class="comment"># target在右半部分</span>' },
+      { num: 20, content: '                <span class="keyword">else</span>:' },
+      { num: 21, content: '                    right = mid - <span class="number">1</span>  <span class="comment"># target在左半部分</span>' },
+      { num: 22, content: '        ' },
+      { num: 23, content: '        <span class="keyword">return</span> -<span class="number">1</span>' }
+    ];
+
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "初始化指针",
+        desc: "设置 left=0，right=n-1，准备进行二分查找",
+        line: 3,
+        state: { left: 0, right: 6, mid: "?", nums: "[4,5,6,7,0,1,2]", target: 0 },
+        arrayState: ["normal", "normal", "normal", "normal", "target", "normal", "normal"],
+        midIndex: -1
+      },
+      {
+        title: "第一轮二分 - 计算 mid",
+        desc: "mid = (0+6)//2 = 3，nums[3]=7，7≠0，继续查找",
+        line: 6,
+        state: { left: 0, right: 6, mid: 3, "nums[mid]": 7, target: 0 },
+        arrayState: ["normal", "normal", "normal", "mid", "target", "normal", "normal"],
+        midIndex: 3
+      },
+      {
+        title: "判断哪半有序",
+        desc: "nums[0]=4 ≤ nums[3]=7，说明左半部分[4,5,6,7]是有序的",
+        line: 12,
+        state: { "nums[left]": 4, "nums[mid]": 7, "有序半区": "左半部分" },
+        arrayState: ["normal", "normal", "normal", "mid", "target", "normal", "normal"],
+        midIndex: 3
+      },
+      {
+        title: "判断 target 位置",
+        desc: "target=0，左半部分范围[4,7]，0不在这个范围，所以 target 在右半部分",
+        line: 15,
+        state: { "target": 0, "左半范围": "[4,7]", "判断": "0不在[4,7]中" },
+        arrayState: ["out", "out", "out", "out", "target", "normal", "normal"],
+        midIndex: -1
+      },
+      {
+        title: "收缩左边界",
+        desc: "left = mid + 1 = 4，现在在[0,1,2]中继续查找",
+        line: 16,
+        state: { left: 4, right: 6, "新的搜索区间": "[0,1,2]" },
+        arrayState: ["out", "out", "out", "out", "target", "normal", "normal"],
+        midIndex: -1
+      },
+      {
+        title: "第二轮二分 - 计算 mid",
+        desc: "mid = (4+6)//2 = 5，nums[5]=1，1≠0，继续查找",
+        line: 6,
+        state: { left: 4, right: 6, mid: 5, "nums[mid]": 1, target: 0 },
+        arrayState: ["out", "out", "out", "out", "target", "mid", "normal"],
+        midIndex: 5
+      },
+      {
+        title: "判断哪半有序",
+        desc: "nums[4]=0 ≤ nums[5]=1，说明左半部分[0,1]是有序的",
+        line: 12,
+        state: { "nums[left]": 0, "nums[mid]": 1, "有序半区": "左半部分" },
+        arrayState: ["out", "out", "out", "out", "target", "mid", "normal"],
+        midIndex: 5
+      },
+      {
+        title: "判断 target 位置",
+        desc: "target=0，左半部分范围[0,1]，0在这个范围内！target在左半部分",
+        line: 13,
+        state: { "target": 0, "左半范围": "[0,1]", "判断": "0在[0,1]中 ✓" },
+        arrayState: ["out", "out", "out", "out", "target", "normal", "out"],
+        midIndex: -1
+      },
+      {
+        title: "收缩右边界",
+        desc: "right = mid - 1 = 4，搜索区间缩小到[0]",
+        line: 14,
+        state: { left: 4, right: 4, "新的搜索区间": "[0]" },
+        arrayState: ["out", "out", "out", "out", "target", "out", "out"],
+        midIndex: -1
+      },
+      {
+        title: "第三轮二分 - 找到 target！",
+        desc: "mid = (4+4)//2 = 4，nums[4]=0 == target，返回 4",
+        line: 8,
+        state: { mid: 4, "nums[mid]": 0, target: 0, 结果: "找到！返回4" },
+        arrayState: ["out", "out", "out", "out", "mid", "out", "out"],
+        midIndex: 4
+      }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      div.addEventListener('click', () => selectByLine(line.num));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染数组可视化
+    const arrayViz = document.getElementById('arrayViz');
+    const arrayData = [4, 5, 6, 7, 0, 1, 2];
+    function renderArray(state, midIdx) {
+      arrayViz.innerHTML = '';
+      arrayData.forEach((val, idx) => {
+        const div = document.createElement('div');
+        div.className = 'array-item ' + (state[idx] || 'normal');
+        if (idx === midIdx) div.classList.add('mid');
+        div.textContent = val;
+        arrayViz.appendChild(div);
+      });
+    }
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.index = idx;
+      
+      let stateHtml = '';
+      if (step.state) {
+        stateHtml = '<div class="state-display">';
+        Object.entries(step.state).forEach(([k, v]) => {
+          stateHtml += `<div class="state-item"><span class="state-key">${k}:</span><span class="state-val">${v}</span></div>`;
+        });
+        stateHtml += '</div>';
+      }
+      
+      div.innerHTML = `
+        <div class="viz-step-title">${step.title}</div>
+        <div class="viz-step-desc">${step.desc}</div>
+        ${stateHtml}
+      `;
+      div.addEventListener('click', () => selectStep(idx));
+      vizSteps.appendChild(div);
+    });
+
+    // 选择步骤
+    function selectStep(index) {
+      // 更新步骤高亮
+      document.querySelectorAll('.viz-step').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+      
+      // 更新代码高亮
+      const line = steps[index].line;
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line) === line);
+      });
+      
+      // 更新数组可视化
+      renderArray(steps[index].arrayState, steps[index].midIndex);
+      
+      // 滚动到对应代码行
+      const activeLine = document.querySelector(`.code-line[data-line="${line}"]`);
+      if (activeLine) {
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // 通过代码行选择
+    function selectByLine(lineNum) {
+      // 找到包含这行的步骤
+      const stepIndex = steps.findIndex((s, i) => {
+        if (s.line === lineNum) return true;
+        // 如果没有完全匹配的，找最近的
+        return false;
+      });
+      
+      // 如果有精确匹配
+      if (stepIndex !== -1) {
+        selectStep(stepIndex);
+        // 滚动到对应步骤
+        const stepEl = document.querySelector(`.viz-step[data-index="${stepIndex}"]`);
+        if (stepEl) stepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // 初始化选中第一步
+    selectStep(0);
+  </script>
+</body>
+</html>
