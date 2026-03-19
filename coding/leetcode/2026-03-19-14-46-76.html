@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #76 - 最小覆盖子串</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --border: #475569; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); max-width: 1100px; margin: 0 auto; padding: 40px 20px; line-height: 1.7; }
+    h1 { font-size: 2rem; margin-bottom: 8px; background: linear-gradient(90deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 24px; }
+    .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-right: 8px; }
+    .tag.hard { background: #dc2626; color: white; }
+    .tag.algo { background: #6366f1; color: white; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; border: 1px solid var(--border); }
+    .section h2 { color: var(--primary); font-size: 1.3rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .section h3 { color: #cbd5e1; font-size: 1.1rem; margin: 20px 0 12px; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.6; }
+    .code-line { display: flex; padding: 3px 8px; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.08); }
+    .code-line.active { background: rgba(99, 102, 241, 0.35); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 45px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 900px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { display: flex; flex-direction: column; gap: 8px; }
+    .viz-step { padding: 14px 16px; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #3d4e66; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.25); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+    .viz-step .step-title { font-weight: 600; color: #e2e8f0; margin-bottom: 4px; font-size: 0.95rem; }
+    .viz-step .step-desc { font-size: 0.85rem; color: #94a3b8; line-height: 1.5; }
+    .viz-step .step-state { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; font-family: monospace; font-size: 0.8rem; color: #a5d6ff; }
+    .code-container h3 { margin-top: 0; color: #a78bfa; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border); transition: all 0.25s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 8px 30px rgba(99, 102, 241, 0.2); }
+    .problem-card .p-num { font-size: 0.8rem; color: #6366f1; font-weight: 600; margin-bottom: 6px; }
+    .problem-card .p-title { font-weight: 600; font-size: 1rem; margin-bottom: 8px; color: #f1f5f9; }
+    .problem-card .p-tag { font-size: 0.75rem; color: #64748b; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    .complexity-table th { color: #94a3b8; font-weight: 500; }
+    .complexity-table tr:hover { background: rgba(255,255,255,0.03); }
+    .highlight { background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px; }
+    .key-insight { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 8px; margin: 16px 0; }
+    .key-insight strong { color: #a78bfa; }
+    .algo-flow { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+    .flow-step { background: #334155; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; position: relative; }
+    .flow-step::after { content: "→"; position: absolute; right: -18px; color: #64748b; }
+    .flow-step:last-child::after { content: none; }
+    .flow-step.highlight { background: rgba(99, 102, 241, 0.4); color: white; }
+    .string-viz { font-family: monospace; font-size: 1.1rem; background: #0d1117; padding: 12px; border-radius: 8px; margin: 12px 0; display: flex; gap: 4px; flex-wrap: wrap; }
+    .string-viz .char { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #1e293b; }
+    .string-viz .char.window { background: #6366f1; color: white; }
+    .string-viz .char.target { background: #10b981; color: white; }
+    .string-viz .char.both { background: linear-gradient(135deg, #6366f1, #10b981); color: white; }
+    /* Syntax highlighting */
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .class { color: #ffa657; }
+    .var { color: #79c0ff; }
+    .method { color: #d2a8ff; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #76 - 最小覆盖子串</h1>
+  <div class="subtitle">
+    <span class="tag hard">Hard</span>
+    <span class="tag algo">滑动窗口</span>
+    <span class="tag algo">哈希表</span>
+  </div>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定两个字符串 <code>s</code> 和 <code>t</code>，返回 <code>s</code> 中涵盖 <code>t</code> 所有字符的最小子串。</p>
+    <p style="margin-top: 12px;">如果不存在符合条件的子串，返回空字符串 <code>""</code>。</p>
+    <p><strong>注意：</strong>对于 <code>t</code> 中重复字符，我们寻找的子串中该字符数量必须不少于 <code>t</code> 中该字符数量。</p>
+    
+    <h3>示例</h3>
+    <div style="background: #0d1117; padding: 16px; border-radius: 10px; font-family: monospace; font-size: 0.9rem;">
+      <p style="color: #10b981;">输入：s = "ADOBECODEBANC", t = "ABC"</p>
+      <p style="color: #f59e0b;">输出："BANC"</p>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">解释：子串 "BANC" 包含 'A'、'B'、'C' 各至少一次，且是最短的。</p>
+    </div>
+  </div>
+  
+  <div class="key-insight">
+    <strong>💡 核心思路：</strong>滑动窗口的"扩张-收缩"策略
+    <p style="margin-top: 8px; margin-bottom: 0;">先用右指针扩张窗口直到包含所有目标字符，再用左指针收缩窗口找最小值。两个哈希表分别记录需求（t）和窗口内现状（s窗口）。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤查看代码高亮）</h2>
+    <div class="string-viz" id="stringViz">
+      <span class="char">A</span><span class="char">D</span><span class="char">O</span><span class="char">B</span><span class="char">E</span><span class="char">C</span><span class="char">O</span><span class="char">D</span><span class="char">E</span><span class="char">B</span><span class="char">A</span><span class="char">N</span><span class="char">C</span>
+    </div>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <div class="viz-step" data-line="5" data-step="0">
+          <div class="step-title">1️⃣ 初始化</div>
+          <div class="step-desc">构建 need 哈希表，统计 t="ABC" 各字符需求：A:1, B:1, C:1</div>
+          <div class="step-state">need = {A:1, B:1, C:1}</div>
+        </div>
+        <div class="viz-step" data-line="7" data-step="1">
+          <div class="step-title">2️⃣ 窗口扩张（右指针移动）</div>
+          <div class="step-desc">right 从0开始遍历，加入 'A'，window[A]=1，满足 need[A] 要求</div>
+          <div class="step-state">window[A:1], valid=1/3, 区间[0,0]</div>
+        </div>
+        <div class="viz-step" data-line="8" data-step="2">
+          <div class="step-title">3️⃣ 继续扩张</div>
+          <div class="step-desc">right 移动到 'B'(索引3)，window[B]=1，valid=2/3</div>
+          <div class="step-state">window[A:1,B:1], valid=2/3, 区间[0,3]</div>
+        </div>
+        <div class="viz-step" data-line="9" data-step="3">
+          <div class="step-title">4️⃣ 首次满足条件</div>
+          <div class="step-desc">right 到 'C'(索引5)，valid=3/3，窗口 "ADOBEC" 包含所有字符</div>
+          <div class="step-state">找到候选："ADOBEC" 长度6，区间[0,5]</div>
+        </div>
+        <div class="viz-step" data-line="12" data-step="4">
+          <div class="step-title">5️⃣ 窗口收缩（左指针移动）</div>
+          <div class="step-desc">left=0 指向 'A'，移除后 window[A]=0 &lt; need[A]，valid=2/3，停止收缩</div>
+          <div class="step-state">收缩后区间[1,5]，长度5，记录最小值</div>
+        </div>
+        <div class="viz-step" data-line="7" data-step="5">
+          <div class="step-title">6️⃣ 继续遍历</div>
+          <div class="step-desc">right 继续右移，经过 CODEB...直到索引10的 'A'，再次满足条件</div>
+          <div class="step-state">区间[6,10] "CODEBA" 长度5</div>
+        </div>
+        <div class="viz-step" data-line="12" data-step="6">
+          <div class="step-title">7️⃣ 找到最优解</div>
+          <div class="step-desc">继续收缩，left 到索引9的 'B'，窗口 "BANC" 长度4，更新最小值</div>
+          <div class="step-state">最优解："BANC" 长度4，区间[9,12]</div>
+        </div>
+        <div class="viz-step" data-line="18" data-step="7">
+          <div class="step-title">8️⃣ 返回结果</div>
+          <div class="step-desc">遍历结束，返回最短子串 "BANC"</div>
+          <div class="step-state">结果："BANC"</div>
+        </div>
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">
+<div class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</div>
+<div class="code-line" data-line="2"><span class="line-number">2</span></div>
+<div class="code-line" data-line="3"><span class="line-number">3</span><span class="keyword">class</span> <span class="class">Solution</span>:</div>
+<div class="code-line" data-line="4"><span class="line-number">4</span>    <span class="keyword">def</span> <span class="function">minWindow</span>(self, s: <span class="class">str</span>, t: <span class="class">str</span>) -> <span class="class">str</span>:</div>
+<div class="code-line" data-line="5"><span class="line-number">5</span>        need = defaultdict(<span class="class">int</span>)      <span class="comment"># t 中字符需求</span></div>
+<div class="code-line" data-line="6"><span class="line-number">6</span>        <span class="keyword">for</span> c <span class="keyword">in</span> t: need[c] += <span class="number">1</span></div>
+<div class="code-line" data-line="7"><span class="line-number">7</span>        window = defaultdict(<span class="class">int</span>)    <span class="comment"># 当前窗口字符统计</span></div>
+<div class="code-line" data-line="8"><span class="line-number">8</span>        left = valid = <span class="number">0</span>             <span class="comment"># valid: 满足条件的字符数</span></div>
+<div class="code-line" data-line="9"><span class="line-number">9</span>        start, min_len = <span class="number">0</span>, <span class="class">float</span>(<span class="string">'inf'</span>)</div>
+<div class="code-line" data-line="10"><span class="line-number">10</span></div>
+<div class="code-line" data-line="11"><span class="line-number">11</span>        <span class="keyword">for</span> right, c <span class="keyword">in</span> <span class="function">enumerate</span>(s):  <span class="comment"># 右指针扩张</span></div>
+<div class="code-line" data-line="12"><span class="line-number">12</span>            <span class="keyword">if</span> c <span class="keyword">in</span> need:</div>
+<div class="code-line" data-line="13"><span class="line-number">13</span>                window[c] += <span class="number">1</span></div>
+<div class="code-line" data-line="14"><span class="line-number">14</span>                <span class="keyword">if</span> window[c] == need[c]:</div>
+<div class="code-line" data-line="15"><span class="line-number">15</span>                    valid += <span class="number">1</span></div>
+<div class="code-line" data-line="16"><span class="line-number">16</span></div>
+<div class="code-line" data-line="17"><span class="line-number">17</span>            <span class="keyword">while</span> valid == <span class="function">len</span>(need):   <span class="comment"># 左指针收缩</span></div>
+<div class="code-line" data-line="18"><span class="line-number">18</span>                <span class="keyword">if</span> right - left + <span class="number">1</span> < min_len:</div>
+<div class="code-line" data-line="19"><span class="line-number">19</span>                    start, min_len = left, right - left + <span class="number">1</span></div>
+<div class="code-line" data-line="20"><span class="line-number">20</span></div>
+<div class="code-line" data-line="21"><span class="line-number">21</span>                d = s[left]              <span class="comment"># 要移除的字符</span></div>
+<div class="code-line" data-line="22"><span class="line-number">22</span>                left += <span class="number">1</span></div>
+<div class="code-line" data-line="23"><span class="line-number">23</span>                <span class="keyword">if</span> d <span class="keyword">in</span> need:</div>
+<div class="code-line" data-line="24"><span class="line-number">24</span>                    <span class="keyword">if</span> window[d] == need[d]:</div>
+<div class="code-line" data-line="25"><span class="line-number">25</span>                        valid -= <span class="number">1</span></div>
+<div class="code-line" data-line="26"><span class="line-number">26</span>                    window[d] -= <span class="number">1</span></div>
+<div class="code-line" data-line="27"><span class="line-number">27</span></div>
+<div class="code-line" data-line="28"><span class="line-number">28</span>        <span class="keyword">return</span> <span class="string">""</span> <span class="keyword">if</span> min_len == <span class="class">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> s[start:start + min_len]</div>
+        </code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🧠 算法流程图</h2>
+    <div class="algo-flow">
+      <span class="flow-step">初始化 need/window</span>
+      <span class="flow-step">右指针扩张</span>
+      <span class="flow-step highlight">valid == len(need)?</span>
+      <span class="flow-step">左指针收缩</span>
+      <span class="flow-step">更新最小值</span>
+      <span class="flow-step">返回结果</span>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr><th>指标</th><th>复杂度</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>时间复杂度</td>
+          <td><span class="highlight">O(|S| + |T|)</span></td>
+          <td>左右指针各遍历 s 一次，每个字符最多被访问两次</td>
+        </tr>
+        <tr>
+          <td>空间复杂度</td>
+          <td><span class="highlight">O(|Σ|)</span></td>
+          <td>哈希表存储字符，Σ 为字符集大小（ASCII约128）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔑 关键技巧总结</h2>
+    <div style="display: grid; gap: 12px;">
+      <div style="background: var(--bg); padding: 16px; border-radius: 10px;">
+        <strong style="color: #10b981;">1. 双哈希表设计</strong>
+        <p style="margin-top: 8px; color: #94a3b8;">need 记录目标需求，window 记录当前状态。分离关注点，逻辑清晰。</p>
+      </div>
+      <div style="background: var(--bg); padding: 16px; border-radius: 10px;">
+        <strong style="color: #f59e0b;">2. valid 计数器</strong>
+        <p style="margin-top: 8px; color: #94a3b8;">不用每次比较整个哈希表，用 valid 记录"已满足需求的字符种类数"，O(1) 判断窗口有效性。</p>
+      </div>
+      <div style="background: var(--bg); padding: 16px; border-radius: 10px;">
+        <strong style="color: #6366f1;">3. 收缩时机</strong>
+        <p style="margin-top: 8px; color: #94a3b8;">一旦 valid == len(need) 立即收缩左边界，寻找以当前 right 结尾的最小窗口。</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/longest-substring-without-repeating-characters/" target="_blank" class="problem-card">
+        <div class="p-num">#3</div>
+        <div class="p-title">无重复字符的最长子串</div>
+        <div class="p-tag">滑动窗口 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/permutation-in-string/" target="_blank" class="problem-card">
+        <div class="p-num">#567</div>
+        <div class="p-title">字符串的排列</div>
+        <div class="p-tag">滑动窗口 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/find-all-anagrams-in-a-string/" target="_blank" class="problem-card">
+        <div class="p-num">#438</div>
+        <div class="p-title">找到字符串中所有字母异位词</div>
+        <div class="p-tag">滑动窗口 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-substring-with-at-most-two-distinct-characters/" target="_blank" class="problem-card">
+        <div class="p-num">#159</div>
+        <div class="p-title">至多包含两个不同字符的最长子串</div>
+        <div class="p-tag">滑动窗口 | Medium 🔒</div>
+      </a>
+      <a href="https://leetcode.cn/problems/subarrays-with-k-different-integers/" target="_blank" class="problem-card">
+        <div class="p-num">#992</div>
+        <div class="p-title">K 个不同整数的子数组</div>
+        <div class="p-tag">滑动窗口 | Hard</div>
+      </a>
+      <a href="https://leetcode.cn/problems/sliding-window-maximum/" target="_blank" class="problem-card">
+        <div class="p-num">#239</div>
+        <div class="p-title">滑动窗口最大值</div>
+        <div class="p-tag">单调队列 | Hard</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const steps = document.querySelectorAll('.viz-step');
+    const codeLines = document.querySelectorAll('.code-line');
+    
+    // 步骤与代码行映射关系
+    const stepToLine = {
+      0: [5, 6],      // 初始化 need
+      1: [11, 12, 13, 14, 15], // 右指针扩张
+      2: [11, 12, 13, 14, 15], // 继续扩张
+      3: [11, 12, 13, 14, 15], // 首次满足
+      4: [17, 18, 19, 21, 22, 23, 24, 25, 26], // 窗口收缩
+      5: [11, 12, 13, 14, 15], // 继续遍历
+      6: [17, 18, 19, 21, 22, 23, 24, 25, 26], // 找到最优解
+      7: [28]  // 返回结果
+    };
+    
+    function highlightLines(lines) {
+      codeLines.forEach(line => line.classList.remove('active'));
+      lines.forEach(lineNum => {
+        const line = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+        if (line) line.classList.add('active');
+      });
+    }
+    
+    steps.forEach((step, idx) => {
+      step.addEventListener('click', () => {
+        steps.forEach(s => s.classList.remove('active'));
+        step.classList.add('active');
+        highlightLines(stepToLine[idx] || []);
+      });
+    });
+    
+    codeLines.forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        // 找到包含这行的步骤
+        for (const [stepIdx, lines] of Object.entries(stepToLine)) {
+          if (lines.includes(lineNum)) {
+            steps.forEach(s => s.classList.remove('active'));
+            steps[stepIdx].classList.add('active');
+            steps[stepIdx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            break;
+          }
+        }
+        highlightLines([lineNum]);
+      });
+    });
+  </script>
+</body>
+</html>
