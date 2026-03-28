@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #3 - 无重复字符的最长子串</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --accent: #10b981;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 30px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .badge-medium { background: #f59e0b; color: #1a1a2e; }
+    .badge-tag { background: var(--surface); color: var(--text); border: 1px solid #475569; }
+    .section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+    .section h2 {
+      color: var(--primary);
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      border-radius: 2px;
+    }
+    pre {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 0;
+      overflow-x: auto;
+      border: 1px solid #21262d;
+    }
+    .code-header {
+      background: #161b22;
+      padding: 12px 20px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .code-line {
+      display: flex;
+      padding: 3px 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+    }
+    .code-line:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    .code-line.active {
+      background: rgba(99, 102, 241, 0.25);
+      border-left: 3px solid var(--primary);
+      padding-left: 17px;
+    }
+    .line-number {
+      color: #484f58;
+      min-width: 36px;
+      text-align: right;
+      padding-right: 16px;
+      user-select: none;
+      font-size: 0.85rem;
+    }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    .variable { color: #ffa657; }
+    .viz-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 20px 0;
+    }
+    @media (max-width: 900px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #21262d;
+    }
+    .viz-step {
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      background: #1c2128;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .viz-step:hover {
+      background: #21262d;
+      transform: translateX(4px);
+    }
+    .viz-step.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.15);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .viz-step-title::before {
+      content: '→';
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .viz-step.active .viz-step-title::before {
+      opacity: 1;
+    }
+    .viz-step-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .state-box {
+      background: #161b22;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      border-left: 3px solid var(--accent);
+    }
+    .string-viz {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .char-box {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+    .char-normal { background: #21262d; border: 1px solid #30363d; }
+    .char-window { background: rgba(99, 102, 241, 0.3); border: 2px solid var(--primary); }
+    .char-duplicate { background: rgba(236, 72, 153, 0.2); border: 2px solid var(--secondary); }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid #334155;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .problem-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    .problem-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th,
+    .complexity-table td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .complexity-table .good {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .complexity-table .ok {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .highlight-box h4 {
+      margin: 0 0 10px 0;
+      color: var(--primary);
+    }
+    .tip-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .tip-list li {
+      margin: 8px 0;
+      color: var(--muted);
+    }
+    .window-demo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      background: #0d1117;
+      border-radius: 10px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .window-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      min-width: 60px;
+    }
+    .window-bar {
+      display: flex;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #3 - 无重复字符的最长子串</h1>
+  <div class="meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="badge badge-tag">滑动窗口</span>
+    <span class="badge badge-tag">哈希表</span>
+    <span class="badge badge-tag">双指针</span>
+  </div>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个字符串 <code style="background: #0d1117; padding: 2px 6px; border-radius: 4px;">s</code> ，请你找出其中<strong>不含有重复字符的</strong>最长子串的长度。</p>
+    <div class="highlight-box">
+      <h4>🎯 核心考点</h4>
+      <ul class="tip-list">
+        <li><strong>滑动窗口技术</strong>：使用左右指针动态维护一个无重复字符的区间</li>
+        <li><strong>哈希表优化</strong>：O(1) 时间复杂度判断字符是否在当前窗口中</li>
+        <li><strong>左指针跳跃优化</strong>：遇到重复字符时，左指针直接跳到上次出现位置+1，避免回退</li>
+      </ul>
+    </div>
+    <p style="color: var(--muted);">示例输入：<code>"abcabcbb"</code> → 输出：<code>3</code>（最长子串为 "abc"）</p>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行可视化（点击步骤或代码行查看联动）</h2>
+    <p style="color: var(--muted); margin-bottom: 16px;">以输入 <code>"abcabcbb"</code> 为例，观察滑动窗口的动态变化</p>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div>
+        <div class="code-header">
+          <span style="color: var(--primary);">●</span>
+          <span>Python 实现</span>
+          <span style="margin-left: auto; color: #6e7681;">长度 26 行</span>
+        </div>
+        <pre id="codeBlock"><code>
+<!-- 代码行由JS生成 -->
+        </code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>复杂度类型</th>
+          <th>本解法</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>时间复杂度</td>
+          <td class="good">O(n)</td>
+          <td>左右指针各遍历字符串一次，每个字符最多被访问两次</td>
+        </tr>
+        <tr>
+          <td>空间复杂度</td>
+          <td class="ok">O(min(m, n))</td>
+          <td>哈希表存储字符位置，m 为字符集大小，n 为字符串长度</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>💡 关键技巧</h2>
+    <div class="highlight-box">
+      <h4>🔑 左指针跳跃优化</h4>
+      <p>遇到重复字符时，不是逐步移动左指针，而是直接跳到该字符上次出现位置的下一位：</p>
+      <code style="display: block; margin-top: 12px; padding: 12px; background: #0d1117; border-radius: 6px; font-family: monospace;">left = max(left, char_index[char] + 1)</code>
+      <p style="color: var(--muted); margin-top: 10px;">这个 <code>max</code> 操作至关重要——它确保左指针不会回退（因为上次出现位置可能已经在窗口左边了）</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/longest-substring-with-at-most-two-distinct-characters/" class="problem-card" target="_blank">
+        <h4>#159 至多包含两个不同字符的最长子串</h4>
+        <p>滑动窗口变体：限制窗口内不同字符数量</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-substring-with-at-most-k-distinct-characters/" class="problem-card" target="_blank">
+        <h4>#340 至多包含 K 个不同字符的最长子串</h4>
+        <p>滑动窗口 + 哈希表计数，经典扩展题</p>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-window-substring/" class="problem-card" target="_blank">
+        <h4>#76 最小覆盖子串</h4>
+        <p>滑动窗口 + 双哈希表匹配，Hard 级别经典</p>
+      </a>
+      <a href="https://leetcode.cn/problems/substring-with-concatenation-of-all-words/" class="problem-card" target="_blank">
+        <h4>#30 串联所有单词的子串</h4>
+        <p>滑动窗口处理固定长度子串的组合问题</p>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "初始化哈希表和指针",
+        desc: "char_index 存储字符最新位置，left=0 为窗口左边界",
+        line: 3,
+        state: { char_index: "{}", left: 0, max_len: 0 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [],
+        window: [0, 0]
+      },
+      {
+        title: "遍历右指针",
+        desc: "右指针 right 从 0 开始遍历字符串",
+        line: 5,
+        state: { char_index: "{}", left: 0, max_len: 0, right: 0 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [0],
+        window: [0, 0]
+      },
+      {
+        title: "处理字符 'a'",
+        desc: "'a' 不在哈希表中，直接存入",
+        line: 8,
+        state: { char_index: "{a:0}", left: 0, max_len: 0, right: 0 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [0],
+        window: [0, 0]
+      },
+      {
+        title: "更新最大长度",
+        desc: "窗口大小为 1，max_len 更新为 1",
+        line: 9,
+        state: { char_index: "{a:0}", left: 0, max_len: 1, right: 0 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [0],
+        window: [0, 0]
+      },
+      {
+        title: "处理字符 'b'",
+        desc: "'b' 不在哈希表中，存入",
+        line: 8,
+        state: { char_index: "{a:0,b:1}", left: 0, max_len: 1, right: 1 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [1],
+        window: [0, 1]
+      },
+      {
+        title: "更新最大长度",
+        desc: "窗口大小为 2，max_len 更新为 2",
+        line: 9,
+        state: { char_index: "{a:0,b:1}", left: 0, max_len: 2, right: 1 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [1],
+        window: [0, 1]
+      },
+      {
+        title: "处理字符 'c'",
+        desc: "'c' 不在哈希表中，存入",
+        line: 8,
+        state: { char_index: "{a:0,b:1,c:2}", left: 0, max_len: 2, right: 2 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [2],
+        window: [0, 2]
+      },
+      {
+        title: "更新最大长度",
+        desc: "窗口大小为 3，max_len 更新为 3",
+        line: 9,
+        state: { char_index: "{a:0,b:1,c:2}", left: 0, max_len: 3, right: 2 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [2],
+        window: [0, 2]
+      },
+      {
+        title: "⚠️ 遇到重复字符 'a'",
+        desc: "'a' 已在哈希表中，且上次位置 0 >= left(0)",
+        line: 6,
+        state: { char_index: "{a:0,b:1,c:2}", left: 0, max_len: 3, right: 3 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [3],
+        window: [0, 2],
+        duplicate: 0
+      },
+      {
+        title: "左指针跳跃",
+        desc: "left 从 0 跳到 char_index['a']+1 = 1",
+        line: 7,
+        state: { char_index: "{a:0,b:1,c:2}", left: 1, max_len: 3, right: 3 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [3],
+        window: [1, 3]
+      },
+      {
+        title: "更新 'a' 的位置",
+        desc: "将 'a' 的新位置 3 存入哈希表",
+        line: 8,
+        state: { char_index: "{a:3,b:1,c:2}", left: 1, max_len: 3, right: 3 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [3],
+        window: [1, 3]
+      },
+      {
+        title: "窗口大小不变",
+        desc: "当前窗口大小为 3，max_len 保持 3",
+        line: 9,
+        state: { char_index: "{a:3,b:1,c:2}", left: 1, max_len: 3, right: 3 },
+        string: "a b c a b c b b".split(" "),
+        highlight: [3],
+        window: [1, 3]
+      },
+      {
+        title: "最终返回结果",
+        desc: "遍历完成，返回 max_len = 3",
+        line: 11,
+        state: { result: 3, longest: '"abc"' },
+        string: "a b c a b c b b".split(" "),
+        highlight: [],
+        window: [1, 3]
+      }
+    ];
+
+    // 代码内容
+    const codeLines = [
+      { num: 1, text: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, text: '    <span class="keyword">def</span> <span class="function">lengthOfLongestSubstring</span>(<span class="variable">self</span>, s: <span class="keyword">str</span>) -> <span class="keyword">int</span>:' },
+      { num: 3, text: '        char_index = {}  <span class="comment"># 字符 -> 最新位置</span>' },
+      { num: 4, text: '        left = max_len = <span class="number">0</span>' },
+      { num: 5, text: '        <span class="keyword">for</span> right, char <span class="keyword">in</span> <span class="function">enumerate</span>(s):' },
+      { num: 6, text: '            <span class="keyword">if</span> char <span class="keyword">in</span> char_index <span class="keyword">and</span> char_index[char] >= left:' },
+      { num: 7, text: '                left = char_index[char] + <span class="number">1</span>  <span class="comment"># 左指针跳跃</span>' },
+      { num: 8, text: '            char_index[char] = right  <span class="comment"># 更新字符位置</span>' },
+      { num: 9, text: '            max_len = <span class="function">max</span>(max_len, right - left + <span class="number">1</span>)' },
+      { num: 10, text: '        <span class="keyword">return</span> max_len' },
+      { num: 11, text: '' }
+    ];
+
+    let currentStep = 0;
+
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      codeBlock.innerHTML = codeLines.map(line => 
+        `<div class="code-line" data-line="${line.num}" onclick="selectByLine(${line.num})">` +
+        `<span class="line-number">${line.num}</span>` +
+        `<span>${line.text}</span>` +
+        `</div>`
+      ).join('');
+    }
+
+    function renderSteps() {
+      const vizSteps = document.getElementById('vizSteps');
+      vizSteps.innerHTML = steps.map((step, idx) => {
+        const stringViz = step.string ? `
+          <div class="string-viz">
+            ${step.string.map((c, i) => {
+              let cls = 'char-box char-normal';
+              if (step.window && i >= step.window[0] && i <= step.window[1]) {
+                cls = 'char-box char-window';
+              }
+              if (step.duplicate === i) {
+                cls = 'char-box char-duplicate';
+              }
+              return `<div class="${cls}">${c}</div>`;
+            }).join('')}
+          </div>
+        ` : '';
+        
+        const stateBox = step.state ? `
+          <div class="state-box">
+            ${Object.entries(step.state).map(([k, v]) => `${k} = ${v}`).join(', ')}
+          </div>
+        ` : '';
+        
+        return `
+          <div class="viz-step ${idx === currentStep ? 'active' : ''}" data-step="${idx}" onclick="selectStep(${idx})">
+            <div class="viz-step-title">Step ${idx + 1}: ${step.title}</div>
+            <div class="viz-step-desc">${step.desc}</div>
+            ${stringViz}
+            ${stateBox}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectStep(idx) {
+      currentStep = idx;
+      updateHighlight();
+    }
+
+    function selectByLine(lineNum) {
+      // 找到包含该代码行的最近步骤
+      const stepIdx = steps.findIndex((s, i) => {
+        if (s.line === lineNum) return true;
+        // 如果没有精确匹配，找最接近的
+        if (i < steps.length - 1 && steps[i+1].line > lineNum) return true;
+        return false;
+      });
+      if (stepIdx !== -1) {
+        currentStep = stepIdx;
+        updateHighlight();
+      }
+    }
+
+    function updateHighlight() {
+      // 更新步骤高亮
+      document.querySelectorAll('.viz-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === currentStep);
+      });
+      
+      // 更新代码行高亮
+      document.querySelectorAll('.code-line').forEach(el => {
+        const lineNum = parseInt(el.dataset.line);
+        el.classList.toggle('active', lineNum === steps[currentStep].line);
+      });
+      
+      // 滚动到可见区域
+      const activeStep = document.querySelector('.viz-step.active');
+      if (activeStep) {
+        activeStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      const activeLine = document.querySelector('.code-line.active');
+      if (activeLine) {
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // 初始化
+    renderCode();
+    renderSteps();
+    updateHighlight();
+  </script>
+</body>
+</html>
