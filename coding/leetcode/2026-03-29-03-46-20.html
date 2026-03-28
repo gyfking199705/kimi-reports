@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #20 - 有效的括号</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid #6366f1; padding-left: 8px; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    .viz-steps { max-height: 500px; overflow-y: auto; padding-right: 8px; }
+    .viz-step { padding: 14px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(5px); border-color: #475569; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+    .step-title { font-weight: 600; color: var(--primary); margin-bottom: 6px; }
+    .step-desc { font-size: 14px; color: #94a3b8; }
+    .state-display { background: #0d1117; border-radius: 10px; padding: 12px; margin-top: 10px; font-family: monospace; font-size: 13px; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3); }
+    .difficulty { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-right: 8px; }
+    .difficulty-easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .difficulty-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .difficulty-hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .operator { color: #ff9ece; } .builtin { color: #7ee787; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    th { background: rgba(99, 102, 241, 0.1); color: var(--primary); font-weight: 600; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .stack-visual { display: flex; flex-direction: column-reverse; gap: 4px; min-height: 80px; }
+    .stack-item { background: var(--primary); padding: 8px 16px; border-radius: 6px; text-align: center; font-weight: 600; animation: pushIn 0.3s ease; }
+    @keyframes pushIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .stack-empty { color: #64748b; font-style: italic; text-align: center; padding: 20px; }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #20 - 有效的括号</h1>
+  <p class="subtitle">Valid Parentheses — 栈的经典应用，面试必考基础题</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个只包括 <code class="string">'('</code>、<code class="string">')'</code>、<code class="string">'{'</code>、<code class="string">'}'</code>、<code class="string">'['</code>、<code class="string">']'</code> 的字符串 <code>s</code>，判断字符串是否有效。</p>
+    <p style="margin-top: 12px;">有效字符串需满足：</p>
+    <ul>
+      <li>左括号必须用相同类型的右括号闭合</li>
+      <li>左括号必须以正确的顺序闭合</li>
+      <li>每个右括号都有一个对应的相同类型的左括号</li>
+    </ul>
+    <p style="margin-top: 16px;"><strong>示例：</strong></p>
+    <pre style="background: #0d1117; padding: 16px; margin: 12px 0;">
+输入: s = "([{}])"
+输出: true
+
+输入: s = "([)]"
+输出: false
+
+输入: s = "(("
+输出: false</pre>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    <p><strong>核心思想：栈 (Stack)</strong></p>
+    <p>遍历字符串时：</p>
+    <ul>
+      <li>遇到<strong>左括号</strong> <code>(</code>、<code>{</code>、<code>[</code> → 将其对应的<strong>右括号</strong>压入栈</li>
+      <li>遇到<strong>右括号</strong> <code>)</code>、<code>}</code>、<code>]</code> → 与栈顶元素比较，不匹配则无效</li>
+      <li>最后栈必须<strong>为空</strong>，说明所有括号都成功匹配</li>
+    </ul>
+    <p style="margin-top: 12px; color: var(--warning);">💡 为什么压入右括号？这样可以直接比较，无需额外的映射表转换</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p style="color: #94a3b8; margin-bottom: 16px;">点击左侧步骤或右侧代码行，查看对应关系</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps"></div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">
+<span class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">Solution</span>:</span>
+<span class="code-line" data-line="2"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">isValid</span>(<span class="keyword">self</span>, s: <span class="builtin">str</span>) -> <span class="builtin">bool</span>:</span>
+<span class="code-line" data-line="3"><span class="line-number">3</span>        <span class="comment"># 用字典存储括号匹配关系</span></span>
+<span class="code-line" data-line="4"><span class="line-number">4</span>        mapping = {<span class="string">')'</span>: <span class="string">'('</span>, <span class="string">'}'</span>: <span class="string">'{'</span>, <span class="string">']'</span>: <span class="string">'['</span>}</span>
+<span class="code-line" data-line="5"><span class="line-number">5</span>        stack = []  <span class="comment"># 模拟栈结构</span></span>
+<span class="code-line" data-line="6"><span class="line-number">6</span>        </span>
+<span class="code-line" data-line="7"><span class="line-number">7</span>        <span class="keyword">for</span> char <span class="keyword">in</span> s:</span>
+<span class="code-line" data-line="8"><span class="line-number">8</span>            <span class="keyword">if</span> char <span class="keyword">in</span> mapping:  <span class="comment"># 遇到右括号</span></span>
+<span class="code-line" data-line="9"><span class="line-number">9</span>                <span class="comment"># 栈为空 或 栈顶不匹配 → 无效</span></span>
+<span class="code-line" data-line="10"><span class="line-number">10</span>                <span class="keyword">if</span> <span class="keyword">not</span> stack <span class="keyword">or</span> stack[-<span class="number">1</span>] != mapping[char]:</span>
+<span class="code-line" data-line="11"><span class="line-number">11</span>                    <span class="keyword">return</span> <span class="keyword">False</span></span>
+<span class="code-line" data-line="12"><span class="line-number">12</span>                stack.pop()  <span class="comment"># 匹配成功，弹出</span></span>
+<span class="code-line" data-line="13"><span class="line-number">13</span>            <span class="keyword">else</span>:  <span class="comment"># 遇到左括号</span></span>
+<span class="code-line" data-line="14"><span class="line-number">14</span>                stack.append(char)  <span class="comment"># 压入栈</span></span>
+<span class="code-line" data-line="15"><span class="line-number">15</span>        </span>
+<span class="code-line" data-line="16"><span class="line-number">16</span>        <span class="keyword">return</span> <span class="builtin">len</span>(stack) == <span class="number">0</span>  <span class="comment"># 栈空则全部匹配</span></span>
+        </code></pre>
+        <div style="margin-top: 20px; padding: 16px; background: #0d1117; border-radius: 10px;">
+          <h4 style="margin-top: 0; color: var(--primary);">当前栈状态</h4>
+          <div class="stack-visual" id="stackVisual">
+            <div class="stack-empty">点击步骤查看栈变化</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>维度</th>
+            <th>时间复杂度</th>
+            <th>空间复杂度</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>本解法</td>
+            <td>O(n)</td>
+            <td>O(n)</td>
+            <td>遍历一次，最坏情况所有字符都是左括号入栈</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎯 核心考点总结</h2>
+    <ul>
+      <li><strong>栈 (Stack) 的基本操作</strong>：push、pop、peek，后进先出 (LIFO) 特性</li>
+      <li><strong>括号匹配的本质</strong>：最近未匹配的左括号，必须由最近的右括号闭合</li>
+      <li><strong>边界情况</strong>：空字符串(有效)、单个左/右括号(无效)、嵌套多层括号</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/minimum-add-to-make-parentheses-valid/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-medium">Medium</span>
+        <h4>#921 使括号有效的最少添加</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">变种：计算最少需要添加几个括号使其有效</p>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-remove-to-make-valid-parentheses/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-medium">Medium</span>
+        <h4>#1249 移除无效的括号</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">删除最少括号使其有效，返回有效字符串</p>
+      </a>
+      <a href="https://leetcode.cn/problems/score-of-parentheses/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-medium">Medium</span>
+        <h4>#856 括号的分数</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">()得1分，(A)得2*A分，AB得A+B分</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-valid-parentheses/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-hard">Hard</span>
+        <h4>#32 最长有效括号</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">求最长有效括号子串的长度</p>
+      </a>
+      <a href="https://leetcode.cn/problems/basic-calculator/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-hard">Hard</span>
+        <h4>#224 基本计算器</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">双栈解决带括号的表达式求值</p>
+      </a>
+      <a href="https://leetcode.cn/problems/implement-queue-using-stacks/" class="problem-card" target="_blank">
+        <span class="difficulty difficulty-easy">Easy</span>
+        <h4>#232 用栈实现队列</h4>
+        <p style="color: #94a3b8; font-size: 14px; margin: 8px 0;">经典：用两个栈实现队列的FIFO特性</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 步骤与代码行映射数据（演示输入: "([{}])"）
+    const steps = [
+      { title: "初始化", desc: "创建空栈，准备遍历字符串", line: 5, stack: [], char: "-", inputIdx: -1 },
+      { title: "遍历: '('", desc: "左括号 → 压入栈", line: 14, stack: ['('], char: "(", inputIdx: 0 },
+      { title: "遍历: '['", desc: "左括号 → 压入栈", line: 14, stack: ['(', '['], char: "[", inputIdx: 1 },
+      { title: "遍历: '{'", desc: "左括号 → 压入栈", line: 14, stack: ['(', '[', '{'], char: "{", inputIdx: 2 },
+      { title: "遍历: '}'", desc: "右括号 → 检查栈顶匹配，弹出", line: 12, stack: ['(', '['], char: "}", inputIdx: 3 },
+      { title: "遍历: ']'", desc: "右括号 → 检查栈顶匹配，弹出", line: 12, stack: ['('], char: "]", inputIdx: 4 },
+      { title: "遍历: ')'", desc: "右括号 → 检查栈顶匹配，弹出", line: 12, stack: [], char: ")", inputIdx: 5 },
+      { title: "返回结果", desc: "栈为空，所有括号匹配成功！", line: 16, stack: [], char: "-", inputIdx: -1 }
+    ];
+
+    const vizStepsContainer = document.getElementById('vizSteps');
+    const codeLines = document.querySelectorAll('.code-line');
+    const stackVisual = document.getElementById('stackVisual');
+    
+    let currentStep = -1;
+    
+    // 渲染步骤
+    function renderSteps() {
+      vizStepsContainer.innerHTML = steps.map((step, idx) => `
+        <div class="viz-step" data-step="${idx}" data-line="${step.line}">
+          <div class="step-title">步骤 ${idx + 1}: ${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+          <div class="state-display">
+            当前字符: ${step.char === '-' ? '-' : `<span style="color: var(--warning)">"${step.char}"</span>`}<br>
+            栈内容: [${step.stack.map(c => `"${c}"`).join(', ')}]
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 渲染栈可视化
+    function renderStack(stack) {
+      if (stack.length === 0) {
+        stackVisual.innerHTML = '<div class="stack-empty">栈为空</div>';
+        return;
+      }
+      stackVisual.innerHTML = stack.map((item, i) => 
+        `<div class="stack-item" style="animation-delay: ${i * 0.05}s">${item}</div>`
+      ).join('');
+    }
+    
+    // 高亮步骤
+    function highlightStep(stepIdx) {
+      currentStep = stepIdx;
+      
+      // 更新步骤样式
+      document.querySelectorAll('.viz-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === stepIdx);
+      });
+      
+      // 更新代码行样式
+      const lineNum = steps[stepIdx].line;
+      codeLines.forEach(el => {
+        const isTarget = parseInt(el.dataset.line) === lineNum;
+        el.classList.toggle('active', isTarget);
+      });
+      
+      // 更新栈可视化
+      renderStack(steps[stepIdx].stack);
+      
+      // 滚动到可视位置
+      const activeStep = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (activeStep) {
+        activeStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+    
+    // 事件监听
+    vizStepsContainer.addEventListener('click', (e) => {
+      const step = e.target.closest('.viz-step');
+      if (step) highlightStep(parseInt(step.dataset.step));
+    });
+    
+    codeLines.forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        const stepIdx = steps.findIndex(s => s.line === lineNum);
+        if (stepIdx !== -1) highlightStep(stepIdx);
+      });
+    });
+    
+    // 初始化
+    renderSteps();
+    highlightStep(0);
+  </script>
+</body>
+</html>
