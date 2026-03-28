@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #11 - 盛最多水的容器</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --primary-light: #818cf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-light: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+    }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1em;
+      margin-bottom: 30px;
+    }
+    .meta-tags {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      background: var(--surface);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      border: 1px solid var(--surface-light);
+    }
+    .tag.difficulty-medium { color: var(--warning); border-color: var(--warning); }
+    .tag.topic { color: var(--primary-light); }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .key-insight {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid var(--success);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 4px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left: 3px solid #6366f1; 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+    }
+    .code-content { flex: 1; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 24px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: var(--surface-light);
+      border-radius: 3px;
+    }
+    .viz-step { 
+      padding: 14px 16px; 
+      border-radius: 12px; 
+      background: var(--surface-light); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      border-color: var(--primary-light);
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step-number {
+      color: var(--primary-light);
+      font-weight: bold;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+    .viz-step-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .viz-step-desc {
+      font-size: 0.9em;
+      color: var(--text-muted);
+    }
+    .state-display {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+    .state-var { color: var(--warning); }
+    .state-val { color: var(--success); }
+    .array-visual {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 120px;
+      padding: 20px;
+      background: var(--bg);
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+    .bar {
+      width: 30px;
+      background: var(--surface-light);
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 4px;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .bar .value {
+      position: absolute;
+      top: -20px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    .bar .index {
+      font-size: 0.75em;
+      color: var(--text-muted);
+    }
+    .bar.left { background: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    .bar.right { background: var(--success); box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+    .bar.in-area { 
+      background: linear-gradient(to top, var(--primary), var(--success));
+      opacity: 0.8;
+    }
+    .area-calc {
+      text-align: center;
+      padding: 12px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 8px;
+      margin-top: 12px;
+      font-family: monospace;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid var(--surface-light); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .number {
+      color: var(--primary-light);
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    .problem-card .title {
+      font-weight: 600;
+      margin: 8px 0;
+      font-size: 1.1em;
+    }
+    .problem-card .desc {
+      color: var(--text-muted);
+      font-size: 0.9em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-light);
+    }
+    th {
+      color: var(--primary-light);
+      font-weight: 600;
+    }
+    .complexity-good { color: var(--success); }
+    .complexity-bad { color: var(--danger); }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    .var { color: #ffa657; }
+    .builtin { color: #7ee787; }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+    .btn-secondary {
+      background: var(--surface-light);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: var(--primary);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>📦 LeetCode #11 - 盛最多水的容器</h1>
+  <p class="subtitle">Container With Most Water — 双指针算法的经典入门题</p>
+  
+  <div class="meta-tags">
+    <span class="tag difficulty-medium">Medium</span>
+    <span class="tag topic">双指针</span>
+    <span class="tag topic">贪心算法</span>
+    <span class="tag topic">数组</span>
+  </div>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个长度为 <code>n</code> 的整数数组 <code>height</code>。有 <code>n</code> 条垂线，第 <code>i</code> 条线的两个端点是 <code>(i, 0)</code> 和 <code>(i, height[i])</code>。</p>
+    <p>找出其中的两条线，使得它们与 <code>x</code> 轴共同构成的容器可以容纳最多的水。</p>
+    <p>返回容器可以储存的最大水量。</p>
+    
+    <div class="highlight-box">
+      <strong>说明：</strong>你不能倾斜容器。
+    </div>
+    
+    <h3>示例</h3>
+    <pre><code>输入: height = [1,8,6,2,5,4,8,3,7]
+输出: 49
+解释: 选择第 1 条线(高度8)和第 8 条线(高度7)
+      容器宽度 = 8 - 1 = 7
+      容器高度 = min(8, 7) = 7
+      面积 = 7 × 7 = 49</code></pre>
+    
+    <h3>约束条件</h3>
+    <ul>
+      <li><code>n == height.length</code></li>
+      <li><code>2 <= n <= 10<sup>5</sup></code></li>
+      <li><code>0 <= height[i] <= 10<sup>4</sup></code></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    
+    <div class="key-insight">
+      <strong>核心洞察：</strong>容器的面积 = 宽度 × 最小高度。双指针从两端开始，每次移动高度较小的那个指针——因为移动较高的指针不可能获得更大的面积（宽度在减小，高度受限于较小的那个）。
+    </div>
+    
+    <h3>为什么移动较小的指针？</h3>
+    <p>假设左指针在 <code>i</code>，右指针在 <code>j</code>，且 <code>height[i] < height[j]</code>：</p>
+    <ul>
+      <li>当前面积 = <code>(j - i) × height[i]</code></li>
+      <li>如果移动右指针 <code>j</code> → 宽度减小，高度最多还是 <code>height[i]</code>，面积必然减小</li>
+      <li>如果移动左指针 <code>i</code> → 虽然宽度也减小，但新的高度 <em>可能</em> 更大，面积 <em>可能</em> 增大</li>
+    </ul>
+    <p>因此，我们唯一有希望找到更大面积的做法是：移动高度较小的指针。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p>点击下方步骤或代码行查看对应关系。示例数组: <code>[1, 8, 6, 2, 5, 4, 8, 3, 7]</code></p>
+    
+    <div class="array-visual" id="arrayViz">
+      <!-- 由JS生成 -->
+    </div>
+    <div class="area-calc" id="areaCalc">
+      点击步骤查看计算过程
+    </div>
+    
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="playAnimation()">▶ 自动播放</button>
+      <button class="btn btn-secondary" onclick="resetViz()">⟲ 重置</button>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>暴力枚举</td>
+          <td class="complexity-bad">O(n²)</td>
+          <td class="complexity-good">O(1)</td>
+          <td>枚举所有两两组合，超时</td>
+        </tr>
+        <tr>
+          <td>双指针（最优）</td>
+          <td class="complexity-good">O(n)</td>
+          <td class="complexity-good">O(1)</td>
+          <td>一次遍历，最优解 ✅</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>📝 代码详解</h2>
+    <pre><code><span class="code-line" data-line="1"><span class="line-number">1</span><span class="code-content"><span class="keyword">class</span> <span class="class">Solution</span>:</span></span>
+<span class="code-line" data-line="2"><span class="line-number">2</span><span class="code-content">    <span class="keyword">def</span> <span class="function">maxArea</span>(<span class="var">self</span>, <span class="var">height</span>: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:</span></span>
+<span class="code-line" data-line="3"><span class="line-number">3</span><span class="code-content">        <span class="comment"># 初始化双指针和最大面积</span></span></span>
+<span class="code-line" data-line="4"><span class="line-number">4</span><span class="code-content">        left, right = <span class="number">0</span>, <span class="builtin">len</span>(height) - <span class="number">1</span></span></span>
+<span class="code-line" data-line="5"><span class="line-number">5</span><span class="code-content">        max_area = <span class="number">0</span></span></span>
+<span class="code-line" data-line="6"><span class="line-number">6</span><span class="code-content">        </span></span>
+<span class="code-line" data-line="7"><span class="line-number">7</span><span class="code-content">        <span class="comment"># 当两个指针相遇时结束</span></span></span>
+<span class="code-line" data-line="8"><span class="line-number">8</span><span class="code-content">        <span class="keyword">while</span> left < right:</span></span>
+<span class="code-line" data-line="9"><span class="line-number">9</span><span class="code-content">            <span class="comment"># 计算当前容器的面积</span></span></span>
+<span class="code-line" data-line="10"><span class="line-number">10</span><span class="code-content">            <span class="comment"># 宽度 = 右指针 - 左指针</span></span></span>
+<span class="code-line" data-line="11"><span class="line-number">11</span><span class="code-content">            <span class="comment"># 高度 = 两边高度的较小值</span></span></span>
+<span class="code-line" data-line="12"><span class="line-number">12</span><span class="code-content">            width = right - left</span></span>
+<span class="code-line" data-line="13"><span class="line-number">13</span><span class="code-content">            h = <span class="builtin">min</span>(height[left], height[right])</span></span>
+<span class="code-line" data-line="14"><span class="line-number">14</span><span class="code-content">            current_area = width * h</span></span>
+<span class="code-line" data-line="15"><span class="line-number">15</span><span class="code-content">            </span></span>
+<span class="code-line" data-line="16"><span class="line-number">16</span><span class="code-content">            <span class="comment"># 更新最大面积</span></span></span>
+<span class="code-line" data-line="17"><span class="line-number">17</span><span class="code-content">            max_area = <span class="builtin">max</span>(max_area, current_area)</span></span>
+<span class="code-line" data-line="18"><span class="line-number">18</span><span class="code-content">            </span></span>
+<span class="code-line" data-line="19"><span class="line-number">19</span><span class="code-content">            <span class="comment"># 移动高度较小的指针</span></span></span>
+<span class="code-line" data-line="20"><span class="line-number">20</span><span class="code-content">            <span class="comment"># 关键：移动较高的指针不可能得到更大面积</span></span></span>
+<span class="code-line" data-line="21"><span class="line-number">21</span><span class="code-content">            <span class="keyword">if</span> height[left] < height[right]:</span></span>
+<span class="code-line" data-line="22"><span class="line-number">22</span><span class="code-content">                left += <span class="number">1</span></span></span>
+<span class="code-line" data-line="23"><span class="line-number">23</span><span class="code-content">            <span class="keyword">else</span>:</span></span>
+<span class="code-line" data-line="24"><span class="line-number">24</span><span class="code-content">                right -= <span class="number">1</span></span></span>
+<span class="code-line" data-line="25"><span class="line-number">25</span><span class="code-content">        </span></span>
+<span class="code-line" data-line="26"><span class="line-number">26</span><span class="code-content">        <span class="keyword">return</span> max_area</span></span></code></pre>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <p>掌握这道题后，可以尝试以下相关题目：</p>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/two-sum/" class="problem-card" target="_blank">
+        <div class="number">#1</div>
+        <div class="title">两数之和</div>
+        <div class="desc">哈希表基础，双指针变体</div>
+      </a>
+      <a href="https://leetcode.cn/problems/3sum/" class="problem-card" target="_blank">
+        <div class="number">#15</div>
+        <div class="title">三数之和</div>
+        <div class="desc">排序+双指针，去重技巧</div>
+      </a>
+      <a href="https://leetcode.cn/problems/trapping-rain-water/" class="problem-card" target="_blank">
+        <div class="number">#42</div>
+        <div class="title">接雨水</div>
+        <div class="desc">双指针进阶，计算积水面积</div>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-substring-without-repeating-characters/" class="problem-card" target="_blank">
+        <div class="number">#3</div>
+        <div class="title">无重复字符的最长子串</div>
+        <div class="desc">滑动窗口，动态维护区间</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-duplicates-from-sorted-array/" class="problem-card" target="_blank">
+        <div class="number">#26</div>
+        <div class="title">删除有序数组中的重复项</div>
+        <div class="desc">双指针原地修改数组</div>
+      </a>
+      <a href="https://leetcode.cn/problems/move-zeroes/" class="problem-card" target="_blank">
+        <div class="number">#283</div>
+        <div class="title">移动零</div>
+        <div class="desc">双指针分离非零元素</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎯 面试要点</h2>
+    <ul>
+      <li><strong>证明正确性：</strong>能够证明为什么移动较小的指针是最优策略</li>
+      <li><strong>边界情况：</strong>处理 n=2 的最小情况，处理 height[i]=0 的情况</li>
+      <li><strong>复杂度分析：</strong>时间 O(n)，空间 O(1)</li>
+      <li><strong>变体思考：</strong>如果要求输出具体的两个索引而不是最大面积？</li>
+    </ul>
+  </div>
+  
+  <script>
+    // 示例数据
+    const height = [1, 8, 6, 2, 5, 4, 8, 3, 7];
+    
+    // 步骤数据
+    const steps = [
+      {title: "初始化指针", desc: "left=0(高度1), right=8(高度7), max_area=0", line: 4, left: 0, right: 8, area: 0, calc: "初始化: left=0, right=8"},
+      {title: "计算面积", desc: "宽度=8, 高度=min(1,7)=1, 面积=8×1=8", line: 12, left: 0, right: 8, area: 8, calc: "面积 = 8 × min(1, 7) = 8"},
+      {title: "更新最大面积", desc: "max_area = max(0, 8) = 8", line: 17, left: 0, right: 8, area: 8, calc: "max_area = max(0, 8) = 8"},
+      {title: "移动左指针", desc: "height[0]=1 < height[8]=7, 移动left", line: 22, left: 1, right: 8, area: 8, calc: "1 < 7, 所以 left++ → left=1"},
+      {title: "计算面积", desc: "宽度=7, 高度=min(8,7)=7, 面积=7×7=49", line: 12, left: 1, right: 8, area: 49, calc: "面积 = 7 × min(8, 7) = 49 ⭐ 最大值!"},
+      {title: "更新最大面积", desc: "max_area = max(8, 49) = 49", line: 17, left: 1, right: 8, area: 49, calc: "max_area = max(8, 49) = 49"},
+      {title: "移动右指针", desc: "height[1]=8 > height[8]=7, 移动right", line: 24, left: 1, right: 7, area: 49, calc: "8 > 7, 所以 right-- → right=7"},
+      {title: "计算面积", desc: "宽度=6, 高度=min(8,3)=3, 面积=6×3=18", line: 12, left: 1, right: 7, area: 18, calc: "面积 = 6 × min(8, 3) = 18"},
+      {title: "更新最大面积", desc: "max_area保持49", line: 17, left: 1, right: 7, area: 49, calc: "max(49, 18) = 49 (不变)"},
+      {title: "移动右指针", desc: "height[1]=8 > height[7]=3, 继续移动right", line: 24, left: 1, right: 6, area: 49, calc: "8 > 3, 所以 right-- → right=6"},
+      {title: "计算面积", desc: "宽度=5, 高度=min(8,8)=8, 面积=5×8=40", line: 12, left: 1, right: 6, area: 40, calc: "面积 = 5 × min(8, 8) = 40"},
+      {title: "最终答案", desc: "遍历完成, 返回 max_area = 49", line: 26, left: 1, right: 6, area: 49, calc: "✅ 最终结果: 49"}
+    ];
+    
+    let currentStep = -1;
+    let autoPlayInterval = null;
+    
+    // 渲染代码
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      const lines = document.querySelectorAll('.code-line');
+      codeBlock.innerHTML = '';
+      lines.forEach(line => {
+        codeBlock.appendChild(line.cloneNode(true));
+      });
+      
+      // 绑定代码行点击事件
+      document.querySelectorAll('#codeBlock .code-line').forEach(line => {
+        line.addEventListener('click', () => {
+          const lineNum = parseInt(line.dataset.line);
+          const stepIndex = steps.findIndex(s => s.line === lineNum);
+          if (stepIndex !== -1) {
+            setActiveStep(stepIndex);
+          }
+        });
+      });
+    }
+    
+    // 渲染步骤
+    function renderSteps() {
+      const stepsContainer = document.getElementById('vizSteps');
+      stepsContainer.innerHTML = '';
+      
+      steps.forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'viz-step';
+        stepEl.dataset.index = index;
+        stepEl.innerHTML = `
+          <div class="viz-step-number">步骤 ${index + 1}</div>
+          <div class="viz-step-title">${step.title}</div>
+          <div class="viz-step-desc">${step.desc}</div>
+          ${step.left !== undefined ? `
+            <div class="state-display">
+              <span class="state-var">left</span>=<span class="state-val">${step.left}</span> 
+              <span class="state-var">right</span>=<span class="state-val">${step.right}</span> 
+              <span class="state-var">max</span>=<span class="state-val">${step.area}</span>
+            </div>
+          ` : ''}
+        `;
+        stepEl.addEventListener('click', () => setActiveStep(index));
+        stepsContainer.appendChild(stepEl);
+      });
+    }
+    
+    // 渲染数组可视化
+    function renderArray(left, right) {
+      const container = document.getElementById('arrayViz');
+      container.innerHTML = '';
+      
+      const maxHeight = Math.max(...height);
+      
+      height.forEach((h, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${(h / maxHeight) * 80 + 20}px`;
+        
+        if (i === left) bar.classList.add('left');
+        if (i === right) bar.classList.add('right');
+        if (left !== undefined && right !== undefined && i > left && i < right) {
+          bar.classList.add('in-area');
+        }
+        
+        bar.innerHTML = `
+          <span class="value">${h}</span>
+          <span class="index">${i}</span>
+        `;
+        container.appendChild(bar);
+      });
+    }
+    
+    // 设置活动步骤
+    function setActiveStep(index) {
+      // 更新步骤样式
+      document.querySelectorAll('.viz-step').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+      
+      // 更新代码行样式
+      document.querySelectorAll('#codeBlock .code-line').forEach(line => {
+        const lineNum = parseInt(line.dataset.line);
+        line.classList.toggle('active', lineNum === steps[index].line);
+      });
+      
+      // 滚动到视图
+      const activeStep = document.querySelector(`.viz-step[data-index="${index}"]`);
+      if (activeStep) {
+        activeStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 更新数组可视化
+      const step = steps[index];
+      renderArray(step.left, step.right);
+      
+      // 更新面积计算显示
+      document.getElementById('areaCalc').innerHTML = step.calc;
+      
+      currentStep = index;
+    }
+    
+    // 自动播放
+    function playAnimation() {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+        return;
+      }
+      
+      let index = 0;
+      setActiveStep(index);
+      
+      autoPlayInterval = setInterval(() => {
+        index++;
+        if (index >= steps.length) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        } else {
+          setActiveStep(index);
+        }
+      }, 1500);
+    }
+    
+    // 重置
+    function resetViz() {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+      }
+      currentStep = -1;
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('#codeBlock .code-line').forEach(el => el.classList.remove('active'));
+      renderArray();
+      document.getElementById('areaCalc').innerHTML = '点击步骤查看计算过程';
+    }
+    
+    // 初始化
+    renderCode();
+    renderSteps();
+    renderArray();
+    setActiveStep(0);
+  </script>
+</body>
+</html>
