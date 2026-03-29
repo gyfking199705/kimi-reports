@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #3 - 无重复字符的最长子串</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --primary-light: #818cf8;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --text-secondary: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.6;
+    }
+    h1 { font-size: 2.2rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 24px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px; 
+      border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    .section h2 { color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .complexity-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+    .complexity-item { background: var(--bg); padding: 16px; border-radius: 12px; text-align: center; }
+    .complexity-label { color: var(--text-secondary); font-size: 0.875rem; }
+    .complexity-value { font-size: 1.5rem; font-weight: bold; color: var(--primary-light); margin-top: 4px; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; border: 1px solid #30363d; }
+    .code-line { display: flex; padding: 4px 0; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left-color: var(--primary); }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { padding: 12px 16px; margin: 8px 0; border-radius: 8px; background: var(--bg); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { border-color: var(--primary-light); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+    .step-title { font-weight: bold; color: var(--primary-light); }
+    .step-desc { color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px; }
+    .state-display { background: var(--bg); padding: 12px; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 0.875rem; }
+    .string-viz { font-size: 1.2rem; margin: 16px 0; padding: 16px; background: var(--bg); border-radius: 12px; text-align: center; letter-spacing: 4px; }
+    .char { display: inline-block; padding: 8px; margin: 2px; border-radius: 6px; transition: all 0.3s; }
+    .char.in-window { background: var(--primary); color: white; }
+    .char.repeat { background: #ef4444; color: white; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 16px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+    }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
+    .problem-id { font-size: 0.75rem; color: var(--primary); font-weight: bold; }
+    .problem-title { font-weight: bold; margin: 8px 0; }
+    .problem-tag { font-size: 0.75rem; color: var(--text-secondary); background: rgba(99, 102, 241, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; font-style: italic; } .class { color: #ffa657; }
+    .operator { color: #f778ba; }
+    .method { color: #7ee787; }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+      .complexity-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #3 - 无重复字符的最长子串</h1>
+  <p class="subtitle">Longest Substring Without Repeating Characters</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个字符串 <code>s</code>，请你找出其中不含有重复字符的 <strong>最长子串</strong> 的长度。</p>
+    <br>
+    <p><strong>示例 1：</strong></p>
+    <pre style="background: var(--bg); padding: 12px;">输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。</pre>
+    <br>
+    <p><strong>示例 2：</strong></p>
+    <pre style="background: var(--bg); padding: 12px;">输入: s = "bbbbb"
+输出: 1
+解释: 因为无重复字符的最长子串是 "b"，所以其长度为 1。</pre>
+    <br>
+    <p><strong>示例 3：</strong></p>
+    <pre style="background: var(--bg); padding: 12px;">输入: s = "pwwkew"
+输出: 3
+解释: 因为无重复字符的最长子串是 "wke"，所以其长度为 3。
+     请注意，你的答案必须是子串的长度，"pwke" 是一个子序列，不是子串。</pre>
+  </div>
+
+  <div class="section">
+    <h2>💡 核心思路</h2>
+    <p><strong>滑动窗口（Sliding Window）</strong>是解决这类子串问题的经典技巧：</p>
+    <ul style="margin: 16px 0; padding-left: 24px; color: var(--text-secondary);">
+      <li>用两个指针 <code>left</code> 和 <code>right</code> 维护一个窗口</li>
+      <li>窗口内始终保证「无重复字符」的不变性质</li>
+      <li>遇到重复字符时，收缩左边界直到无重复</li>
+      <li>用哈希表记录字符最后出现位置，实现 O(1) 查找</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    
+    <div class="string-viz" id="stringViz"></div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <div class="complexity-grid">
+      <div class="complexity-item">
+        <div class="complexity-label">时间复杂度</div>
+        <div class="complexity-value">O(n)</div>
+      </div>
+      <div class="complexity-item">
+        <div class="complexity-label">空间复杂度</div>
+        <div class="complexity-value">O(Σ)</div>
+      </div>
+      <div class="complexity-item">
+        <div class="complexity-label">难度</div>
+        <div class="complexity-value">Medium</div>
+      </div>
+    </div>
+    <p style="margin-top: 16px; color: var(--text-secondary);">
+      <strong>说明：</strong>每个字符最多被访问两次（left和right各一次），所以是线性时间。哈希表存储字符位置，字符集大小为 Σ（通常为 ASCII 128 或 Unicode）。
+    </p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/longest-substring-with-at-most-two-distinct-characters/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 159</span>
+        <div class="problem-title">至多包含两个不同字符的最长子串</div>
+        <span class="problem-tag">滑动窗口</span>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-substring-with-at-most-k-distinct-characters/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 340</span>
+        <div class="problem-title">至多包含 K 个不同字符的最长子串</div>
+        <span class="problem-tag">滑动窗口 + 哈希表</span>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-window-substring/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 76</span>
+        <div class="problem-title">最小覆盖子串</div>
+        <span class="problem-tag">滑动窗口（困难）</span>
+      </a>
+      <a href="https://leetcode.cn/problems/substring-with-concatenation-of-all-words/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 30</span>
+        <div class="problem-title">串联所有单词的子串</div>
+        <span class="problem-tag">滑动窗口 + 哈希表</span>
+      </a>
+      <a href="https://leetcode.cn/problems/permutation-in-string/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 567</span>
+        <div class="problem-title">字符串的排列</div>
+        <span class="problem-tag">滑动窗口 + 字符计数</span>
+      </a>
+      <a href="https://leetcode.cn/problems/find-all-anagrams-in-a-string/" class="problem-card" target="_blank">
+        <span class="problem-id">LeetCode 438</span>
+        <div class="problem-title">找到字符串中所有字母异位词</div>
+        <span class="problem-tag">滑动窗口</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, text: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, text: '    <span class="keyword">def</span> <span class="function">lengthOfLongestSubstring</span>(<span class="keyword">self</span>, s: <span class="keyword">str</span>) -> <span class="keyword">int</span>:' },
+      { num: 3, text: '        <span class="comment"># 哈希表：记录字符最后出现的位置</span>' },
+      { num: 4, text: '        char_index = {}' },
+      { num: 5, text: '        max_len = <span class="number">0</span>  <span class="comment"># 最长子串长度</span>' },
+      { num: 6, text: '        left = <span class="number">0</span>  <span class="comment"># 滑动窗口左边界</span>' },
+      { num: 7, text: '        ' },
+      { num: 8, text: '        <span class="comment"># right 作为右边界遍历字符串</span>' },
+      { num: 9, text: '        <span class="keyword">for</span> right <span class="keyword">in</span> <span class="function">range</span>(<span class="function">len</span>(s)):' },
+      { num: 10, text: '            char = s[right]' },
+      { num: 11, text: '            ' },
+      { num: 12, text: '            <span class="comment"># 如果字符已在窗口内，收缩左边界</span>' },
+      { num: 13, text: '            <span class="keyword">if</span> char <span class="keyword">in</span> char_index <span class="keyword">and</span> char_index[char] >= left:' },
+      { num: 14, text: '                left = char_index[char] + <span class="number">1</span>  <span class="comment"># 跳到重复字符的下一个位置</span>' },
+      { num: 15, text: '            ' },
+      { num: 16, text: '            <span class="comment"># 更新字符最新位置</span>' },
+      { num: 17, text: '            char_index[char] = right' },
+      { num: 18, text: '            ' },
+      { num: 19, text: '            <span class="comment"># 更新最大长度</span>' },
+      { num: 20, text: '            current_len = right - left + <span class="number">1</span>' },
+      { num: 21, text: '            max_len = <span class="function">max</span>(max_len, current_len)' },
+      { num: 22, text: '        ' },
+      { num: 23, text: '        <span class="keyword">return</span> max_len' }
+    ];
+
+    // 执行步骤数据
+    const steps = [
+      { title: "初始化", desc: "创建空哈希表，left=0，max_len=0", line: 4, state: { left: 0, right: "-", max_len: 0, window: "[]" } },
+      { title: "right=0, 字符 'p'", desc: "'p'不在表中，直接加入", line: 13, state: { left: 0, right: 0, max_len: 1, window: "[p]" } },
+      { title: "right=1, 字符 'w'", desc: "'w'不在表中，窗口扩展", line: 17, state: { left: 0, right: 1, max_len: 2, window: "[pw]" } },
+      { title: "right=2, 字符 'w'", desc: "⚠️ 'w'已在窗口内！需要收缩left", line: 13, state: { left: 0, right: 2, max_len: 2, window: "[pww]→重复!" } },
+      { title: "收缩左边界", desc: "left跳到第一个'w'的下一个位置", line: 14, state: { left: 2, right: 2, max_len: 2, window: "[w]" } },
+      { title: "更新最大长度", desc: "当前窗口长度为1，max_len仍为2", line: 21, state: { left: 2, right: 2, max_len: 2, window: "[w]" } },
+      { title: "right=3, 字符 'k'", desc: "'k'不在表中，窗口扩展", line: 17, state: { left: 2, right: 3, max_len: 2, window: "[wk]" } },
+      { title: "right=4, 字符 'e'", desc: "'e'不在表中，窗口扩展", line: 17, state: { left: 2, right: 4, max_len: 3, window: "[wke]" } },
+      { title: "right=5, 字符 'w'", desc: "⚠️ 'w'再次重复，收缩left", line: 13, state: { left: 2, right: 5, max_len: 3, window: "[wkew]→重复!" } },
+      { title: "最终答案", desc: "遍历完成，返回max_len=3", line: 23, state: { left: 5, right: 5, max_len: 3, window: "[w]" } }
+    ];
+
+    // 渲染代码
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      codeBlock.innerHTML = codeLines.map((line, idx) => 
+        `<div class="code-line" data-line="${line.num}" data-idx="${idx}">
+          <span class="line-number">${line.num}</span>
+          <span>${line.text}</span>
+        </div>`
+      ).join('');
+    }
+
+    // 渲染步骤
+    function renderSteps() {
+      const vizSteps = document.getElementById('vizSteps');
+      vizSteps.innerHTML = steps.map((step, idx) => `
+        <div class="viz-step" data-step="${idx}" data-line="${step.line}">
+          <div class="step-title">${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+          <div class="state-display">
+            left=${step.state.left}, right=${step.state.right}, max=${step.state.max_len}<br>
+            window: ${step.state.window}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染字符串可视化
+    function renderString() {
+      const s = "pwwkew";
+      const viz = document.getElementById('stringViz');
+      viz.innerHTML = s.split('').map((c, i) => 
+        `<span class="char" data-idx="${i}">${c}</span>`
+      ).join('');
+    }
+
+    // 高亮函数
+    function highlightStep(stepIdx) {
+      document.querySelectorAll('.viz-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === stepIdx);
+      });
+      
+      const step = steps[stepIdx];
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line) === step.line);
+      });
+
+      // 更新字符串高亮
+      updateStringHighlight(stepIdx);
+    }
+
+    function highlightLine(lineNum) {
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line) === lineNum);
+      });
+      
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        document.querySelectorAll('.viz-step').forEach((el, idx) => {
+          el.classList.toggle('active', idx === stepIdx);
+        });
+        updateStringHighlight(stepIdx);
+      }
+    }
+
+    function updateStringHighlight(stepIdx) {
+      const chars = document.querySelectorAll('.char');
+      const step = steps[stepIdx];
+      chars.forEach((c, i) => {
+        c.classList.remove('in-window', 'repeat');
+        if (step.state.right !== '-' && i >= step.state.left && i <= step.state.right) {
+          c.classList.add('in-window');
+        }
+      });
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      document.getElementById('vizSteps').addEventListener('click', (e) => {
+        const step = e.target.closest('.viz-step');
+        if (step) highlightStep(parseInt(step.dataset.step));
+      });
+
+      document.getElementById('codeBlock').addEventListener('click', (e) => {
+        const line = e.target.closest('.code-line');
+        if (line) highlightLine(parseInt(line.dataset.line));
+      });
+    }
+
+    // 初始化
+    renderCode();
+    renderSteps();
+    renderString();
+    bindEvents();
+    highlightStep(0);
+  </script>
+</body>
+</html>
