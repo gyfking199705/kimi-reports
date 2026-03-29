@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode #56 - 合并区间</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    body { 
+      font-family: 'Inter', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.6;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 32px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: background 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left-color: #6366f1;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: monospace;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.3fr; 
+      gap: 24px; 
+      margin: 20px 0;
+    }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { transform: translateX(4px); }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.25);
+    }
+    .viz-step h4 { margin: 0 0 6px 0; color: #fff; font-size: 0.95rem; }
+    .viz-step p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+    .state-display { 
+      background: #1e293b; 
+      border-radius: 8px; 
+      padding: 12px 16px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .problem-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+      gap: 16px; 
+      margin-top: 20px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid #475569; 
+      transition: all 0.25s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(99, 102, 241, 0.25);
+    }
+    .problem-card .difficulty { 
+      font-size: 0.75rem; 
+      padding: 4px 10px; 
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .difficulty.easy { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .problem-card h4 { margin: 8px 0; font-size: 1rem; }
+    .problem-card p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+    .interval-visual {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 8px 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .interval { 
+      padding: 6px 10px; 
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.3);
+      border: 1px solid var(--primary);
+    }
+    .interval.merged { 
+      background: rgba(34, 197, 94, 0.3);
+      border-color: var(--success);
+    }
+    .interval.new { 
+      background: rgba(245, 158, 11, 0.3);
+      border-color: var(--warning);
+    }
+    .arrow { color: #64748b; }
+    .tag { 
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin: 4px 4px 4px 0;
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .highlight { color: var(--primary); font-weight: 600; }
+    .code-keyword { color: #ff7b72; }
+    .code-function { color: #d2a8ff; }
+    .code-string { color: #a5d6ff; }
+    .code-number { color: #79c0ff; }
+    .code-comment { color: #8b949e; }
+    .code-class { color: #ffa657; }
+    .step-index {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 0.75rem;
+      margin-right: 8px;
+    }
+    .viz-step.active .step-index { background: #fff; color: var(--primary); }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #56 - 合并区间</h1>
+  <p class="subtitle">Merge Intervals | 中等难度 | 贪心算法 + 排序</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>以数组 <code>intervals</code> 表示若干个区间的集合，其中单个区间为 <code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code>。请你合并所有重叠的区间，并返回一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间。</p>
+    <br>
+    <p><strong>示例 1：</strong></p>
+    <pre>输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].</pre>
+    <p><strong>示例 2：</strong></p>
+    <pre>输入：intervals = [[1,4],[4,5]]
+输出：[[1,5]]
+解释：区间 [1,4] 和 [4,5] 可被视为重叠区间。</pre>
+    <br>
+    <span class="tag">数组</span>
+    <span class="tag">排序</span>
+    <span class="tag">贪心</span>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <p style="color: #94a3b8; font-size: 0.9rem;">以输入 <code>[[1,3],[2,6],[8,10],[15,18]]</code> 为例，观察合并过程</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        # 按区间起点升序排序
+        intervals.sort(key=lambda x: x[0])
+        
+        merged = []
+        for interval in intervals:
+            # 如果当前区间与上一个不重叠，直接添加
+            if not merged or merged[-1][1] < interval[0]:
+                merged.append(interval)
+            else:
+                # 有重叠，合并区间，更新结束点
+                merged[-1][1] = max(merged[-1][1], interval[1])
+        
+        return merged</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>指标</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td><span class="highlight">O(n log n)</span></td>
+        <td>排序 O(n log n) + 遍历 O(n)</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td><span class="highlight">O(n) / O(log n)</span></td>
+        <td>输出数组 O(n)，排序栈空间 O(log n)</td>
+      </tr>
+      <tr>
+        <td>排序稳定性</td>
+        <td>TimSort</td>
+        <td>Python内置排序，稳定高效</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/insert-interval/" class="problem-card" target="_blank">
+        <span class="difficulty medium">中等</span>
+        <h4>57. 插入区间</h4>
+        <p>在已有序的区间集合中插入新区间并合并，核心思路与本题相同</p>
+      </a>
+      <a href="https://leetcode.cn/problems/non-overlapping-intervals/" class="problem-card" target="_blank">
+        <span class="difficulty medium">中等</span>
+        <h4>435. 无重叠区间</h4>
+        <p>求需要移除的最小区间数使剩余区间不重叠，贪心策略略有不同</p>
+      </a>
+      <a href="https://leetcode.cn/problems/meeting-rooms-ii/" class="problem-card" target="_blank">
+        <span class="difficulty medium">中等</span>
+        <h4>253. 会议室 II</h4>
+        <p>最小化所需会议室数量，需要用堆或差分数组处理重叠计数</p>
+      </a>
+      <a href="https://leetcode.cn/problems/meeting-rooms/" class="problem-card" target="_blank">
+        <span class="difficulty easy">简单</span>
+        <h4>252. 会议室</h4>
+        <p>判断一个人是否能参加所有会议，只需检查是否有重叠</p>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-covered-intervals/" class="problem-card" target="_blank">
+        <span class="difficulty medium">中等</span>
+        <h4>1288. 删除被覆盖区间</h4>
+        <p>移除被其他区间完全覆盖的区间，排序后线性扫描即可</p>
+      </a>
+      <a href="https://leetcode.cn/problems/find-right-interval/" class="problem-card" target="_blank">
+        <span class="difficulty medium">中等</span>
+        <h4>436. 寻找右区间</h4>
+        <p>对每个区间找其右侧最近的区间，可用二分查找优化</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>💡 核心解题思路</h2>
+    <ol>
+      <li><strong>排序先行</strong>：按区间起点升序排序，保证后续只需线性扫描</li>
+      <li><strong>维护当前区间</strong>：用 <code>merged[-1]</code> 表示当前正在构建的合并后区间</li>
+      <li><strong>判断重叠</strong>：当前区间起点 > 上个区间终点？不重叠 : 重叠</li>
+      <li><strong>合并更新</strong>：重叠时更新终点为两者的最大值</li>
+    </ol>
+    <br>
+    <p><strong>关键洞察：</strong>排序后，任何可能与当前区间重叠的区间，其起点一定在当前区间起点之后（或相等）。因此只需比较上一个合并区间的终点与当前区间的起点。</p>
+  </div>
+
+  <script>
+    // 步骤与代码行映射（行号从1开始，需要+1因为代码前面有换行）
+    const steps = [
+      {
+        title: "初始区间", 
+        desc: "原始区间未排序，先进行排序", 
+        line: 4,
+        intervals: [[1,3],[2,6],[8,10],[15,18]],
+        merged: [],
+        state: "准备排序"
+      },
+      {
+        title: "排序完成", 
+        desc: "按起点升序排列: [1,3] → [2,6] → [8,10] → [15,18]", 
+        line: 4,
+        intervals: [[1,3],[2,6],[8,10],[15,18]],
+        merged: [],
+        state: "sorted: True"
+      },
+      {
+        title: "处理区间 [1,3]", 
+        desc: "merged为空，直接添加第一个区间", 
+        line: 8,
+        intervals: [[2,6],[8,10],[15,18]],
+        merged: [[1,3]],
+        state: "merged = [[1,3]]"
+      },
+      {
+        title: "处理区间 [2,6]", 
+        desc: "检查: merged[-1][1]=3 >= interval[0]=2，有重叠！", 
+        line: 10,
+        intervals: [[8,10],[15,18]],
+        merged: [[1,3],[2,6]],
+        state: "重叠 detected"
+      },
+      {
+        title: "合并区间", 
+        desc: "更新终点: max(3, 6) = 6，结果 [1,6]", 
+        line: 11,
+        intervals: [[8,10],[15,18]],
+        merged: [[1,6]],
+        state: "merged[-1][1] = 6"
+      },
+      {
+        title: "处理区间 [8,10]", 
+        desc: "检查: merged[-1][1]=6 < interval[0]=8，无重叠", 
+        line: 8,
+        intervals: [[15,18]],
+        merged: [[1,6],[8,10]],
+        state: "不重叠，直接添加"
+      },
+      {
+        title: "处理区间 [15,18]", 
+        desc: "检查: merged[-1][1]=10 < interval[0]=15，无重叠", 
+        line: 8,
+        intervals: [],
+        merged: [[1,6],[8,10],[15,18]],
+        state: "不重叠，直接添加"
+      },
+      {
+        title: "返回结果", 
+        desc: "遍历完成，返回合并后的区间数组", 
+        line: 13,
+        intervals: [],
+        merged: [[1,6],[8,10],[15,18]],
+        state: "return merged"
+      }
+    ];
+
+    // 生成可视化步骤
+    const vizStepsContainer = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.line = step.line;
+      stepDiv.dataset.index = idx;
+      
+      // 生成区间可视化
+      let intervalHtml = '';
+      if (step.intervals.length > 0) {
+        intervalHtml = '<div class="interval-visual">待处理: ' + 
+          step.intervals.map(i => `<span class="interval">[${i[0]},${i[1]}]</span>`).join(' ') + 
+          '</div>';
+      }
+      
+      let mergedHtml = '<div class="interval-visual">已合并: ' + 
+        step.merged.map((i, mIdx) => {
+          const isNew = mIdx === step.merged.length - 1 && step.title.includes('合并') || 
+                       (mIdx === step.merged.length - 1 && step.title.includes('添加'));
+          return `<span class="interval ${isNew ? 'merged' : ''}">[${i[0]},${i[1]}]</span>`;
+        }).join(' ') + 
+        '</div>';
+      
+      stepDiv.innerHTML = `
+        <h4><span class="step-index">${idx + 1}</span>${step.title}</h4>
+        <p>${step.desc}</p>
+        ${intervalHtml}
+        ${mergedHtml}
+        <div class="state-display">${step.state}</div>
+      `;
+      
+      stepDiv.addEventListener('click', () => highlightStep(idx));
+      vizStepsContainer.appendChild(stepDiv);
+    });
+
+    // 处理代码高亮
+    const codeBlock = document.getElementById('codeBlock');
+    const codeLines = codeBlock.innerHTML.split('\n');
+    codeBlock.innerHTML = codeLines.map((line, idx) => {
+      // 语法高亮
+      let highlighted = line
+        .replace(/\b(def|if|else|return|for|in|class|not|or|and)\b/g, '<span class="code-keyword">$1</span>')
+        .replace(/\b(self|intervals|merged|interval|key|lambda|max|append|sort|List)\b/g, '<span class="code-function">$1</span>')
+        .replace(/([0-9]+)/g, '<span class="code-number">$1</span>')
+        .replace(/(#.*$)/gm, '<span class="code-comment">$1</span>');
+      
+      return `<div class="code-line" data-line="${idx + 1}">
+        <span class="line-number">${idx + 1}</span>
+        <span class="code-content">${highlighted || ' '}</span>
+      </div>`;
+    }).join('');
+
+    // 为代码行添加点击事件
+    document.querySelectorAll('.code-line').forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        // 找到对应的步骤
+        const stepIdx = steps.findIndex(s => s.line === lineNum);
+        if (stepIdx !== -1) {
+          highlightStep(stepIdx);
+        }
+      });
+    });
+
+    function highlightStep(idx) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepDiv = document.querySelector(`.viz-step[data-index="${idx}"]`);
+      if (stepDiv) {
+        stepDiv.classList.add('active');
+        stepDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 高亮对应代码行
+      const lineNum = steps[idx].line;
+      const codeLine = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (codeLine) {
+        codeLine.classList.add('active');
+      }
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
