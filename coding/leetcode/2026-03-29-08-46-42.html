@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #42 - 接雨水</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px; 
+      border: 1px solid var(--border);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      font-size: 1.3em;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95em;
+    }
+    .tags {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 500;
+    }
+    .tag.difficulty-hard {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: background 0.2s; 
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9em;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid #6366f1; 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    .code-content {
+      white-space: pre;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .viz-steps {
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .viz-step { 
+      padding: 14px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: var(--bg); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover {
+      border-color: var(--border);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.15); 
+    }
+    .step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .step-desc {
+      font-size: 0.9em;
+      color: var(--text-muted);
+    }
+    .step-state {
+      margin-top: 10px;
+      padding: 8px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: var(--primary);
+    }
+    .code-container h3 {
+      margin-top: 0;
+      color: var(--text-muted);
+      font-size: 1em;
+      font-weight: 500;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px); 
+    }
+    .problem-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .problem-desc {
+      font-size: 0.9em;
+      color: var(--text-muted);
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; font-style: italic; } 
+    .class { color: #ffa657; }
+    .method { color: #7ee787; }
+    
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .complexity-value {
+      font-family: monospace;
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    .insight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 0 12px 12px 0;
+    }
+    .insight-box h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    
+    .highlight {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    #visualization-canvas {
+      width: 100%;
+      height: 200px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #42 - 接雨水</h1>
+  <p class="subtitle">Trapping Rain Water · 双指针 · 单调栈 · 动态规划</p>
+  <div class="tags">
+    <span class="tag difficulty-hard">Hard</span>
+    <span class="tag">双指针</span>
+    <span class="tag">单调栈</span>
+    <span class="tag">动态规划</span>
+    <span class="tag">数组</span>
+  </div>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定 <code>n</code> 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。</p>
+    
+    <div class="insight-box">
+      <h4>💡 核心洞察</h4>
+      <p>每个位置能接的雨水 = <span class="highlight">min(左侧最高, 右侧最高) - 当前高度</span></p>
+      <p>如果当前位置是两边最高中的较低者，且高于当前高度，就能接到雨水。</p>
+    </div>
+    
+    <p><strong>示例：</strong></p>
+    <pre style="background: var(--bg); padding: 12px 16px;">
+输入: height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出: 6
+解释: 上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，
+      可以接 6 个单位的雨水（蓝色部分表示雨水）</pre>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行互相高亮）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现 - 双指针法</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>解法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>特点</th>
+      </tr>
+      <tr>
+        <td>暴力解法</td>
+        <td><span class="complexity-value">O(n²)</span></td>
+        <td><span class="complexity-value">O(1)</span></td>
+        <td>对每个位置遍历找左右最高</td>
+      </tr>
+      <tr>
+        <td>动态规划</td>
+        <td><span class="complexity-value">O(n)</span></td>
+        <td><span class="complexity-value">O(n)</span></td>
+        <td>预处理左右最高数组</td>
+      </tr>
+      <tr>
+        <td><strong>双指针法 ⭐</strong></td>
+        <td><span class="complexity-value">O(n)</span></td>
+        <td><span class="complexity-value">O(1)</strong></td>
+        <td>最优空间，实时维护左右最高</td>
+      </tr>
+      <tr>
+        <td>单调栈</td>
+        <td><span class="complexity-value">O(n)</span></td>
+        <td><span class="complexity-value">O(n)</span></td>
+        <td>按行计算，可扩展性强</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🧠 三种解法详解</h2>
+    
+    <h3>1. 动态规划法</h3>
+    <p>预处理两个数组：<code>left_max[i]</code> 表示位置 i 左侧最高柱子，<code>right_max[i]</code> 表示右侧最高柱子。</p>
+    <pre><code><span class="keyword">def</span> <span class="function">trap_dp</span>(<span class="method">self</span>, height: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:
+    <span class="keyword">if</span> <span class="keyword">not</span> height: <span class="keyword">return</span> <span class="number">0</span>
+    
+    n = <span class="function">len</span>(height)
+    left_max = [<span class="number">0</span>] * n
+    right_max = [<span class="number">0</span>] * n
+    
+    <span class="comment"># 从左向右扫描左侧最高</span>
+    left_max[<span class="number">0</span>] = height[<span class="number">0</span>]
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, n):
+        left_max[i] = <span class="function">max</span>(left_max[i<span class="number">-1</span>], height[i])
+    
+    <span class="comment"># 从右向左扫描右侧最高</span>
+    right_max[n<span class="number">-1</span>] = height[n<span class="number">-1</span>]
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n<span class="number">-2</span>, <span class="number">-1</span>, <span class="number">-1</span>):
+        right_max[i] = <span class="function">max</span>(right_max[i<span class="number">+1</span>], height[i])
+    
+    <span class="comment"># 计算总雨水量</span>
+    ans = <span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):
+        ans += <span class="function">min</span>(left_max[i], right_max[i]) - height[i]
+    <span class="keyword">return</span> ans</code></pre>
+    
+    <h3>2. 双指针法 ⭐ 推荐</h3>
+    <div class="insight-box">
+      <h4>关键优化</h4>
+      <p>当 <code>left_max < right_max</code> 时，位置 left 的雨水量只与 left_max 有关。<br>
+      反之亦然。这样可以在一次遍历中实时计算，无需额外数组。</p>
+    </div>
+    
+    <h3>3. 单调栈法</h3>
+    <p>按"行"计算雨水。维护一个单调递减栈，当遇到更高的柱子时，可以形成凹槽接水。</p>
+    <pre><code><span class="keyword">def</span> <span class="function">trap_stack</span>(<span class="method">self</span>, height: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:
+    stack = []  <span class="comment"># 存储索引，对应高度单调递减</span>
+    ans = <span class="number">0</span>
+    
+    <span class="keyword">for</span> i, h <span class="keyword">in</span> <span class="function">enumerate</span>(height):
+        <span class="comment"># 当前柱子高于栈顶，可以接水</span>
+        <span class="keyword">while</span> stack <span class="keyword">and</span> h > height[stack[<span class="number">-1</span>]]:
+            top = stack.pop()
+            <span class="keyword">if</span> <span class="keyword">not</span> stack:
+                <span class="keyword">break</span>
+            <span class="comment"># 计算宽度</span>
+            width = i - stack[<span class="number">-1</span>] - <span class="number">1</span>
+            <span class="comment"># 计算高度（取两边较小者减去当前）</span>
+            bounded_height = <span class="function">min</span>(h, height[stack[<span class="number">-1</span>]]) - height[top]
+            ans += width * bounded_height
+        stack.append(i)
+    <span class="keyword">return</span> ans</code></pre>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/container-with-most-water/" class="problem-card" target="_blank">
+        <div class="problem-title">#11 盛最多水的容器</div>
+        <div class="problem-desc">双指针经典题，计算能容纳最多水的容器面积</div>
+      </a>
+      <a href="https://leetcode.cn/problems/largest-rectangle-in-histogram/" class="problem-card" target="_blank">
+        <div class="problem-title">#84 柱状图中最大的矩形</div>
+        <div class="problem-desc">单调栈经典题，与本题是"相反"的问题</div>
+      </a>
+      <a href="https://leetcode.cn/problems/maximal-rectangle/" class="problem-card" target="_blank">
+        <div class="problem-title">#85 最大矩形</div>
+        <div class="problem-desc">基于柱状图问题，使用单调栈解决</div>
+      </a>
+      <a href="https://leetcode.cn/problems/product-of-array-except-self/" class="problem-card" target="_blank">
+        <div class="problem-title">#238 除自身以外数组的乘积</div>
+        <div class="problem-desc">类似的双向遍历/双指针技巧</div>
+      </a>
+      <a href="https://leetcode.cn/problems/sliding-window-maximum/" class="problem-card" target="_blank">
+        <div class="problem-title">#239 滑动窗口最大值</div>
+        <div class="problem-desc">单调队列应用</div>
+      </a>
+      <a href="https://leetcode.cn/problems/daily-temperatures/" class="problem-card" target="_blank">
+        <div class="problem-title">#739 每日温度</div>
+        <div class="problem-desc">单调栈入门题</div>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Python 代码，按行分割
+    const codeLines = [
+      { line: 1, text: '<span class="keyword">class</span> <span class="class">Solution</span>:', indent: 0 },
+      { line: 2, text: '    <span class="keyword">def</span> <span class="function">trap</span>(<span class="method">self</span>, height: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:', indent: 1 },
+      { line: 3, text: '        <span class="keyword">if</span> <span class="keyword">not</span> height:', indent: 2 },
+      { line: 4, text: '            <span class="keyword">return</span> <span class="number">0</span>', indent: 3 },
+      { line: 5, text: '        ', indent: 2 },
+      { line: 6, text: '        left, right = <span class="number">0</span>, <span class="function">len</span>(height) - <span class="number">1</span>', indent: 2 },
+      { line: 7, text: '        left_max = right_max = <span class="number">0</span>', indent: 2 },
+      { line: 8, text: '        ans = <span class="number">0</span>', indent: 2 },
+      { line: 9, text: '        ', indent: 2 },
+      { line: 10, text: '        <span class="keyword">while</span> left < right:', indent: 2 },
+      { line: 11, text: '            <span class="keyword">if</span> height[left] < height[right]:', indent: 3 },
+      { line: 12, text: '                <span class="comment"># 左边较小，left_max决定当前位置水量</span>', indent: 4 },
+      { line: 13, text: '                <span class="keyword">if</span> height[left] >= left_max:', indent: 4 },
+      { line: 14, text: '                    left_max = height[left]', indent: 5 },
+      { line: 15, text: '                <span class="keyword">else</span>:', indent: 5 },
+      { line: 16, text: '                    ans += left_max - height[left]', indent: 5 },
+      { line: 17, text: '                left += <span class="number">1</span>', indent: 4 },
+      { line: 18, text: '            <span class="keyword">else</span>:', indent: 3 },
+      { line: 19, text: '                <span class="comment"># 右边较小，right_max决定当前位置水量</span>', indent: 4 },
+      { line: 20, text: '                <span class="keyword">if</span> height[right] >= right_max:', indent: 4 },
+      { line: 21, text: '                    right_max = height[right]', indent: 5 },
+      { line: 22, text: '                <span class="keyword">else</span>:', indent: 5 },
+      { line: 23, text: '                    ans += right_max - height[right]', indent: 5 },
+      { line: 24, text: '                right -= <span class="number">1</span>', indent: 4 },
+      { line: 25, text: '        ', indent: 2 },
+      { line: 26, text: '        <span class="keyword">return</span> ans', indent: 2 }
+    ];
+
+    // 步骤与代码行映射
+    const steps = [
+      { title: "初始化双指针", desc: "left指向数组开头，right指向末尾。left_max和right_max记录两边遇到的最大高度。", line: 6, state: "left=0, right=11, left_max=0, right_max=0" },
+      { title: "比较左右高度", desc: "比较height[left]和height[right]，当前height[0]=0 < height[11]=1，所以处理左边。", line: 11, state: "0 < 1，进入左分支" },
+      { title: "更新左侧最高", desc: "height[left]=0 >= left_max=0，更新left_max为0，不加水（不能接水）。", line: 13, state: "left_max = max(0, 0) = 0" },
+      { title: "左指针右移", desc: "left自增，现在left=1，指向高度为1的位置。", line: 17, state: "left = 1" },
+      { title: "继续比较", desc: "height[1]=1 >= height[11]=1，进入右分支处理右边。", line: 18, state: "1 >= 1，进入右分支" },
+      { title: "更新右侧最高", desc: "height[right]=1 >= right_max=0，更新right_max=1，不加水。", line: 20, state: "right_max = max(1, 0) = 1" },
+      { title: "右指针左移", desc: "right自减，现在right=10，指向高度为2的位置。", line: 24, state: "right = 10" },
+      { title: "发现凹槽", desc: "height[1]=1 < height[10]=2，处理左边。height[1]=1 >= left_max=0，更新left_max=1。", line: 13, state: "left_max更新为1" },
+      { title: "左指针移动", desc: "left=2，height[2]=0 < left_max=1，可以接水！", line: 11, state: "left移动到位置2" },
+      { title: "计算雨水", desc: "height[2]=0 < left_max=1，ans += 1-0 = 1，第一个单位雨水！", line: 16, state: "ans = 1 (位置2接1单位水)" },
+      { title: "持续遍历", desc: "继续移动指针，最终left和right相遇，算法结束。", line: 10, state: "left=right，循环结束" },
+      { title: "返回结果", desc: "累计接到的雨水总量为6个单位。", line: 26, state: "返回 ans = 6" }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = item.line;
+      div.innerHTML = `<span class="line-number">${item.line}</span><span class="code-content">${item.text}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(item.line));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, index) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.index = index;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="step-title">Step ${index + 1}: ${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">${step.state}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(index));
+      vizSteps.appendChild(div);
+    });
+
+    // 高亮步骤
+    function highlightStep(index) {
+      // 清除所有高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-index="${index}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 高亮对应代码行
+      const lineNum = steps[index].line;
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) {
+        lineEl.classList.add('active');
+        lineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // 根据代码行高亮步骤
+    function highlightStepByLine(lineNum) {
+      // 找到对应的步骤
+      const stepIndex = steps.findIndex(s => s.line === lineNum);
+      if (stepIndex !== -1) {
+        highlightStep(stepIndex);
+      }
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
