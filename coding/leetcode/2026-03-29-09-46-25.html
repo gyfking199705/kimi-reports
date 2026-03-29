@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode #25 - K 个一组翻转链表</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --accent: #10b981; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    h1 { color: var(--primary); font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+    .tag { display: inline-block; background: rgba(99, 102, 241, 0.2); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-right: 8px; margin-bottom: 8px; }
+    .tag.hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .tag.medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .tag.easy { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.08); }
+    .code-line.active { background: rgba(99, 102, 241, 0.35); border-left: 3px solid var(--primary); margin-left: -3px; padding-left: 3px; }
+    .line-number { color: #484f58; min-width: 45px; text-align: right; padding-right: 16px; user-select: none; }
+    .line-content { flex: 1; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    .viz-steps { max-height: 450px; overflow-y: auto; }
+    .viz-step { padding: 14px 16px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #3d4a5f; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.25); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+    .viz-step h4 { margin: 0 0 6px 0; color: var(--primary); font-size: 0.95rem; }
+    .viz-step p { margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; }
+    .viz-step .state { margin-top: 8px; padding-top: 8px; border-top: 1px solid #475569; font-family: monospace; font-size: 0.8rem; color: #94a3b8; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #475569; }
+    .complexity-table th { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+    .complexity-table td { color: #cbd5e1; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; font-style: italic; } .class { color: #ffa657; }
+    .link-node { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--primary); border-radius: 50%; margin: 4px; font-weight: bold; }
+    .link-arrow { color: #64748b; margin: 0 4px; }
+    .diagram { background: #0d1117; padding: 20px; border-radius: 12px; margin: 16px 0; text-align: center; font-family: monospace; }
+    .btn-play { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; margin-top: 12px; }
+    .btn-play:hover { background: #5558e0; }
+    .note { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent); padding: 16px; border-radius: 8px; margin: 16px 0; }
+    .note-title { color: var(--accent); font-weight: bold; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #25 - K 个一组翻转链表</h1>
+  <p class="subtitle">Reverse Nodes in k-Group | 链表 · 递归 · 迭代</p>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你链表的头节点 <code>head</code> ，每 <code>k</code> 个节点一组进行翻转，请你返回修改后的链表。</p>
+    <p style="margin-top: 12px;"><strong>注意：</strong></p>
+    <ul>
+      <li>k 是一个正整数，它的值小于或等于链表的长度</li>
+      <li>如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序</li>
+    </ul>
+    <p style="margin-top: 12px;"><strong>进阶：</strong>你可以设计一个只用 O(1) 额外内存空间的算法解决此问题吗？</p>
+    <div style="margin-top: 16px;">
+      <span class="tag hard">Hard</span>
+      <span class="tag">链表</span>
+      <span class="tag">递归</span>
+      <span class="tag">双指针</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps"></div>
+      <div class="code-container">
+        <h3>Python 实现（迭代法 - O(1) 空间）</h3>
+        <pre><code id="codeBlock"></code></pre>
+        <button class="btn-play" onclick="autoPlay()">▶ 自动演示</button>
+      </div>
+    </div>
+    
+    <div class="note">
+      <div class="note-title">💡 核心思路</div>
+      使用「头插法」思想：维护一个指针指向每组翻转后的新头部，将后续节点逐个插入到新头部之前。整个过程只需常数级额外空间。
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr><th>解法</th><th>时间复杂度</th><th>空间复杂度</th><th>说明</th></tr>
+      <tr><td>迭代法（推荐）</td><td>O(n)</td><td>O(1)</td><td>满足进阶要求，只需几个指针</td></tr>
+      <tr><td>递归法</td><td>O(n)</td><td>O(n/k)</td><td>递归栈深度为 n/k 组</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/reverse-linked-list/" class="problem-card" target="_blank">
+        <h4>#206 反转链表</h4>
+        <p>基础版，单链表整体翻转，必刷入门题</p>
+      </a>
+      <a href="https://leetcode.cn/problems/swap-nodes-in-pairs/" class="problem-card" target="_blank">
+        <h4>#24 两两交换链表节点</h4>
+        <p>k=2 的特殊情况，可作为本题前导练习</p>
+      </a>
+      <a href="https://leetcode.cn/problems/reverse-linked-list-ii/" class="problem-card" target="_blank">
+        <h4>#92 反转链表 II</h4>
+        <p>指定区间翻转，考察边界处理能力</p>
+      </a>
+      <a href="https://leetcode.cn/problems/rotate-list/" class="problem-card" target="_blank">
+        <h4>#61 旋转链表</h4>
+        <p>链表循环移动，考察闭环和断链技巧</p>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">ListNode</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">__init__</span>(self, val=<span class="number">0</span>, next=<span class="keyword">None</span>):' },
+      { num: 3, content: '        self.val = val' },
+      { num: 4, content: '        self.next = next' },
+      { num: 5, content: '' },
+      { num: 6, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 7, content: '    <span class="keyword">def</span> <span class="function">reverseKGroup</span>(self, head: ListNode, k: <span class="keyword">int</span>) -> ListNode:' },
+      { num: 8, content: '        dummy = ListNode(<span class="number">0</span>)      <span class="comment"># 哨兵节点</span>' },
+      { num: 9, content: '        dummy.next = head' },
+      { num: 10, content: '        prev_group = dummy      <span class="comment"># 指向每组的前一个节点</span>' },
+      { num: 11, content: '' },
+      { num: 12, content: '        <span class="keyword">while</span> <span class="keyword">True</span>:' },
+      { num: 13, content: '            <span class="comment"># 1. 检查剩余节点是否 >= k</span>' },
+      { num: 14, content: '            tail = prev_group' },
+      { num: 15, content: '            <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="function">range</span>(k):' },
+      { num: 16, content: '                tail = tail.next' },
+      { num: 17, content: '                <span class="keyword">if</span> <span class="keyword">not</span> tail:     <span class="comment"># 不足 k 个</span>' },
+      { num: 18, content: '                    <span class="keyword">return</span> dummy.next' },
+      { num: 19, content: '' },
+      { num: 20, content: '            <span class="comment"># 2. 保存下一组的起始位置</span>' },
+      { num: 21, content: '            next_group = tail.next' },
+      { num: 22, content: '' },
+      { num: 23, content: '            <span class="comment"># 3. 翻转当前组（头插法）</span>' },
+      { num: 24, content: '            prev = next_group     <span class="comment"># 翻转后最后一个指向下一组</span>' },
+      { num: 25, content: '            curr = prev_group.next <span class="comment"># 当前组第一个节点</span>' },
+      { num: 26, content: '' },
+      { num: 27, content: '            <span class="keyword">while</span> curr != next_group:' },
+      { num: 28, content: '                nxt = curr.next   <span class="comment"># 暂存下一个节点</span>' },
+      { num: 29, content: '                curr.next = prev  <span class="comment"># 反转指向</span>' },
+      { num: 30, content: '                prev = curr       <span class="comment"># prev 前移</span>' },
+      { num: 31, content: '                curr = nxt        <span class="comment"># curr 前移</span>' },
+      { num: 32, content: '' },
+      { num: 33, content: '            <span class="comment"># 4. 更新 prev_group 位置</span>' },
+      { num: 34, content: '            temp = prev_group.next  <span class="comment"># 原第一个，现最后一个</span>' },
+      { num: 35, content: '            prev_group.next = tail  <span class="comment"># 连接翻转后的头部</span>' },
+      { num: 36, content: '            prev_group = temp       <span class="comment"># 移动到下一组之前</span>' },
+      { num: 37, content: '' }
+    ];
+
+    // 步骤与代码行映射
+    const steps = [
+      { title: "初始化哨兵节点", desc: "创建 dummy 哨兵节点简化头节点处理，prev_group 初始指向 dummy", line: 8, state: "dummy → 0 → 1 → 2 → 3 → 4 → 5" },
+      { title: "检查剩余节点数", desc: "从 prev_group 出发走 k 步，检查是否有足够节点需要翻转", line: 14, state: "tail 从 dummy 开始移动 k=2 步" },
+      { title: "不足 k 则结束", desc: "如果 tail 变为 None，说明剩余节点不足 k，直接返回结果", line: 17, state: "剩余节点数 < k，任务完成" },
+      { title: "保存下一组位置", desc: "记录 tail.next 作为下一组的起始，翻转后需要连接", line: 21, state: "next_group = tail.next" },
+      { title: "准备翻转", desc: "prev 初始指向下一组（翻转后的尾连这里），curr 指向组内第一个", line: 24, state: "prev → next_group, curr → 节点1" },
+      { title: "翻转节点", desc: "暂存下一个，反转指向，双指针前移 - 头插法核心操作", line: 28, state: "nxt = curr.next 保存后续" },
+      { title: "完成反转指向", desc: "当前节点指向 prev，完成一次反转", line: 29, state: "1 → next_group (原 tail.next)" },
+      { title: "指针前移", desc: "prev 和 curr 各自前进一步，继续处理下一个", line: 30, state: "prev → 节点1, curr → 节点2" },
+      { title: "继续翻转", desc: "循环处理直到 curr 到达 next_group，完成整组翻转", line: 27, state: "组内 [1,2] 翻转为 [2,1]" },
+      { title: "连接前组", desc: "prev_group.next 指向翻转后的头部（tail）", line: 35, state: "dummy → 2 → 1 → 3 → 4..." },
+      { title: "移动 prev_group", desc: "将 prev_group 移动到当前组的尾部（原头部），准备处理下一组", line: 36, state: "prev_group → 节点1（现尾部）" },
+      { title: "循环下一组", desc: "回到循环开始，继续处理后续节点", line: 12, state: "准备处理下一组..." }
+    ];
+
+    // 渲染代码
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      codeBlock.innerHTML = codeLines.map((line, idx) => 
+        `<div class="code-line" data-line="${line.num}" data-idx="${idx}" onclick="highlightStep(${idx})">` +
+        `<span class="line-number">${line.num}</span>` +
+        `<span class="line-content">${line.content}</span></div>`
+      ).join('');
+    }
+
+    // 渲染步骤
+    function renderSteps() {
+      const vizSteps = document.getElementById('vizSteps');
+      vizSteps.innerHTML = steps.map((step, idx) => 
+        `<div class="viz-step" data-idx="${idx}" onclick="highlightLine(${idx})">` +
+        `<h4>步骤 ${idx + 1}: ${step.title}</h4>` +
+        `<p>${step.desc}</p>` +
+        `<div class="state">${step.state}</div></div>`
+      ).join('');
+    }
+
+    let currentStep = -1;
+    let autoPlayInterval = null;
+
+    function highlightStep(idx) {
+      clearAutoPlay();
+      const step = steps.find(s => codeLines[idx].num === s.line);
+      if (step) {
+        const stepIdx = steps.indexOf(step);
+        activate(stepIdx, idx);
+      }
+    }
+
+    function highlightLine(stepIdx) {
+      clearAutoPlay();
+      const step = steps[stepIdx];
+      const lineIdx = codeLines.findIndex(l => l.num === step.line);
+      activate(stepIdx, lineIdx);
+    }
+
+    function activate(stepIdx, lineIdx) {
+      currentStep = stepIdx;
+      document.querySelectorAll('.viz-step').forEach((el, i) => el.classList.toggle('active', i === stepIdx));
+      document.querySelectorAll('.code-line').forEach((el, i) => el.classList.toggle('active', i === lineIdx));
+    }
+
+    function autoPlay() {
+      clearAutoPlay();
+      currentStep = 0;
+      activate(0, codeLines.findIndex(l => l.num === steps[0].line));
+      autoPlayInterval = setInterval(() => {
+        currentStep++;
+        if (currentStep >= steps.length) {
+          clearAutoPlay();
+          return;
+        }
+        const lineIdx = codeLines.findIndex(l => l.num === steps[currentStep].line);
+        activate(currentStep, lineIdx);
+      }, 1500);
+    }
+
+    function clearAutoPlay() {
+      if (autoPlayInterval) clearInterval(autoPlayInterval);
+    }
+
+    renderCode();
+    renderSteps();
+  </script>
+</body>
+</html>
