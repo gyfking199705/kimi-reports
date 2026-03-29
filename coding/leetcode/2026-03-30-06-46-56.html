@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #56 - 合并区间</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.7; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-family: 'SF Mono', Monaco, monospace; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid #6366f1; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .code-content { flex: 1; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .viz-steps { display: flex; flex-direction: column; gap: 8px; }
+    .viz-step { padding: 14px; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(4px); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+    .viz-step-title { font-weight: 600; color: var(--primary); margin-bottom: 6px; }
+    .viz-step-desc { font-size: 14px; color: #94a3b8; }
+    .viz-state { margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; font-family: monospace; font-size: 12px; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 20px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.2); }
+    .problem-id { color: var(--primary); font-weight: bold; font-size: 14px; }
+    .problem-title { font-weight: 600; margin: 8px 0; }
+    .problem-tag { font-size: 12px; color: #64748b; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #475569; }
+    .complexity-table th { color: var(--primary); background: rgba(99,102,241,0.1); }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .highlight-box { background: rgba(99,102,241,0.1); border-left: 4px solid var(--primary); padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+    .tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 4px 4px 4px 0; }
+    h1 { text-align: center; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #56 - 合并区间</h1>
+  <p class="subtitle">区间问题经典入门 | 排序 + 贪心思想</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>以数组 <code>intervals</code> 表示若干个区间的集合，其中单个区间为 <code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code>。</p>
+    <p>请你合并所有重叠的区间，并返回一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间。</p>
+    
+    <div class="highlight-box">
+      <strong>示例 1：</strong><br>
+      输入：intervals = [[1,3],[2,6],[8,10],[15,18]]<br>
+      输出：[[1,6],[8,10],[15,18]]<br>
+      解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6]。
+    </div>
+    
+    <div class="highlight-box">
+      <strong>示例 2：</strong><br>
+      输入：intervals = [[1,4],[4,5]]<br>
+      输出：[[1,5]]<br>
+      解释：区间 [1,4] 和 [4,5] 可被视为重叠区间（因为是闭区间）。
+    </div>
+    
+    <p><strong>约束条件：</strong></p>
+    <ul>
+      <li>1 ≤ intervals.length ≤ 10<sup>4</sup></li>
+      <li>intervals[i].length == 2</li>
+      <li>0 ≤ start<sub>i</sub> ≤ end<sub>i</sub> ≤ 10<sup>4</sup></li>
+    </ul>
+    
+    <div style="margin-top: 16px;">
+      <span class="tag">数组</span>
+      <span class="tag">排序</span>
+      <span class="tag">贪心</span>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心思路</h2>
+    <div class="highlight-box">
+      <strong>关键洞察：</strong>如果我们将所有区间按起始时间排序，那么重叠的区间必然相邻出现。
+    </div>
+    <p>排序后，从左到右遍历区间，维护一个当前正在合并的区间：</p>
+    <ol>
+      <li>如果新区间的起始时间 <strong>≤</strong> 当前区间的结束时间，说明有重叠，扩展当前区间的结束时间</li>
+      <li>如果新区间的起始时间 <strong>&gt;</strong> 当前区间的结束时间，说明无重叠，保存当前区间，开启新区间</li>
+    </ol>
+    <p>这种贪心策略确保我们总是尽可能合并更大的区间。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <p style="color: #64748b; font-size: 14px;">输入：intervals = [[1,3], [2,6], [8,10], [15,18]]</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps"></div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>维度</th>
+        <th>复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td>O(n log n)</td>
+        <td>排序占主导，O(n log n)；遍历一次 O(n)</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td>O(n)</td>
+        <td>存储结果数组，最坏情况需要存储所有区间</td>
+      </tr>
+      <tr>
+        <td>是否原地</td>
+        <td>否</td>
+        <td>Python sorted() 返回新数组</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔍 代码深度解析</h2>
+    <p><strong>Line 4-5：</strong>按区间起始位置排序是贪心策略的基础，确保重叠区间相邻。</p>
+    <p><strong>Line 7：</strong>用 result[-1] 直接访问最后一个区间，无需额外变量。</p>
+    <p><strong>Line 8：</strong>判断重叠的条件是"新区间起点 ≤ 当前区间终点"，注意是闭区间。</p>
+    <p><strong>Line 9：</strong>合并时取 max 扩展终点，因为新区间的结束时间可能更大。</p>
+    <p><strong>Line 11：</strong>无重叠时直接追加，这是贪心选择——遇到不相交的开启新区间。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/insert-interval/" class="problem-card" target="_blank">
+        <div class="problem-id">#57</div>
+        <div class="problem-title">插入区间</div>
+        <div class="problem-tag">区间 | 模拟 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/meeting-rooms/" class="problem-card" target="_blank">
+        <div class="problem-id">#252</div>
+        <div class="problem-title">会议室</div>
+        <div class="problem-tag">区间 | 排序 | Easy</div>
+      </a>
+      <a href="https://leetcode.cn/problems/meeting-rooms-ii/" class="problem-card" target="_blank">
+        <div class="problem-id">#253</div>
+        <div class="problem-title">会议室 II</div>
+        <div class="problem-tag">区间 | 优先队列 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/non-overlapping-intervals/" class="problem-card" target="_blank">
+        <div class="problem-id">#435</div>
+        <div class="problem-title">无重叠区间</div>
+        <div class="problem-tag">区间 | 贪心 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-covered-intervals/" class="problem-card" target="_blank">
+        <div class="problem-id">#1288</div>
+        <div class="problem-title">删除被覆盖区间</div>
+        <div class="problem-tag">区间 | 排序 | Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/check-if-an-original-string-exists-given-two-encoded-strings/" class="problem-card" target="_blank">
+        <div class="problem-id">#2060</div>
+        <div class="problem-title">区间列表的交集</div>
+        <div class="problem-tag">双指针 | 区间 | Medium</div>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📝 总结</h2>
+    <p>合并区间是<strong>区间问题</strong>的入门经典，核心技巧是：</p>
+    <ul>
+      <li><strong>排序预处理</strong>——让重叠区间相邻，为贪心创造条件</li>
+      <li><strong>贪心策略</strong>——能合并就合并，不能合并就开新区间</li>
+      <li><strong>闭区间注意</strong>——本题是闭区间，相等也算重叠</li>
+    </ul>
+    <p>掌握这道题后，可以顺利解决会议室系列、无重叠区间等进阶题目。</p>
+  </div>
+  
+  <script>
+    const pythonCode = `class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        # 按区间起始位置排序
+        intervals.sort(key=lambda x: x[0])
+        result = [intervals[0]]
+        for curr in intervals[1:]:
+            last = result[-1]
+            # 检查是否重叠
+            if curr[0] <= last[1]:
+                # 合并：扩展结束时间
+                last[1] = max(last[1], curr[1])
+            else:
+                # 不重叠，加入新区间
+                result.append(curr)
+        return result`;
+
+    const steps = [
+      {title: "初始化", desc: "按起始位置排序 intervals", line: 4, state: "sorted: [[1,3], [2,6], [8,10], [15,18]]"},
+      {title: "放入第一个区间", desc: "result = [[1,3]]", line: 5, state: "result: [[1,3]]"},
+      {title: "检查 [2,6]", desc: "2 ≤ 3，有重叠！合并为 [1,6]", line: 8, state: "result: [[1,6]]"},
+      {title: "扩展终点", desc: "max(3, 6) = 6", line: 9, state: "result[-1][1] = 6"},
+      {title: "检查 [8,10]", desc: "8 > 6，无重叠", line: 10, state: "curr[0]=8, last[1]=6"},
+      {title: "加入新区间", desc: "result 追加 [8,10]", line: 11, state: "result: [[1,6], [8,10]]"},
+      {title: "检查 [15,18]", desc: "15 > 10，无重叠", line: 10, state: "curr[0]=15, last[1]=10"},
+      {title: "加入新区间", desc: "result 追加 [15,18]", line: 11, state: "result: [[1,6], [8,10], [15,18]]"},
+      {title: "返回结果", desc: "遍历完成，返回合并后的区间", line: 12, state: "✅ 完成"}
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    const lines = pythonCode.split('\n');
+    lines.forEach((line, idx) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.dataset.line = idx + 1;
+      lineDiv.innerHTML = `<span class="line-number">${idx + 1}</span><span class="code-content">${highlightSyntax(line)}</span>`;
+      lineDiv.addEventListener('click', () => highlightStep(idx + 1));
+      codeBlock.appendChild(lineDiv);
+    });
+
+    // 语法高亮
+    function highlightSyntax(line) {
+      return line
+        .replace(/(#.*)/g, '<span class="comment">$1</span>')
+        .replace(/\b(def|class|if|else|return|for|in|lambda|key)\b/g, '<span class="keyword">$1</span>')
+        .replace(/\b(intervals|result|curr|last|Solution|List)\b/g, '<span class="class">$1</span>')
+        .replace(/\b(merge|sort|max|append)\b/g, '<span class="function">$2</span>')
+        .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+    }
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.line = step.line;
+      stepDiv.innerHTML = `
+        <div class="viz-step-title">${idx + 1}. ${step.title}</div>
+        <div class="viz-step-desc">${step.desc}</div>
+        <div class="viz-state">${step.state}</div>
+      `;
+      stepDiv.addEventListener('click', () => highlightStep(step.line));
+      vizSteps.appendChild(stepDiv);
+    });
+
+    // 高亮联动
+    function highlightStep(line) {
+      document.querySelectorAll('.code-line, .viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(`[data-line="${line}"]`).forEach(el => el.classList.add('active'));
+    }
+
+    // 默认高亮第一步
+    highlightStep(4);
+  </script>
+</body>
+</html>
