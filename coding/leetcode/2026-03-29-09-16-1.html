@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode #1 - 两数之和</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.7; }
+    h1 { color: var(--primary); font-size: 2.2em; margin-bottom: 10px; }
+    .meta { color: #94a3b8; font-size: 0.9em; margin-bottom: 30px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; margin-right: 8px; }
+    .tag-easy { background: #10b981; color: white; }
+    .tag-medium { background: #f59e0b; color: white; }
+    .tag-hard { background: #ef4444; color: white; }
+    .tag-method { background: #3b82f6; color: white; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.95em; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid var(--primary); margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .viz-steps { display: flex; flex-direction: column; gap: 8px; }
+    .viz-step { padding: 16px; margin: 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(4px); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+    .viz-step h4 { margin: 0 0 6px 0; color: var(--primary); font-size: 0.95em; }
+    .viz-step p { margin: 0; color: #cbd5e1; font-size: 0.85em; }
+    .viz-step .state { margin-top: 8px; font-size: 0.8em; color: #94a3b8; font-family: monospace; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 0.85em; color: #94a3b8; }
+    .problem-card .difficulty { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7em; margin-top: 10px; }
+    .difficulty-easy { background: rgba(16,185,129,0.2); color: #10b981; }
+    .difficulty-medium { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .difficulty-hard { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .class { color: #ffa657; }
+    .variable { color: #79c0ff; }
+    .operator { color: #ff7b72; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    th { color: var(--primary); font-weight: 600; }
+    .example { background: rgba(99,102,241,0.1); border-left: 3px solid var(--primary); padding: 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .example-title { color: var(--primary); font-weight: 600; margin-bottom: 8px; }
+    .highlight-box { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15)); border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .highlight-box h4 { margin: 0 0 10px 0; color: var(--primary); }
+    .complexity-table { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #1 - 两数之和</h1>
+  <div class="meta">
+    <span class="tag tag-easy">Easy</span>
+    <span class="tag tag-method">哈希表</span>
+    <span class="tag tag-method">数组</span>
+    | 今日精讲 · 第160期
+  </div>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个整数数组 <code>nums</code> 和一个整数目标值 <code>target</code>，请你在该数组中找出 <strong>和为目标值</strong> 的那 <strong>两个</strong> 整数，并返回它们的数组下标。</p>
+    <p>你可以假设每种输入只会对应一个答案，并且 <strong>同一个元素在答案里不能重复出现</strong>。你可以按任意顺序返回答案。</p>
+    
+    <div class="example">
+      <div class="example-title">示例 1</div>
+      <p><strong>输入：</strong>nums = [2,7,11,15], target = 9</p>
+      <p><strong>输出：</strong>[0,1]</p>
+      <p><strong>解释：</strong>因为 nums[0] + nums[1] == 9，返回 [0, 1]。</p>
+    </div>
+    
+    <div class="example">
+      <div class="example-title">示例 2</div>
+      <p><strong>输入：</strong>nums = [3,2,4], target = 6</p>
+      <p><strong>输出：</strong>[1,2]</p>
+    </div>
+    
+    <div class="example">
+      <div class="example-title">示例 3</div>
+      <p><strong>输入：</strong>nums = [3,3], target = 6</p>
+      <p><strong>输出：</strong>[0,1]</p>
+    </div>
+  </div>
+  
+  <div class="highlight-box">
+    <h4>💡 核心思路</h4>
+    <p>对于当前元素 <code>nums[i]</code>，我们需要找到另一个数 <code>target - nums[i]</code>。<strong>哈希表</strong>让查找从 O(n) 降到 O(1)。一边遍历一边存入哈希表，如果表中已有所需的「补数」，直接返回结果。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行联动查看）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <div class="viz-step" data-line="4" onclick="selectStep(0)">
+          <h4>步骤 1: 初始化哈希表</h4>
+          <p>创建一个空字典，用于存储「数值 → 下标」的映射关系</p>
+          <div class="state">hashmap = {}</div>
+        </div>
+        <div class="viz-step" data-line="5" onclick="selectStep(1)">
+          <h4>步骤 2: 开始遍历数组</h4>
+          <p>使用 enumerate 同时获取索引 i 和数值 num</p>
+          <div class="state">i=0, num=2, nums=[2,7,11,15]</div>
+        </div>
+        <div class="viz-step" data-line="6" onclick="selectStep(2)">
+          <h4>步骤 3: 计算补数</h4>
+          <p>计算需要找的另一个数：complement = target - num = 9 - 2 = 7</p>
+          <div class="state">complement = 7</div>
+        </div>
+        <div class="viz-step" data-line="7" onclick="selectStep(3)">
+          <h4>步骤 4: 检查补数是否在哈希表中</h4>
+          <p>哈希表为空，7 不在表中，继续执行</p>
+          <div class="state">7 not in {} → True</div>
+        </div>
+        <div class="viz-step" data-line="9" onclick="selectStep(4)">
+          <h4>步骤 5: 存入当前数值和下标</h4>
+          <p>将当前数值 2 和下标 0 存入哈希表，供后续元素查找</p>
+          <div class="state">hashmap = {2: 0}</div>
+        </div>
+        <div class="viz-step" data-line="5" onclick="selectStep(5)">
+          <h4>步骤 6: 处理下一个元素</h4>
+          <p>进入下一轮循环，i=1, num=7</p>
+          <div class="state">i=1, num=7</div>
+        </div>
+        <div class="viz-step" data-line="6" onclick="selectStep(6)">
+          <h4>步骤 7: 再次计算补数</h4>
+          <p>complement = 9 - 7 = 2</p>
+          <div class="state">complement = 2</div>
+        </div>
+        <div class="viz-step active" data-line="7" onclick="selectStep(7)">
+          <h4>步骤 8: 找到匹配！</h4>
+          <p>补数 2 在哈希表中！返回当前下标 1 和哈希表中的下标 0</p>
+          <div class="state">2 in {2: 0} → return [hashmap[2], 1] = [0, 1]</div>
+        </div>
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"><div class="code-line" data-step="0" onclick="selectLine(0)"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">Solution</span>:</div><div class="code-line" data-step="0" onclick="selectLine(0)"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">twoSum</span>(<span class="variable">self</span>, nums: List[<span class="keyword">int</span>], target: <span class="keyword">int</span>) -> List[<span class="keyword">int</span>]:</div><div class="code-line" data-step="0" onclick="selectLine(0)"><span class="line-number">3</span>        <span class="comment"># 哈希表：存储 数值 -> 下标 的映射</span></div><div class="code-line active" data-step="0" onclick="selectLine(0)"><span class="line-number">4</span>        hashmap = {}</div><div class="code-line" data-step="1" onclick="selectLine(1)"><span class="line-number">5</span>        <span class="keyword">for</span> i, num <span class="keyword">in</span> <span class="function">enumerate</span>(nums):</div><div class="code-line" data-step="2,6" onclick="selectLine(2)"><span class="line-number">6</span>            complement = target - num</div><div class="code-line" data-step="3,7" onclick="selectLine(3)"><span class="line-number">7</span>            <span class="keyword">if</span> complement <span class="keyword">in</span> hashmap:</div><div class="code-line" data-step="7" onclick="selectLine(3)"><span class="line-number">8</span>                <span class="keyword">return</span> [hashmap[complement], i]</div><div class="code-line" data-step="4" onclick="selectLine(4)"><span class="line-number">9</span>            hashmap[num] = i</div><div class="code-line" data-step="0" onclick="selectLine(0)"><span class="line-number">10</span>        <span class="keyword">return</span> []  <span class="comment"># 题目保证有解，这行不会执行</span></div></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>方案</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>暴力枚举</td>
+        <td>O(n²)</td>
+        <td>O(1)</td>
+        <td>两重循环遍历所有组合</td>
+      </tr>
+      <tr style="background: rgba(99,102,241,0.1);">
+        <td><strong>哈希表（推荐）</strong></td>
+        <td><strong>O(n)</strong></td>
+        <td><strong>O(n)</strong></td>
+        <td>一次遍历，空间换时间</td>
+      </tr>
+    </table>
+    <p style="color: #94a3b8; font-size: 0.9em;">
+      <strong>最优选择：</strong>哈希表法虽然使用了 O(n) 的额外空间，但将时间从 O(n²) 优化到 O(n)，在绝大多数场景下是更好的选择。
+    </p>
+  </div>
+  
+  <div class="section">
+    <h2>🎯 关键点总结</h2>
+    <ul>
+      <li><strong>边查边存：</strong>遍历的同时将已处理的元素存入哈希表，这样可以在一次遍历中完成查找</li>
+      <li><strong>避免重复使用元素：</strong>先查哈希表再存当前元素，确保不会用同一个元素两次</li>
+      <li><strong>空间换时间：</strong>这是典型的用额外空间换取时间优化的案例</li>
+      <li><strong>enumerate 技巧：</strong>Python 中同时获取索引和值的最佳实践</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/3sum/" class="problem-card" target="_blank">
+        <h4>#15 三数之和</h4>
+        <p>扩展到三个数的和，需要排序 + 双指针</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/" class="problem-card" target="_blank">
+        <h4>#167 两数之和 II</h4>
+        <p>数组已排序，使用双指针从两端向中间逼近</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/two-sum-iii-data-structure-design/" class="problem-card" target="_blank">
+        <h4>#170 两数之和 III</h4>
+        <p>设计一个数据结构，支持 add 和 find 操作</p>
+        <span class="difficulty difficulty-easy">Easy</span>
+      </a>
+      <a href="https://leetcode.cn/problems/subarray-sum-equals-k/" class="problem-card" target="_blank">
+        <h4>#560 和为 K 的子数组</h4>
+        <p>前缀和 + 哈希表的经典应用</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/4sum/" class="problem-card" target="_blank">
+        <h4>#18 四数之和</h4>
+        <p>固定两个数 + 双指针，复杂度更高</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/two-sum-less-than-k/" class="problem-card" target="_blank">
+        <h4>#1099 小于 K 的两数之和</h4>
+        <p>变体问题，找和小于 K 的最大组合</p>
+        <span class="difficulty difficulty-easy">Easy</span>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📝 面试高频追问</h2>
+    <div class="highlight-box">
+      <p><strong>Q1: 如果数组是有序的，你会怎么做？</strong></p>
+      <p>A: 使用双指针法。一个指针在头部，一个指针在尾部，根据两数之和与 target 的大小关系移动指针。时间 O(n)，空间 O(1)。</p>
+    </div>
+    <div class="highlight-box">
+      <p><strong>Q2: 如果有多个答案，要求输出所有组合？</strong></p>
+      <p>A: 不能用 return 直接返回，需要收集所有结果。可以用 defaultdict 存储相同值的所有下标，找到匹配后遍历组合。</p>
+    </div>
+    <div class="highlight-box">
+      <p><strong>Q3: 数据量很大（10^9 级别）怎么处理？</strong></p>
+      <p>A: 考虑分布式处理，或使用外部排序后双指针。哈希表受限于单机内存，需要考虑分片存储。</p>
+    </div>
+  </div>
+  
+  <script>
+    const steps = document.querySelectorAll('.viz-step');
+    const codeLines = document.querySelectorAll('.code-line');
+    
+    function selectStep(index) {
+      // 清除所有高亮
+      steps.forEach(s => s.classList.remove('active'));
+      codeLines.forEach(l => l.classList.remove('active'));
+      
+      // 高亮当前步骤
+      steps[index].classList.add('active');
+      
+      // 高亮对应的代码行
+      const lineNum = steps[index].getAttribute('data-line');
+      const targetLine = document.querySelector(`.code-line[data-step*="${index}"]`);
+      if (targetLine) targetLine.classList.add('active');
+    }
+    
+    function selectLine(stepIndex) {
+      // 清除所有高亮
+      steps.forEach(s => s.classList.remove('active'));
+      codeLines.forEach(l => l.classList.remove('active'));
+      
+      // 找到包含该 step 的步骤
+      steps.forEach((step, idx) => {
+        const lineAttr = step.getAttribute('data-line');
+        const lineOfStep = codeLines[stepIndex]?.getAttribute('data-step')?.split(',').map(Number);
+        if (lineOfStep && lineOfStep.includes(idx)) {
+          step.classList.add('active');
+        }
+      });
+      
+      // 高亮点击的代码行
+      codeLines.forEach(line => {
+        const steps = line.getAttribute('data-step')?.split(',').map(Number);
+        if (steps && steps.includes(stepIndex)) {
+          line.classList.add('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
