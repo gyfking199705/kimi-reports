@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #42 - 接雨水</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary-light);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-right: 8px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 {
+      color: var(--primary);
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section p { margin: 0; color: var(--text-muted); }
+    .problem-statement {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+      border-left: 4px solid var(--primary);
+    }
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .complexity-card {
+      background: var(--bg);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .complexity-card h3 {
+      margin: 0 0 8px 0;
+      color: var(--primary-light);
+      font-size: 1rem;
+    }
+    .complexity-card .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--success);
+    }
+    .viz-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 20px 0;
+    }
+    .viz-panel {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .viz-panel h3 {
+      margin: 0 0 16px 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .viz-step {
+      padding: 14px 16px;
+      margin: 10px 0;
+      border-radius: 10px;
+      background: var(--surface);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .viz-step:hover {
+      background: var(--surface-light);
+      transform: translateX(4px);
+    }
+    .viz-step.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step .step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .viz-step .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .viz-step .state-vars {
+      font-size: 0.8rem;
+      color: var(--primary-light);
+      margin-top: 8px;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    pre {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 0;
+      overflow-x: auto;
+      margin: 0;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .code-line {
+      display: flex;
+      padding: 3px 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .code-line:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .code-line.active {
+      background: rgba(99, 102, 241, 0.25);
+      border-left: 3px solid var(--primary);
+      padding-left: 17px;
+    }
+    .line-number {
+      color: #484f58;
+      min-width: 36px;
+      text-align: right;
+      padding-right: 16px;
+      user-select: none;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 150px;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+    .bar {
+      width: 24px;
+      background: linear-gradient(to top, var(--primary), var(--primary-light));
+      border-radius: 4px 4px 0 0;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .bar-label {
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .bar.left { background: linear-gradient(to top, #22c55e, #4ade80); }
+    .bar.right { background: linear-gradient(to top, #f59e0b, #fbbf24); }
+    .bar.highlight { box-shadow: 0 0 12px rgba(99, 102, 241, 0.5); }
+    .water-level {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: rgba(34, 197, 94, 0.4);
+      border: 2px dashed var(--success);
+      border-radius: 4px;
+    }
+    .pointer {
+      position: absolute;
+      top: -24px;
+      font-size: 1rem;
+      transform: translateX(-50%);
+      animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-4px); }
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #475569;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .problem-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card .difficulty {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      float: right;
+    }
+    .difficulty.easy { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .difficulty.medium { background: rgba(99, 102, 241, 0.2); color: var(--primary-light); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--text);
+    }
+    .problem-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    .var { color: #79c0ff; }
+    .insight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(34, 197, 94, 0.1));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .insight-box h4 {
+      margin: 0 0 12px 0;
+      color: var(--primary-light);
+    }
+    .insight-box p {
+      margin: 0;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #42 - 接雨水</h1>
+  <p class="subtitle">
+    <span class="tag">Hard</span>
+    <span class="tag">双指针</span>
+    <span class="tag">数组</span>
+    <span class="tag">经典面试题</span>
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <div class="problem-statement">
+      <p><strong>给定</strong> <code>n</code> 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。</p>
+      <br>
+      <p><strong>示例：</strong></p>
+      <p>输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]</p>
+      <p>输出：6</p>
+      <p>解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>💡 核心洞察</h2>
+    <div class="insight-box">
+      <h4>🎯 关键观察</h4>
+      <p>每个位置的接水量 = <strong>min(左边最高柱, 右边最高柱) - 当前柱高度</strong></p>
+      <p style="margin-top: 8px; color: var(--text-muted);">水往低处流，能接多少水取决于两边较矮的那根柱子（短板效应）</p>
+    </div>
+    <div class="bar-chart" id="barChart">
+      <!-- Bars generated by JS -->
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看联动）</h2>
+    <div class="viz-container">
+      <div class="viz-panel">
+        <h3>执行步骤</h3>
+        <div class="viz-steps" id="vizSteps">
+          <!-- Steps generated by JS -->
+        </div>
+      </div>
+      <div class="viz-panel">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">
+        </code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <div class="complexity-grid">
+      <div class="complexity-card">
+        <h3>⏱️ 时间复杂度</h3>
+        <div class="value">O(n)</div>
+        <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">双指针只遍历数组一次</p>
+      </div>
+      <div class="complexity-card">
+        <h3>💾 空间复杂度</h3>
+        <div class="value">O(1)</div>
+        <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">仅使用常数额外空间</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a class="problem-card" href="https://leetcode.cn/problems/trapping-rain-water-ii/" target="_blank">
+        <span class="difficulty hard">Hard</span>
+        <h4>407. 接雨水 II</h4>
+        <p>从1D扩展到2D，使用优先队列（堆）解决</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/container-with-most-water/" target="_blank">
+        <span class="difficulty medium">Medium</span>
+        <h4>11. 盛最多水的容器</h4>
+        <p>类似的双指针思路，找最大面积</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/largest-rectangle-in-histogram/" target="_blank">
+        <span class="difficulty hard">Hard</span>
+        <h4>84. 柱状图中最大的矩形</h4>
+        <p>单调栈经典题，与接雨水思路相反</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/product-of-array-except-self/" target="_blank">
+        <span class="difficulty medium">Medium</span>
+        <h4>238. 除自身以外数组的乘积</h4>
+        <p>双指针从左从右扫描的变体</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 题目数据
+    const height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1];
+    
+    // Python 代码行（带语法高亮）
+    const codeLines = [
+      { line: 1, html: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { line: 2, html: '    <span class="keyword">def</span> <span class="function">trap</span>(<span class="var">self</span>, <span class="var">height</span>: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:' },
+      { line: 3, html: '        <span class="keyword">if</span> <span class="keyword">not</span> <span class="var">height</span>:' },
+      { line: 4, html: '            <span class="keyword">return</span> <span class="number">0</span>' },
+      { line: 5, html: '        ' },
+      { line: 6, html: '        <span class="var">left</span>, <span class="var">right</span> = <span class="number">0</span>, <span class="keyword">len</span>(<span class="var">height</span>) - <span class="number">1</span>  <span class="comment"># 双指针</span>' },
+      { line: 7, html: '        <span class="var">left_max</span>, <span class="var">right_max</span> = <span class="number">0</span>, <span class="number">0</span>  <span class="comment"># 左右最大高度</span>' },
+      { line: 8, html: '        <span class="var">water</span> = <span class="number">0</span>  <span class="comment"># 总接水量</span>' },
+      { line: 9, html: '        ' },
+      { line: 10, html: '        <span class="keyword">while</span> <span class="var">left</span> < <span class="var">right</span>:' },
+      { line: 11, html: '            <span class="keyword">if</span> <span class="var">height</span>[<span class="var">left</span>] < <span class="var">height</span>[<span class="var">right</span>]:  <span class="comment"># 左边是短板</span>' },
+      { line: 12, html: '                <span class="keyword">if</span> <span class="var">height</span>[<span class="var">left</span>] >= <span class="var">left_max</span>:' },
+      { line: 13, html: '                    <span class="var">left_max</span> = <span class="var">height</span>[<span class="var">left</span>]  <span class="comment"># 更新左边最高</span>' },
+      { line: 14, html: '                <span class="keyword">else</span>:' },
+      { line: 15, html: '                    <span class="var">water</span> += <span class="var">left_max</span> - <span class="var">height</span>[<span class="var">left</span>]  <span class="comment"># 接水！</span>' },
+      { line: 16, html: '                <span class="var">left</span> += <span class="number">1</span>  <span class="comment"># 左指针右移</span>' },
+      { line: 17, html: '            <span class="keyword">else</span>:' },
+      { line: 18, html: '                <span class="keyword">if</span> <span class="var">height</span>[<span class="var">right</span>] >= <span class="var">right_max</span>:' },
+      { line: 19, html: '                    <span class="var">right_max</span> = <span class="var">height</span>[<span class="var">right</span>]  <span class="comment"># 更新右边最高</span>' },
+      { line: 20, html: '                <span class="keyword">else</span>:' },
+      { line: 21, html: '                    <span class="var">water</span> += <span class="var">right_max</span> - <span class="var">height</span>[<span class="var">right</span>]  <span class="comment"># 接水！</span>' },
+      { line: 22, html: '                <span class="var">right</span> -= <span class="number">1</span>  <span class="comment"># 右指针左移</span>' },
+      { line: 23, html: '        ' },
+      { line: 24, html: '        <span class="keyword">return</span> <span class="var">water</span>' }
+    ];
+    
+    // 执行步骤与代码行映射
+    const steps = [
+      { 
+        title: "初始化双指针", 
+        desc: "left=0, right=11，分别指向数组首尾", 
+        line: 6, 
+        state: { left: 0, right: 11, left_max: 0, right_max: 0, water: 0 }
+      },
+      { 
+        title: "第1轮循环", 
+        desc: "height[0]=0 < height[11]=1，左边是短板，移动左指针", 
+        line: 11, 
+        state: { left: 0, right: 11, left_max: 0, right_max: 0, water: 0 }
+      },
+      { 
+        title: "更新左边最大值", 
+        desc: "height[0]=0 >= left_max=0，更新left_max=0，接水量0", 
+        line: 13, 
+        state: { left: 0, right: 11, left_max: 0, right_max: 0, water: 0 }
+      },
+      { 
+        title: "左指针右移", 
+        desc: "left += 1，left变为1，指向高度为1的柱子", 
+        line: 16, 
+        state: { left: 1, right: 11, left_max: 0, right_max: 0, water: 0 }
+      },
+      { 
+        title: "第2轮循环", 
+        desc: "height[1]=1 < height[11]=1，相等时走else分支，这里走左边", 
+        line: 11, 
+        state: { left: 1, right: 11, left_max: 0, right_max: 0, water: 0 }
+      },
+      { 
+        title: "更新左边最大值", 
+        desc: "height[1]=1 >= left_max=0，更新left_max=1，接水量0", 
+        line: 13, 
+        state: { left: 1, right: 11, left_max: 1, right_max: 0, water: 0 }
+      },
+      { 
+        title: "左指针右移", 
+        desc: "left += 1，left变为2，指向高度为0的柱子（凹槽）", 
+        line: 16, 
+        state: { left: 2, right: 11, left_max: 1, right_max: 0, water: 0 }
+      },
+      { 
+        title: "第3轮循环 - 开始接水！", 
+        desc: "height[2]=0 < height[11]=1，左边是短板", 
+        line: 11, 
+        state: { left: 2, right: 11, left_max: 1, right_max: 0, water: 0 }
+      },
+      { 
+        title: "计算接水量", 
+        desc: "height[2]=0 < left_max=1，接水！water += 1-0 = 1", 
+        line: 15, 
+        state: { left: 2, right: 11, left_max: 1, right_max: 0, water: 1 }
+      },
+      { 
+        title: "左指针右移", 
+        desc: "left += 1，left变为3，指向高度为2的柱子", 
+        line: 16, 
+        state: { left: 3, right: 11, left_max: 1, right_max: 0, water: 1 }
+      },
+      { 
+        title: "第4轮循环", 
+        desc: "height[3]=2 > height[11]=1，右边是短板，移动右指针", 
+        line: 17, 
+        state: { left: 3, right: 11, left_max: 1, right_max: 0, water: 1 }
+      },
+      { 
+        title: "初始化右边最大值", 
+        desc: "height[11]=1 >= right_max=0，更新right_max=1", 
+        line: 19, 
+        state: { left: 3, right: 11, left_max: 1, right_max: 1, water: 1 }
+      },
+      { 
+        title: "右指针左移", 
+        desc: "right -= 1，right变为10，指向高度为2的柱子", 
+        line: 22, 
+        state: { left: 3, right: 10, left_max: 1, right_max: 1, water: 1 }
+      },
+      { 
+        title: "继续循环...", 
+        desc: "算法继续执行，直到 left >= right 时结束", 
+        line: 10, 
+        state: { left: "...", right: "...", left_max: "...", right_max: "...", water: 6 }
+      },
+      { 
+        title: "返回结果", 
+        desc: "循环结束，返回总接水量 water = 6", 
+        line: 24, 
+        state: { left: 7, right: 7, left_max: 3, right_max: 2, water: 6 }
+      }
+    ];
+    
+    // 渲染代码块
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({ line, html }) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span>${html}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line));
+      codeBlock.appendChild(div);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, index) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.index = index;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="state-vars">left=${step.state.left}, right=${step.state.right}, water=${step.state.water}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(index));
+      vizSteps.appendChild(div);
+    });
+    
+    // 渲染柱状图
+    const barChart = document.getElementById('barChart');
+    const maxHeight = Math.max(...height);
+    height.forEach((h, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = `${(h / maxHeight) * 100}%`;
+      bar.innerHTML = `<span class="bar-label">${h}</span>`;
+      barChart.appendChild(bar);
+    });
+    
+    let currentStep = -1;
+    
+    function highlightStep(index) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-index="${index}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const step = steps[index];
+      const codeEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (codeEl) {
+        codeEl.classList.add('active');
+        codeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
+      currentStep = index;
+      updateBarChart(step.state);
+    }
+    
+    function highlightStepByLine(line) {
+      // 找到对应步骤
+      const stepIndex = steps.findIndex(s => s.line === line);
+      if (stepIndex !== -1) {
+        highlightStep(stepIndex);
+      }
+    }
+    
+    function updateBarChart(state) {
+      const bars = document.querySelectorAll('.bar');
+      bars.forEach((bar, i) => {
+        bar.classList.remove('left', 'right', 'highlight');
+        if (i === state.left) {
+          bar.classList.add('left');
+          bar.innerHTML = `<span class="pointer">👈</span><span class="bar-label">${height[i]}</span>`;
+        } else if (i === state.right) {
+          bar.classList.add('right');
+          bar.innerHTML = `<span class="pointer">👉</span><span class="bar-label">${height[i]}</span>`;
+        }
+      });
+    }
+    
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
