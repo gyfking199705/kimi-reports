@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #5 - 最长回文子串</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 0; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: background 0.2s; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-step { padding: 12px; margin: 8px 0; border-radius: 8px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); }
+    .viz-step:hover { border-color: #6366f1; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 16px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+    .var { color: #ffa657; }
+    .op { color: #ff7b72; }
+    .step-title { font-weight: bold; color: #a5d6ff; margin-bottom: 4px; }
+    .step-desc { font-size: 14px; color: #94a3b8; }
+    .step-state { margin-top: 8px; padding: 8px; background: #1e293b; border-radius: 6px; font-family: monospace; font-size: 13px; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .complexity-table th, .complexity-table td { padding: 12px; text-align: left; border-bottom: 1px solid #475569; }
+    .complexity-table th { color: var(--primary); }
+    .highlight-box { background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); padding: 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>🎯 LeetCode #5 - 最长回文子串</h1>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个字符串 <code>s</code>，找到 <code>s</code> 中最长的回文子串。</p>
+    <p><strong>回文</strong>是正着读和反着读都一样的字符串。</p>
+    
+    <div class="highlight-box">
+      <strong>示例 1：</strong><br>
+      输入：s = "babad"<br>
+      输出："bab"（或 "aba"）<br><br>
+      <strong>示例 2：</strong><br>
+      输入：s = "cbbd"<br>
+      输出："bb"
+    </div>
+    
+    <p><strong>约束：</strong>1 ≤ s.length ≤ 1000，s 仅由数字和英文字母组成</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程</h2>
+    <p style="color:#94a3b8; font-size:14px;">💡 点击左侧步骤或右侧代码行，查看对应关系</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心洞察</h2>
+    <ul>
+      <li><strong>回文的对称性</strong>：回文正读反读相同，从中心向两边扩展即可验证</li>
+      <li><strong>两种中心</strong>：奇数长度回文中心是单个字符，偶数长度回文中心是两字符之间</li>
+      <li><strong>空间优势</strong>：中心扩展空间O(1)，优于动态规划的O(n²)</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr><th>指标</th><th>值</th><th>说明</th></tr>
+      <tr><td>时间复杂度</td><td>O(n²)</td><td>共2n-1个中心，每个最多扩展n/2次</td></tr>
+      <tr><td>空间复杂度</td><td>O(1)</td><td>仅使用几个指针变量</td></tr>
+      <tr><td>相比DP的优势</td><td>✓</td><td>DP需要O(n²)空间，中心扩展更优</td></tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/palindromic-substrings/" class="problem-card" target="_blank">
+        <strong>#647</strong> 回文子串的个数<br>
+        <small style="color:#94a3b8">中心扩展法的变体，计数而非求最长</small>
+      </a>
+      <a href="https://leetcode.cn/problems/palindrome-partitioning/" class="problem-card" target="_blank">
+        <strong>#131</strong> 分割回文串<br>
+        <small style="color:#94a3b8">需要判断所有子串是否为回文</small>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-palindromic-subsequence/" class="problem-card" target="_blank">
+        <strong>#516</strong> 最长回文子序列<br>
+        <small style="color:#94a3b8">子序列 vs 子串，需用动态规划</small>
+      </a>
+      <a href="https://leetcode.cn/problems/palindrome-linked-list/" class="problem-card" target="_blank">
+        <strong>#234</strong> 回文链表<br>
+        <small style="color:#94a3b8">链表上的回文判断</small>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码内容
+    const codeLines = [
+      {line: 1, text: '<span class="keyword">class</span> <span class="class">Solution</span>:'},
+      {line: 2, text: '    <span class="keyword">def</span> <span class="function">longestPalindrome</span>(<span class="var">self</span>, <span class="var">s</span>: <span class="keyword">str</span>) <span class="op">-></span> <span class="keyword">str</span>:'},
+      {line: 3, text: '        n = <span class="function">len</span>(s)'},
+      {line: 4, text: '        <span class="keyword">if</span> n < <span class="number">2</span>:'},
+      {line: 5, text: '            <span class="keyword">return</span> s'},
+      {line: 6, text: ''},
+      {line: 7, text: '        <span class="keyword">def</span> <span class="function">expand</span>(left, right):'},
+      {line: 8, text: '            <span class="comment"># 从中心向两边扩展</span>'},
+      {line: 9, text: '            <span class="keyword">while</span> left >= <span class="number">0</span> <span class="keyword">and</span> right < n <span class="keyword">and</span> s[left] == s[right]:'},
+      {line: 10, text: '                left -= <span class="number">1</span>'},
+      {line: 11, text: '                right += <span class="number">1</span>'},
+      {line: 12, text: '            <span class="keyword">return</span> s[left+<span class="number">1</span>:right]'},
+      {line: 13, text: ''},
+      {line: 14, text: '        ans = <span class="string">""</span>'},
+      {line: 15, text: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):'},
+      {line: 16, text: '            <span class="comment"># 奇数长度回文（中心为i）</span>'},
+      {line: 17, text: '            s1 = expand(i, i)'},
+      {line: 18, text: '            <span class="comment"># 偶数长度回文（中心为i和i+1之间）</span>'},
+      {line: 19, text: '            s2 = expand(i, i + <span class="number">1</span>)'},
+      {line: 20, text: ''},
+      {line: 21, text: '            longer = s1 <span class="keyword">if</span> <span class="function">len</span>(s1) > <span class="function">len</span>(s2) <span class="keyword">else</span> s2'},
+      {line: 22, text: '            <span class="keyword">if</span> <span class="function">len</span>(longer) > <span class="function">len</span>(ans):'},
+      {line: 23, text: '                ans = longer'},
+      {line: 24, text: ''},
+      {line: 25, text: '        <span class="keyword">return</span> ans'}
+    ];
+
+    // 步骤定义
+    const steps = [
+      {id: 0, title: "初始化", desc: "获取字符串长度，长度<2直接返回", line: 3, state: {n: 5, s: '"babad"'}},
+      {id: 1, title: "定义expand函数", desc: "从中心向两边扩展，返回最长回文", line: 7, state: {expand: "function"}},
+      {id: 2, title: "开始遍历 i=0", desc: "处理奇数中心'b'", line: 15, state: {i: 0}},
+      {id: 3, title: "expand(0,0) - 奇数", desc: "中心在'b'，无法扩展", line: 17, state: {left: -1, right: 1, result: '"b"'}},
+      {id: 4, title: "expand(0,1) - 偶数", desc: "'b'≠'a'，不是回文", line: 19, state: {left: 0, right: 1, result: '"b"'}},
+      {id: 5, title: "更新答案", desc: "当前最长: 'b'", line: 22, state: {ans: '"b"'}},
+      {id: 6, title: "遍历 i=1", desc: "处理中心'a'或'ba'之间", line: 15, state: {i: 1}},
+      {id: 7, title: "expand(1,1) - 奇数", desc: "中心在'a'，向两边扩展", line: 17, state: {left: 0, right: 2, result: '"bab"'}},
+      {id: 8, title: "expand(1,2) - 偶数", desc: "'a'≠'b'，不是回文", line: 19, state: {left: 1, right: 2, result: '"a"'}},
+      {id: 9, title: "更新答案", desc: "当前最长: 'bab'", line: 22, state: {ans: '"bab"'}},
+      {id: 10, title: "遍历 i=2", desc: "处理中心'b'或'ab'之间", line: 15, state: {i: 2}},
+      {id: 11, title: "expand(2,2) - 奇数", desc: "中心在'b'，'b'≠'d'停止", line: 17, state: {left: 1, right: 3, result: '"aba"'}},
+      {id: 12, title: "expand(2,3) - 偶数", desc: "'b'≠'d'，不是回文", line: 19, state: {left: 2, right: 3, result: '"b"'}},
+      {id: 13, title: "不更新答案", desc: "'aba'长度3不大于当前3", line: 22, state: {ans: '"bab"'}},
+      {id: 14, title: "返回结果", desc: "最长回文子串", line: 25, state: {result: '"bab"'}}
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({line, text}) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span class="line-content">${text}</span>`;
+      div.onclick = () => selectByLine(line);
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach(step => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = step.id;
+      div.dataset.line = step.line;
+      
+      let stateHtml = '';
+      for (let [k, v] of Object.entries(step.state)) {
+        stateHtml += `${k}: ${v}<br>`;
+      }
+      
+      div.innerHTML = `
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">${stateHtml}</div>
+      `;
+      div.onclick = () => selectByStep(step.id);
+      vizSteps.appendChild(div);
+    });
+
+    // 状态管理
+    let activeStep = null;
+    let activeLine = null;
+
+    function selectByStep(stepId) {
+      const step = steps.find(s => s.id === stepId);
+      if (!step) return;
+      
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      document.querySelector(`.viz-step[data-step="${stepId}"]`).classList.add('active');
+      
+      // 高亮对应代码行
+      const codeLine = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (codeLine) codeLine.classList.add('active');
+      
+      activeStep = stepId;
+      activeLine = step.line;
+    }
+
+    function selectByLine(lineNum) {
+      // 找到包含此行的步骤
+      const step = steps.filter(s => s.line === lineNum).pop();
+      if (step) {
+        selectByStep(step.id);
+      } else {
+        // 只高亮代码行
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+        const codeLine = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+        if (codeLine) codeLine.classList.add('active');
+      }
+    }
+
+    // 默认选中第一步
+    selectByStep(0);
+  </script>
+</body>
+</html>
