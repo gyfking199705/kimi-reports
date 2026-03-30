@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #300 - 最长递增子序列</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-light: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.7;
+    }
+    h1 { 
+      font-size: 2rem; 
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle { 
+      color: var(--text-muted); 
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .tag-medium { background: var(--accent); color: #000; }
+    .tag-dp { background: var(--primary); color: #fff; }
+    .tag-binary { background: var(--secondary); color: #fff; }
+    
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section h3 {
+      color: var(--text);
+      margin-top: 20px;
+      margin-bottom: 12px;
+    }
+    
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .complexity-card {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .complexity-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+    .complexity-card .value {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .complexity-card .value.green { color: var(--secondary); }
+    .complexity-card .value.yellow { color: var(--accent); }
+    
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 0;
+      overflow-x: auto;
+      border: 1px solid #30363d;
+      margin: 16px 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 4px 16px; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    
+    .viz-steps {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 8px 0; 
+      border-radius: 10px; 
+      background: var(--surface-light); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover {
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2); 
+    }
+    .viz-step .step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .viz-step .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .viz-step .step-state {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      background: var(--bg);
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--secondary);
+    }
+    
+    .algorithm-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 16px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      margin-bottom: 12px;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card h4 {
+      margin: 0 0 6px 0;
+      color: var(--primary);
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .builtin { color: #7ee787; }
+    
+    .code-container h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 16px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    
+    .example-box {
+      background: var(--bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .insight {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(99, 102, 241, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .insight h4 {
+      margin-top: 0;
+      color: var(--secondary);
+    }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #300 - 最长递增子序列</h1>
+  <p class="subtitle">
+    <span class="tag tag-medium">Medium</span>
+    <span class="tag tag-dp">动态规划</span>
+    <span class="tag tag-binary">二分查找</span>
+    数组 | 子序列问题经典模板
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个整数数组 <code>nums</code>，找到其中最长严格递增子序列的长度。</p>
+    <p><strong>子序列</strong>是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，<code>[3,6,2,7]</code> 是数组 <code>[0,3,1,6,2,2,7]</code> 的子序列。</p>
+    
+    <div class="highlight-box">
+      <strong>示例：</strong><br>
+      输入: nums = [10, 9, 2, 5, 3, 7, 101, 18]<br>
+      输出: 4<br>
+      解释: 最长递增子序列是 [2, 3, 7, 101]，长度为 4
+    </div>
+    
+    <h3>核心考点</h3>
+    <ul>
+      <li><strong>DP思路</strong>：dp[i] 表示以 nums[i] 结尾的最长递增子序列长度</li>
+      <li><strong>状态转移</strong>：dp[i] = max(dp[j] + 1) for all j < i and nums[j] < nums[i]</li>
+      <li><strong>二分优化</strong>：维护一个递增数组 tails，用二分查找替换 O(n²) 为 O(n log n)</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程</h2>
+    <p style="color: var(--text-muted);">👆 <strong>点击步骤或代码行</strong> 查看对应关系（高亮联动）</p>
+    
+    <div class="algorithm-tabs">
+      <button class="tab-btn active" onclick="switchAlgo('dp')">解法1: 动态规划 O(n²)</button>
+      <button class="tab-btn" onclick="switchAlgo('binary')">解法2: 二分优化 O(n log n)</button>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">
+<!-- 代码由JS填充 -->
+        </code></pre>
+      </div>
+    </div>
+    
+    <div class="insight">
+      <h4>💡 关键洞察</h4>
+      <p id="insight-text">对于二分优化版本，tails[i] 表示长度为 i+1 的递增子序列的<strong>最小结尾元素</strong>。数组 tails 始终保持递增，可以用二分查找来优化。</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <div class="complexity-grid">
+      <div class="complexity-card">
+        <h4>🔹 动态规划</h4>
+        <div class="value yellow">O(n²)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">时间复杂度</div>
+      </div>
+      <div class="complexity-card">
+        <h4>🔹 动态规划</h4>
+        <div class="value green">O(n)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">空间复杂度</div>
+      </div>
+      <div class="complexity-card">
+        <h4>🔸 二分优化</h4>
+        <div class="value green">O(n log n)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">时间复杂度</div>
+      </div>
+      <div class="complexity-card">
+        <h4>🔸 二分优化</h4>
+        <div class="value green">O(n)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">空间复杂度</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/russian-doll-envelopes/" class="problem-card" target="_blank">
+        <h4>#354 俄罗斯套娃信封问题</h4>
+        <p>LIS的二维扩展，先排序再降维打击</p>
+      </a>
+      <a href="https://leetcode.cn/problems/maximum-length-of-pair-chain/" class="problem-card" target="_blank">
+        <h4>#646 最长数对链</h4>
+        <p>贪心 + LIS变体，区间问题</p>
+      </a>
+      <a href="https://leetcode.cn/problems/number-of-longest-increasing-subsequence/" class="problem-card" target="_blank">
+        <h4>#673 最长递增子序列的个数</h4>
+        <p>LIS进阶，需要统计个数</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-continuous-increasing-subsequence/" class="problem-card" target="_blank">
+        <h4>#674 最长连续递增序列</h4>
+        <p>LIS变体，要求连续而非子序列</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-increasing-subsequence-ii/" class="problem-card" target="_blank">
+        <h4>#2407 最长递增子序列 II</h4>
+        <p>LIS带差值限制，线段树优化</p>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/" class="problem-card" target="_blank">
+        <h4>#452 用最少数量的箭引爆气球</h4>
+        <p>区间贪心，与LIS思想相关</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // DP解法代码
+    const dpCode = `<span class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">Solution</span>:</span>
+<span class="code-line" data-line="2"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">lengthOfLIS</span>(<span class="builtin">self</span>, nums: List[<span class="builtin">int</span>]) -> <span class="builtin">int</span>:</span>
+<span class="code-line" data-line="3"><span class="line-number">3</span>        <span class="keyword">if</span> <span class="keyword">not</span> nums:</span>
+<span class="code-line" data-line="4"><span class="line-number">4</span>            <span class="keyword">return</span> <span class="number">0</span></span>
+<span class="code-line" data-line="5"><span class="line-number">5</span>        </span>
+<span class="code-line" data-line="6"><span class="line-number">6</span>        n = <span class="builtin">len</span>(nums)</span>
+<span class="code-line" data-line="7"><span class="line-number">7</span>        dp = [<span class="number">1</span>] * n  <span class="comment"># 每个元素至少长度为1</span></span>
+<span class="code-line" data-line="8"><span class="line-number">8</span>        </span>
+<span class="code-line" data-line="9"><span class="line-number">9</span>        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">1</span>, n):</span>
+<span class="code-line" data-line="10"><span class="line-number">10</span>            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="builtin">range</span>(i):</span>
+<span class="code-line" data-line="11"><span class="line-number">11</span>                <span class="keyword">if</span> nums[j] < nums[i]:</span>
+<span class="code-line" data-line="12"><span class="line-number">12</span>                    dp[i] = <span class="builtin">max</span>(dp[i], dp[j] + <span class="number">1</span>)</span>
+<span class="code-line" data-line="13"><span class="line-number">13</span>        </span>
+<span class="code-line" data-line="14"><span class="line-number">14</span>        <span class="keyword">return</span> <span class="builtin">max</span>(dp)</span>`;
+
+    // 二分优化解法代码
+    const binaryCode = `<span class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">Solution</span>:</span>
+<span class="code-line" data-line="2"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">lengthOfLIS</span>(<span class="builtin">self</span>, nums: List[<span class="builtin">int</span>]) -> <span class="builtin">int</span>:</span>
+<span class="code-line" data-line="3"><span class="line-number">3</span>        <span class="keyword">if</span> <span class="keyword">not</span> nums:</span>
+<span class="code-line" data-line="4"><span class="line-number">4</span>            <span class="keyword">return</span> <span class="number">0</span></span>
+<span class="code-line" data-line="5"><span class="line-number">5</span>        </span>
+<span class="code-line" data-line="6"><span class="line-number">6</span>        tails = []  <span class="comment"># tails[i]: 长度为i+1的递增子序列的最小结尾</span></span>
+<span class="code-line" data-line="7"><span class="line-number">7</span>        </span>
+<span class="code-line" data-line="8"><span class="line-number">8</span>        <span class="keyword">for</span> num <span class="keyword">in</span> nums:</span>
+<span class="code-line" data-line="9"><span class="line-number">9</span>            <span class="comment"># 二分查找：找到第一个 >= num 的位置</span></span>
+<span class="code-line" data-line="10"><span class="line-number">10</span>            left, right = <span class="number">0</span>, <span class="builtin">len</span>(tails)</span>
+<span class="code-line" data-line="11"><span class="line-number">11</span>            <span class="keyword">while</span> left < right:</span>
+<span class="code-line" data-line="12"><span class="line-number">12</span>                mid = (left + right) // <span class="number">2</span></span>
+<span class="code-line" data-line="13"><span class="line-number">13</span>                <span class="keyword">if</span> tails[mid] < num:</span>
+<span class="code-line" data-line="14"><span class="line-number">14</span>                    left = mid + <span class="number">1</span></span>
+<span class="code-line" data-line="15"><span class="line-number">15</span>                <span class="keyword">else</span>:</span>
+<span class="code-line" data-line="16"><span class="line-number">16</span>                    right = mid</span>
+<span class="code-line" data-line="17"><span class="line-number">17</span>            </span>
+<span class="code-line" data-line="18"><span class="line-number">18</span>            <span class="keyword">if</span> left == <span class="builtin">len</span>(tails):</span>
+<span class="code-line" data-line="19"><span class="line-number">19</span>                tails.append(num)  <span class="comment"># 可以接在后面，长度+1</span></span>
+<span class="code-line" data-line="20"><span class="line-number">20</span>            <span class="keyword">else</span>:</span>
+<span class="code-line" data-line="21"><span class="line-number">21</span>                tails[left] = num  <span class="comment"># 替换，保持最小</span></span>
+<span class="code-line" data-line="22"><span class="line-number">22</span>        </span>
+<span class="code-line" data-line="23"><span class="line-number">23</span>        <span class="keyword">return</span> <span class="builtin">len</span>(tails)</span>`;
+
+    // DP解法步骤
+    const dpSteps = [
+      {title: "初始化", desc: "创建dp数组，每个位置初始值为1（至少包含自己）", line: 7, state: "dp = [1, 1, 1, 1, 1, 1, 1, 1]"},
+      {title: "遍历 i=1 (nums[1]=9)", desc: "j=0 时 nums[0]=10 > 9，不满足递增，跳过", line: 9, state: "dp = [1, 1, 1, 1, 1, 1, 1, 1]"},
+      {title: "遍历 i=2 (nums[2]=2)", desc: "前面没有小于2的，dp[2]保持1", line: 11, state: "dp = [1, 1, 1, 1, 1, 1, 1, 1]"},
+      {title: "遍历 i=3 (nums[3]=5)", desc: "j=2 时 nums[2]=2 < 5，dp[3]=max(1, 1+1)=2", line: 12, state: "dp = [1, 1, 1, 2, 1, 1, 1, 1]"},
+      {title: "遍历 i=4 (nums[4]=3)", desc: "j=2 时 2 < 3，dp[4]=2；j=3时 5>3，跳过", line: 12, state: "dp = [1, 1, 1, 2, 2, 1, 1, 1]"},
+      {title: "遍历 i=5 (nums[5]=7)", desc: "j=4时 3<7，dp[5]=3；前面最大dp是2", line: 12, state: "dp = [1, 1, 1, 2, 2, 3, 1, 1]"},
+      {title: "遍历 i=6 (nums[6]=101)", desc: "前面所有都小于101，取最大dp+1=4", line: 12, state: "dp = [1, 1, 1, 2, 2, 3, 4, 1]"},
+      {title: "遍历 i=7 (nums[7]=18)", desc: "18小于101，取dp[5]=3时得到4", line: 12, state: "dp = [1, 1, 1, 2, 2, 3, 4, 4]"},
+      {title: "返回结果", desc: "dp数组最大值为4，即最长递增子序列长度", line: 14, state: "max(dp) = 4"}
+    ];
+
+    // 二分解法步骤
+    const binarySteps = [
+      {title: "处理 num=10", desc: "tails为空，直接append", line: 19, state: "tails = [10]"},
+      {title: "处理 num=9", desc: "二分找到位置0，替换tails[0]=9", line: 21, state: "tails = [9]"},
+      {title: "处理 num=2", desc: "二分找到位置0，替换tails[0]=2", line: 21, state: "tails = [2]"},
+      {title: "处理 num=5", desc: "2 < 5，二分找到位置1，append", line: 19, state: "tails = [2, 5]"},
+      {title: "处理 num=3", desc: "2 < 3 < 5，二分找到位置1，替换tails[1]=3", line: 21, state: "tails = [2, 3]"},
+      {title: "处理 num=7", desc: "3 < 7，二分找到位置2，append", line: 19, state: "tails = [2, 3, 7]"},
+      {title: "处理 num=101", desc: "7 < 101，二分找到位置3，append", line: 19, state: "tails = [2, 3, 7, 101]"},
+      {title: "处理 num=18", desc: "18在7和101之间，替换tails[3]=18", line: 21, state: "tails = [2, 3, 7, 18]"},
+      {title: "返回结果", desc: "tails长度为4，即最长递增子序列长度", line: 23, state: "len(tails) = 4"}
+    ];
+
+    let currentAlgo = 'dp';
+    let activeStep = 0;
+
+    function switchAlgo(algo) {
+      currentAlgo = algo;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.getElementById('codeBlock').innerHTML = algo === 'dp' ? dpCode : binaryCode;
+      renderSteps();
+      updateInsight();
+      bindCodeLineClick();
+    }
+
+    function renderSteps() {
+      const steps = currentAlgo === 'dp' ? dpSteps : binarySteps;
+      const container = document.getElementById('vizSteps');
+      container.innerHTML = steps.map((step, idx) => `
+        <div class="viz-step ${idx === activeStep ? 'active' : ''}" data-step="${idx}" data-line="${step.line}">
+          <div class="step-title">${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+          <div class="step-state">${step.state}</div>
+        </div>
+      `).join('');
+      
+      bindStepClick();
+      highlightCodeLine(steps[activeStep].line);
+    }
+
+    function bindStepClick() {
+      document.querySelectorAll('.viz-step').forEach(step => {
+        step.addEventListener('click', () => {
+          activeStep = parseInt(step.dataset.step);
+          renderSteps();
+        });
+      });
+    }
+
+    function bindCodeLineClick() {
+      document.querySelectorAll('.code-line').forEach(line => {
+        line.addEventListener('click', () => {
+          const lineNum = parseInt(line.dataset.line);
+          const steps = currentAlgo === 'dp' ? dpSteps : binarySteps;
+          const stepIdx = steps.findIndex(s => s.line === lineNum);
+          if (stepIdx !== -1) {
+            activeStep = stepIdx;
+            renderSteps();
+          }
+        });
+      });
+    }
+
+    function highlightCodeLine(line) {
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.remove('active');
+        if (parseInt(el.dataset.line) === line) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    function updateInsight() {
+      const text = currentAlgo === 'dp' 
+        ? "DP的核心是 <code>dp[i]</code> 表示以 <code>nums[i]</code> 结尾的最长递增子序列长度。对于每个位置，向前遍历所有可能的前驱，取最大值+1。"
+        : "对于二分优化版本，<code>tails[i]</code> 表示长度为 i+1 的递增子序列的<strong>最小结尾元素</strong>。数组 tails 始终保持递增，可以用二分查找来优化。";
+      document.getElementById('insight-text').innerHTML = text;
+    }
+
+    // 初始化
+    document.getElementById('codeBlock').innerHTML = dpCode;
+    renderSteps();
+    bindCodeLineClick();
+  </script>
+</body>
+</html>
