@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #141 - 环形链表</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --accent: #f472b6;
+      --success: #22c55e;
+    }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.7;
+    }
+    h1 {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #64748b;
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .badge.easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .badge.medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .badge.hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 4px;
+      margin: 0 -8px;
+      padding-left: 8px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -11px;
+      padding-left: 8px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    .viz-steps { 
+      max-height: 480px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    .viz-step { 
+      padding: 16px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover {
+      transform: translateX(4px);
+      border-color: #475569;
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step h4 {
+      margin: 0 0 8px 0;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .viz-step p {
+      margin: 0;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    .state-display {
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-display span {
+      display: inline-block;
+      margin-right: 16px;
+    }
+    .state-label {
+      color: var(--primary);
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; font-style: italic; } 
+    .class { color: #ffa657; }
+    .decorator { color: #f472b6; }
+    
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(244, 114, 182, 0.1));
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0;
+    }
+    
+    .algorithm-visual {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .nodes {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .node {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border: 2px solid #475569;
+      background: #1e293b;
+      transition: all 0.3s;
+    }
+    .node.slow { border-color: #f59e0b; background: rgba(245, 158, 11, 0.2); }
+    .node.fast { border-color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+    .node.both { 
+      border-color: #8b5cf6; 
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(239, 68, 68, 0.3));
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    }
+    .arrow {
+      font-size: 1.5rem;
+      color: #475569;
+    }
+    .loop-arrow {
+      font-size: 2rem;
+      color: var(--success);
+    }
+    
+    @media (max-width: 768px) {
+      .viz-container {
+        grid-template-columns: 1fr;
+      }
+      .problem-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #141 - 环形链表</h1>
+  <p class="subtitle">Linked List Cycle · 快慢指针 · Floyd判圈算法</p>
+  
+  <div class="section">
+    <h2>📋 题目描述 <span class="badge easy">Easy</span></h2>
+    <p>给你一个链表的头节点 <code>head</code>，判断链表中是否有环。</p>
+    <p style="margin-top: 16px;"><strong>进阶：</strong>你能用 <em>O(1)（即，常量）</em> 内存解决此问题吗？</p>
+    
+    <div class="highlight-box">
+      <strong>核心洞察：</strong>想象两个运动员在环形跑道上跑步，一个快一个慢，如果跑道是环形的，快的一定能追上慢的。
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行联动查看）</h2>
+    
+    <div class="algorithm-visual" id="visualDisplay">
+      <div style="color: #94a3b8; margin-bottom: 12px;">快慢指针相遇演示</div>
+      <div class="nodes" id="nodeVisual">
+        <div class="node">3</div>
+        <span class="arrow">→</span>
+        <div class="node">2</div>
+        <span class="arrow">→</span>
+        <div class="node">0</div>
+        <span class="arrow">→</span>
+        <div class="node">-4</div>
+        <span class="loop-arrow">↻</span>
+      </div>
+      <div id="stepDescription" style="color: var(--primary); font-weight: 500;">点击左侧步骤查看动画</div>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>方案</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>哈希表</td>
+        <td>O(n)</td>
+        <td>O(n)</td>
+        <td>记录访问过的节点</td>
+      </tr>
+      <tr style="background: rgba(99, 102, 241, 0.1);">
+        <td><strong>快慢指针 ⭐</strong></td>
+        <td><strong>O(n)</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td>最优解，无需额外空间</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心原理解析</h2>
+    <h3 style="color: var(--accent);">Floyd's Cycle-Finding Algorithm（弗洛伊德判圈算法）</h3>
+    <p>想象你在一个环形跑道上：</p>
+    <ul>
+      <li><strong>慢指针 slow</strong>：每次走 1 步</li>
+      <li><strong>快指针 fast</strong>：每次走 2 步</li>
+    </ul>
+    <p style="margin-top: 16px;"><strong>为什么一定能相遇？</strong></p>
+    <p>如果存在环，快指针相对于慢指针的速度是每秒 1 步。无论环有多大，快指针一定会「追上」慢指针（即指向同一节点）。</p>
+    <p style="margin-top: 16px;"><strong>数学证明：</strong>假设环长度为 L，进入环时快慢指针距离为 d，每轮距离减少 1，最多 L 轮后相遇。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/linked-list-cycle-ii/" class="problem-card" target="_blank">
+        <h3>#142. 环形链表 II</h3>
+        <p>进阶：找到环的入口节点</p>
+      </a>
+      <a href="https://leetcode.cn/problems/middle-of-the-linked-list/" class="problem-card" target="_blank">
+        <h3>#876. 链表的中间结点</h3>
+        <p>快慢指针求中点</p>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-nth-node-from-end-of-list/" class="problem-card" target="_blank">
+        <h3>#19. 删除链表的倒数第 N 个结点</h3>
+        <p>快慢指针定位倒数第n个</p>
+      </a>
+      <a href="https://leetcode.cn/problems/happy-number/" class="problem-card" target="_blank">
+        <h3>#202. 快乐数</h3>
+        <p>Floyd判圈的另一个应用</p>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📝 面试考点</h2>
+    <ul>
+      <li>理解快慢指针的相对运动原理</li>
+      <li>为什么 fast 要初始化为 head.next？（或同时用 head 走 while fast and fast.next）</li>
+      <li>如何证明快慢指针一定会相遇？（相对速度为 1）</li>
+      <li>进阶：如何找到环的入口？（相遇后，一个指针回到头，同步走再次相遇点即入口）</li>
+    </ul>
+  </div>
+
+  <script>
+    // Python代码行
+    const codeLines = [
+      { num: 1, code: '<span class="decorator">@</span><span class="decorator">staticmethod</span>' },
+      { num: 2, code: '<span class="keyword">def</span> <span class="function">hasCycle</span>(head: ListNode) -> <span class="class">bool</span>:' },
+      { num: 3, code: '    <span class="comment"># 边界：空链表或单节点无环</span>' },
+      { num: 4, code: '    <span class="keyword">if</span> <span class="keyword">not</span> head <span class="keyword">or</span> <span class="keyword">not</span> head.next:' },
+      { num: 5, code: '        <span class="keyword">return</span> <span class="keyword">False</span>' },
+      { num: 6, code: '    ' },
+      { num: 7, code: '    <span class="comment"># 初始化快慢指针</span>' },
+      { num: 8, code: '    slow, fast = head, head.next  <span class="comment"># fast先走一步</span>' },
+      { num: 9, code: '    ' },
+      { num: 10, code: '    <span class="comment"># 开始追逐</span>' },
+      { num: 11, code: '    <span class="keyword">while</span> fast <span class="keyword">and</span> fast.next:' },
+      { num: 12, code: '        <span class="keyword">if</span> slow == fast:' },
+      { num: 13, code: '            <span class="keyword">return</span> <span class="keyword">True</span>  <span class="comment"># 相遇！有环</span>' },
+      { num: 14, code: '        ' },
+      { num: 15, code: '        slow = slow.next       <span class="comment"># 慢指针走1步</span>' },
+      { num: 16, code: '        fast = fast.next.next  <span class="comment"># 快指针走2步</span>' },
+      { num: 17, code: '    ' },
+      { num: 18, code: '    <span class="keyword">return</span> <span class="keyword">False</span>  <span class="comment"># fast到达末尾，无环</span>' }
+    ];
+
+    // 步骤定义
+    const steps = [
+      { 
+        title: "① 边界检查", 
+        desc: "检查链表是否为空或只有1个节点，这些情况不可能有环",
+        line: 4,
+        state: { head: "3→2→0→-4↻", slow: "—", fast: "—" },
+        visual: "初始状态"
+      },
+      { 
+        title: "② 初始化指针", 
+        desc: "slow指向head，fast指向head.next（快指针先走一步）",
+        line: 8,
+        state: { slow: "3", fast: "2" },
+        visual: "slow在3，fast在2"
+      },
+      { 
+        title: "③ 第一轮追逐", 
+        desc: "slow走一步到2，fast走两步到0",
+        line: 15,
+        state: { slow: "2", fast: "0" },
+        visual: "slow在2，fast在0"
+      },
+      { 
+        title: "④ 第二轮追逐", 
+        desc: "slow从2到0，fast从0到-4再到2（绕环）",
+        line: 16,
+        state: { slow: "0", fast: "2" },
+        visual: "slow在0，fast在2"
+      },
+      { 
+        title: "⑤ 第三轮追逐", 
+        desc: "slow从0到-4，fast从2到0",
+        line: 15,
+        state: { slow: "-4", fast: "0" },
+        visual: "slow在-4，fast在0"
+      },
+      { 
+        title: "⑥ 第四轮追逐", 
+        desc: "slow从-4到2，fast从0到2，两指针相遇！",
+        line: 16,
+        state: { slow: "2", fast: "2" },
+        visual: "🎯 slow和fast在2相遇！"
+      },
+      { 
+        title: "⑦ 返回结果", 
+        desc: "快慢指针相遇，链表存在环，返回True",
+        line: 13,
+        state: { result: "True ✓" },
+        visual: "检测到环！"
+      }
+    ];
+
+    // 渲染代码
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      codeBlock.innerHTML = codeLines.map(line => 
+        `<div class="code-line" data-line="${line.num}">
+          <span class="line-number">${line.num}</span>
+          <span>${line.code}</span>
+        </div>`
+      ).join('');
+    }
+
+    // 渲染步骤
+    function renderSteps() {
+      const vizSteps = document.getElementById('vizSteps');
+      vizSteps.innerHTML = steps.map((step, idx) => `
+        <div class="viz-step" data-step="${idx}" data-line="${step.line}">
+          <h4>${step.title}</h4>
+          <p>${step.desc}</p>
+          <div class="state-display">
+            ${Object.entries(step.state).map(([k, v]) => 
+              `<span><span class="state-label">${k}:</span> ${v}</span>`
+            ).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 高亮逻辑
+    function highlightLine(lineNum) {
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      const line = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (line) line.classList.add('active');
+    }
+
+    function highlightStep(stepIdx) {
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      const step = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (step) step.classList.add('active');
+      
+      // 更新可视化描述
+      const stepData = steps[stepIdx];
+      document.getElementById('stepDescription').textContent = stepData.visual;
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      // 步骤点击 -> 高亮代码行
+      document.querySelectorAll('.viz-step').forEach(el => {
+        el.addEventListener('click', () => {
+          const stepIdx = parseInt(el.dataset.step);
+          const lineNum = parseInt(el.dataset.line);
+          highlightStep(stepIdx);
+          highlightLine(lineNum);
+          
+          // 滚动到对应代码行
+          const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+          if (lineEl) lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      });
+
+      // 代码行点击 -> 高亮步骤
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.addEventListener('click', () => {
+          const lineNum = parseInt(el.dataset.line);
+          // 找到对应的步骤
+          const stepIdx = steps.findIndex(s => s.line === lineNum);
+          if (stepIdx !== -1) {
+            highlightStep(stepIdx);
+            highlightLine(lineNum);
+            
+            // 滚动到对应步骤
+            const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+            if (stepEl) stepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+      });
+    }
+
+    // 初始化
+    renderCode();
+    renderSteps();
+    bindEvents();
+    
+    // 默认高亮第一步
+    highlightStep(0);
+    highlightLine(4);
+  </script>
+</body>
+</html>
