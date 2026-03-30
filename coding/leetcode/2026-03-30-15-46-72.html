@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #72 - 编辑距离</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --success: #22c55e; --warning: #f59e0b; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); max-width: 1100px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    h1 { text-align: center; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 40px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .section h2::before { content: "▸"; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+    .code-line { display: flex; padding: 3px 12px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.25); border-left-color: #6366f1; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { display: flex; flex-direction: column; gap: 10px; }
+    .viz-step { padding: 14px 16px; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; font-size: 14px; }
+    .viz-step:hover { background: #475569; transform: translateX(4px); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+    .viz-step .step-title { font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+    .viz-step .step-desc { color: #cbd5e1; font-size: 13px; }
+    .code-container { background: #0d1117; border-radius: 12px; overflow: hidden; }
+    .code-header { background: #161b22; padding: 12px 16px; font-size: 14px; color: #8b949e; border-bottom: 1px solid #30363d; }
+    code { font-family: 'SF Mono', Monaco, monospace; font-size: 14px; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.3); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+    .problem-card .difficulty { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 8px; }
+    .difficulty-easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .difficulty-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .difficulty-hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #475569; }
+    th { color: var(--primary); font-weight: 600; }
+    .highlight-box { background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .dp-table { display: grid; gap: 2px; font-family: monospace; font-size: 12px; margin: 20px 0; }
+    .dp-cell { padding: 8px 12px; background: #1e293b; border-radius: 4px; text-align: center; transition: all 0.3s; }
+    .dp-cell.highlight { background: rgba(99, 102, 241, 0.4); color: #fff; transform: scale(1.05); }
+    .dp-cell.header { background: #334155; color: #94a3b8; }
+    .complexity-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #1e293b; border-radius: 20px; font-size: 13px; margin-right: 8px; }
+    .state-preview { background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-family: monospace; font-size: 12px; }
+    .state-preview .var { color: #79c0ff; }
+    .state-preview .val { color: #a5d6ff; }
+    .tag { display: inline-block; padding: 3px 10px; background: rgba(99, 102, 241, 0.2); color: var(--primary); border-radius: 12px; font-size: 12px; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #72 - 编辑距离</h1>
+  <p class="subtitle">Edit Distance | Hard ⭐ | 动态规划经典难题</p>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你两个单词 <code>word1</code> 和 <code>word2</code>，请返回将 <code>word1</code> 转换成 <code>word2</code> 所使用的<strong>最少操作数</strong>。</p>
+    <p>你可以对一个单词进行如下三种操作：</p>
+    <ul>
+      <li>插入一个字符</li>
+      <li>删除一个字符</li>
+      <li>替换一个字符</li>
+    </ul>
+    <div class="highlight-box">
+      <strong>示例：</strong><br>
+      输入：word1 = "horse", word2 = "ros"<br>
+      输出：3<br>
+      解释：<br>
+      horse → rorse (将 'h' 替换为 'r')<br>
+      rorse → rose (删除 'r')<br>
+      rose → ros (删除 'e')
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🧠 核心思路</h2>
+    <p>这是一道经典的<strong>二维动态规划</strong>问题。定义 <code>dp[i][j]</code> 表示将 <code>word1[0..i-1]</code> 转换为 <code>word2[0..j-1]</code> 所需的最小操作数。</p>
+    <div class="highlight-box">
+      <strong>状态转移方程：</strong><br>
+      如果 word1[i-1] == word2[j-1]：dp[i][j] = dp[i-1][j-1]（无需操作）<br>
+      否则：dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])<br>
+      &nbsp;&nbsp;• dp[i-1][j] + 1：删除 word1[i-1]<br>
+      &nbsp;&nbsp;• dp[i][j-1] + 1：插入 word2[j-1]<br>
+      &nbsp;&nbsp;• dp[i-1][j-1] + 1：替换 word1[i-1] 为 word2[j-1]
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <p style="color: #94a3b8; font-size: 14px;">当前示例：word1="horse", word2="ros"</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <div class="code-header">Python 实现</div>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+    <div id="dpVisualization" style="margin-top: 20px;"></div>
+  </div>
+
+  <div class="section">
+    <h2>⏱️ 复杂度分析</h2>
+    <table>
+      <tr><th>维度</th><th>时间复杂度</th><th>空间复杂度</th><th>说明</th></tr>
+      <tr><td>基础DP</td><td>O(m × n)</td><td>O(m × n)</td><td>需要完整的二维DP表</td></tr>
+      <tr><td>空间优化</td><td>O(m × n)</td><td>O(min(m, n))</td><td>滚动数组，只保留两行</td></tr>
+    </table>
+    <p style="margin-top: 16px; color: #94a3b8; font-size: 14px;">其中 m = len(word1), n = len(word2)</p>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/longest-common-subsequence/" class="problem-card" target="_blank">
+        <h4>#1143 最长公共子序列</h4>
+        <p>编辑距离的近亲问题，同样使用二维DP</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+        <span class="tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/distinct-subsequences/" class="problem-card" target="_blank">
+        <h4>#115 不同的子序列</h4>
+        <p>字符串匹配类DP，考察状态定义技巧</p>
+        <span class="difficulty difficulty-hard">Hard</span>
+        <span class="tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-ascii-delete-sum-for-two-strings/" class="problem-card" target="_blank">
+        <h4>#712 两个字符串的最小ASCII删除和</h4>
+        <p>编辑距离变种，操作带权值</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+        <span class="tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/delete-operation-for-two-strings/" class="problem-card" target="_blank">
+        <h4>#583 两个字符串的删除操作</h4>
+        <p>只允许删除操作的简化版编辑距离</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+        <span class="tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/regular-expression-matching/" class="problem-card" target="_blank">
+        <h4>#10 正则表达式匹配</h4>
+        <p>更复杂的字符串DP，涉及通配符处理</p>
+        <span class="difficulty difficulty-hard">Hard</span>
+        <span class="tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/wildcard-matching/" class="problem-card" target="_blank">
+        <h4>#44 通配符匹配</h4>
+        <p>正则匹配的简化版，同样二维DP</p>
+        <span class="difficulty difficulty-hard">Hard</span>
+        <span class="tag">动态规划</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 代码行内容
+    const codeLines = [
+      { num: 1, text: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, text: '    <span class="keyword">def</span> <span class="function">minDistance</span>(<span class="keyword">self</span>, word1: <span class="keyword">str</span>, word2: <span class="keyword">str</span>) -> <span class="keyword">int</span>:' },
+      { num: 3, text: '        m, n = <span class="function">len</span>(word1), <span class="function">len</span>(word2)' },
+      { num: 4, text: '        ' },
+      { num: 5, text: '        <span class="comment"># dp[i][j]: word1[0..i-1] -> word2[0..j-1] 的最小操作数</span>' },
+      { num: 6, text: '        dp = [[<span class="number">0</span>] * (n + <span class="number">1</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="function">range</span>(m + <span class="number">1</span>)]' },
+      { num: 7, text: '        ' },
+      { num: 8, text: '        <span class="comment"># 初始化边界：空字符串转换</span>' },
+      { num: 9, text: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(m + <span class="number">1</span>):' },
+      { num: 10, text: '            dp[i][<span class="number">0</span>] = i  <span class="comment"># 删除i个字符</span>' },
+      { num: 11, text: '        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(n + <span class="number">1</span>):' },
+      { num: 12, text: '            dp[<span class="number">0</span>][j] = j  <span class="comment"># 插入j个字符</span>' },
+      { num: 13, text: '        ' },
+      { num: 14, text: '        <span class="comment"># 填充DP表</span>' },
+      { num: 15, text: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, m + <span class="number">1</span>):' },
+      { num: 16, text: '            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, n + <span class="number">1</span>):' },
+      { num: 17, text: '                <span class="keyword">if</span> word1[i - <span class="number">1</span>] == word2[j - <span class="number">1</span>]:' },
+      { num: 18, text: '                    dp[i][j] = dp[i - <span class="number">1</span>][j - <span class="number">1</span>]  <span class="comment"># 字符相同，无需操作</span>' },
+      { num: 19, text: '                <span class="keyword">else</span>:' },
+      { num: 20, text: '                    <span class="comment"># 删除、插入、替换，取最小+1</span>' },
+      { num: 21, text: '                    dp[i][j] = <span class="number">1</span> + <span class="function">min</span>(dp[i - <span class="number">1</span>][j],    <span class="comment"># 删除</span>' },
+      { num: 22, text: '                                         dp[i][j - <span class="number">1</span>],    <span class="comment"># 插入</span>' },
+      { num: 23, text: '                                         dp[i - <span class="number">1</span>][j - <span class="number">1</span>])  <span class="comment"># 替换</span>' },
+      { num: 24, text: '        ' },
+      { num: 25, text: '        <span class="keyword">return</span> dp[m][n]' }
+    ];
+
+    // 步骤定义
+    const steps = [
+      { title: "1. 初始化变量", desc: "获取两个单词的长度 m=5, n=3", line: 3, state: {m:5, n:3} },
+      { title: "2. 创建DP表", desc: "创建 (m+1) × (n+1) 的二维数组，初始化为0", line: 6, state: {dp:"6×4零矩阵"} },
+      { title: "3. 初始化边界-行", desc: "dp[i][0] = i，将word1前i个字符转为空串需删除i次", line: 9, state: {"dp[1][0]":1,"dp[2][0]":2,"dp[5][0]":5} },
+      { title: "4. 初始化边界-列", desc: "dp[0][j] = j，将空串转为word2前j个字符需插入j次", line: 11, state: {"dp[0][1]":1,"dp[0][2]":2,"dp[0][3]":3} },
+      { title: "5. 遍历DP表", desc: "开始双重循环填充dp[i][j]", line: 15, state: {i:1, j:1, c1:"'h'", c2:"'r'"} },
+      { title: "6. 比较字符 'h' vs 'r'", desc: "字符不同，取删除/插入/替换的最小值+1", line: 17, state: {"dp[0][0]":0,"dp[0][1]":1,"dp[1][0]":1, result:1} },
+      { title: "7. 状态转移 - 替换", desc: "dp[1][1] = 1 + min(1, 1, 0) = 1 (替换h为r)", line: 21, state: {operation:"替换", cost:1} },
+      { title: "8. 继续填充 - 匹配 'o'", desc: "word1[1]='o', word2[1]='o'，字符相同！", line: 17, state: {i:2, j:2, match:true} },
+      { title: "9. 状态转移 - 无需操作", desc: "dp[2][2] = dp[1][1] = 1 (字符相同，继承左上值)", line: 18, state: {dp22:1, note:"无需额外操作"} },
+      { title: "10. 最终结果", desc: "dp[5][3] = 3，将'horse'转为'ros'最少需要3次操作", line: 25, state: {result:3, path:"horse→rorse→rose→ros"} }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({num, text}) => {
+      const line = document.createElement('div');
+      line.className = 'code-line';
+      line.dataset.line = num;
+      line.innerHTML = `<span class="line-number">${num}</span><span>${text}</span>`;
+      line.onclick = () => activateByLine(num);
+      codeBlock.appendChild(line);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        ${step.state ? `<div class="state-preview">${Object.entries(step.state).map(([k,v]) => `<span class="var">${k}</span>=<span class="val">${v}</span>`).join(', ')}</div>` : ''}
+      `;
+      div.onclick = () => activateByStep(idx);
+      vizSteps.appendChild(div);
+    });
+
+    // DP可视化
+    function renderDPTable() {
+      const dp = [
+        [0, 1, 2, 3],
+        [1, 1, 2, 3],
+        [2, 2, 1, 2],
+        [3, 2, 2, 2],
+        [4, 3, 3, 2],
+        [5, 4, 4, 3]
+      ];
+      const word1 = "horse", word2 = "ros";
+      
+      let html = '<div style="display: grid; grid-template-columns: auto repeat(4, 1fr); gap: 4px; align-items: center;">';
+      html += '<div></div><div class="dp-cell header">∅</div>';
+      for (let c of word2) html += `<div class="dp-cell header">${c}</div>`;
+      
+      for (let i = 0; i <= 5; i++) {
+        html += `<div class="dp-cell header">${i === 0 ? '∅' : word1[i-1]}</div>`;
+        for (let j = 0; j <= 3; j++) {
+          html += `<div class="dp-cell" id="dp-${i}-${j}">${dp[i][j]}</div>`;
+        }
+      }
+      html += '</div>';
+      document.getElementById('dpVisualization').innerHTML = '<h3 style="margin-top:0">DP表状态</h3>' + html;
+    }
+    renderDPTable();
+
+    // 激活函数
+    function activateByStep(idx) {
+      document.querySelectorAll('.viz-step').forEach((el, i) => el.classList.toggle('active', i === idx));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      const line = steps[idx].line;
+      const lineEl = document.querySelector(`.code-line[data-line="${line}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 高亮DP表
+      document.querySelectorAll('.dp-cell').forEach(el => el.classList.remove('highlight'));
+      if (idx === 2) { // 行初始化
+        for (let i = 1; i <= 5; i++) document.getElementById(`dp-${i}-0`)?.classList.add('highlight');
+      } else if (idx === 3) { // 列初始化
+        for (let j = 1; j <= 3; j++) document.getElementById(`dp-0-${j}`)?.classList.add('highlight');
+      } else if (idx >= 5 && idx <= 9) {
+        const coords = [[1,1],[1,1],[1,1],[2,2],[2,2]];
+        const [i,j] = coords[idx-5] || [0,0];
+        document.getElementById(`dp-${i}-${j}`)?.classList.add('highlight');
+      } else if (idx === 9) {
+        document.getElementById('dp-5-3')?.classList.add('highlight');
+      }
+    }
+
+    function activateByLine(lineNum) {
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelector(`.code-line[data-line="${lineNum}"]`)?.classList.add('active');
+      
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        document.querySelectorAll('.viz-step').forEach((el, i) => el.classList.toggle('active', i === stepIdx));
+      }
+    }
+
+    // 默认激活第一步
+    activateByStep(0);
+  </script>
+</body>
+</html>
