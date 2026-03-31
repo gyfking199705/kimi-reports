@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #208 - 实现 Trie (前缀树)</title>
+  <style>
+    :root { 
+      --primary: #8b5cf6; 
+      --secondary: #6366f1;
+      --accent: #ec4899;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { 
+      font-size: 2rem;
+      margin-bottom: 8px; 
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle { 
+      color: var(--text-muted); 
+      margin-bottom: 32px; 
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty { 
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tag { 
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      border: 1px solid #30363d;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 2px 0; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(139, 92, 246, 0.3); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+      padding-left: 3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+    }
+    .code-content { flex: 1; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      max-height: 500px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    .viz-step { 
+      padding: 14px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      background: #3d4e66;
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(139, 92, 246, 0.2);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+    .step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .step-state {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .complexity-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .type { color: #ff7b72; }
+    .param { color: #ffa657; }
+    .self { color: #79c0ff; }
+    .struct-title {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .trie-visual {
+      background: #0d1117;
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .trie-node {
+      display: inline-block;
+      padding: 8px 12px;
+      margin: 4px;
+      border-radius: 8px;
+      background: #1e293b;
+      border: 2px solid transparent;
+      text-align: center;
+    }
+    .trie-node.root { border-color: #ec4899; }
+    .trie-node.word-end { background: rgba(16, 185, 129, 0.3); border-color: #22c55e; }
+    .trie-edge {
+      color: var(--text-muted);
+      margin: 0 4px;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .highlight-box h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    .example-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    ul { line-height: 2; }
+    code {
+      background: rgba(139, 92, 246, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #208 - 实现 Trie (前缀树)</h1>
+  <p class="subtitle">
+    <span class="difficulty">Medium</span>
+    <span class="tag">Trie</span>
+    <span class="tag">字符串</span>
+    <span class="tag">哈希表</span>
+    <span class="tag">设计</span>
+  </p>
+  
+  <div class="section">
+    <h2><span>📋</span> 题目描述</h2>
+    <p><strong>Trie</strong>（发音类似 "try"），或称<strong>前缀树</strong>或<strong>字典树</strong>，是一种用于高效存储和检索字符串数据集中的键的树形数据结构。</p>
+    
+    <div class="example-box">
+      <strong>应用场景：</strong>
+      <ul>
+        <li>搜索引擎的<strong>自动补全</strong>功能</li>
+        <li>输入法的<strong>联想提示</strong></li>
+        <li>拼写检查器的<strong>单词验证</strong></li>
+        <li>IP路由表的<strong>最长前缀匹配</strong></li>
+      </ul>
+    </div>
+    
+    <p>请你实现 Trie 类：</p>
+    <ul>
+      <li><code>Trie()</code> 初始化前缀树对象。</li>
+      <li><code>void insert(String word)</code> 向前缀树中插入字符串 <code>word</code>。</li>
+      <li><code>boolean search(String word)</code> 如果字符串 <code>word</code> 在前缀树中，返回 <code>true</code>；否则，返回 <code>false</code>。</li>
+      <li><code>boolean startsWith(String prefix)</code> 如果之前已经插入的字符串 <code>word</code> 的前缀之一为 <code>prefix</code>，返回 <code>true</code>；否则，返回 <code>false</code>。</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2><span>💡</span> 核心思路</h2>
+    <div class="highlight-box">
+      <h4>Trie 的核心结构</h4>
+      <p>Trie 是一棵<strong>多叉树</strong>，每个节点包含：</p>
+      <ul>
+        <li><strong>children</strong>：子节点字典，键是字符，值是子节点</li>
+        <li><strong>is_end</strong>：布尔标记，表示从根到此节点是否构成一个完整单词</li>
+      </ul>
+    </div>
+    
+    <div class="trie-visual">
+      <div style="color: var(--text-muted); margin-bottom: 12px;">Trie 结构示例（存储 "app", "apple", "apply"）：</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <div class="trie-node root">根</div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span class="trie-edge">↓ a</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <div class="trie-node">a</div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span class="trie-edge">↓ p</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <div class="trie-node">p</div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span class="trie-edge">↓ p</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <div class="trie-node word-end">p ✓</div>
+          <span class="trie-edge">→ l</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 40px;">
+          <div class="trie-node">l</div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 100px;">
+          <span class="trie-edge">↓ e</span>
+          <span class="trie-edge">↓ y</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 60px;">
+          <div class="trie-node word-end">e ✓ (apple)</div>
+          <div class="trie-node word-end">y ✓ (apply)</div>
+        </div>
+      </div>
+    </div>
+    
+    <p style="margin-top: 20px;"><strong>关键操作：</strong></p>
+    <ul>
+      <li><strong>插入</strong>：从根开始，逐字符创建/遍历节点，最后标记 is_end = True</li>
+      <li><strong>搜索</strong>：逐字符匹配，走到尽头时检查 is_end 是否为 True</li>
+      <li><strong>前缀匹配</strong>：只需逐字符匹配成功即可，不需要检查 is_end</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2><span>🎬</span> 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 class="struct-title">Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2><span>📊</span> 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>操作</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>insert</code></td>
+          <td><strong>O(m)</strong></td>
+          <td>O(m)</td>
+          <td>m 为单词长度，需遍历/创建每个字符</td>
+        </tr>
+        <tr>
+          <td><code>search</code></td>
+          <td><strong>O(m)</strong></td>
+          <td>O(1)</td>
+          <td>遍历每个字符，无需额外空间</td>
+        </tr>
+        <tr>
+          <td><code>startsWith</code></td>
+          <td><strong>O(m)</strong></td>
+          <td>O(1)</td>
+          <td>与 search 类似，但不检查 is_end</td>
+        </tr>
+        <tr>
+          <td>总体</td>
+          <td>O(m)</td>
+          <td><strong>O(n × m)</strong></td>
+          <td>n 为单词数量，最坏情况无公共前缀</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2><span>🎯</span> 面试要点</h2>
+    <ul style="line-height: 2;">
+      <li><strong>为什么要用 Trie？</strong> 字符串集合的搜索、前缀匹配可以达到 O(m) 时间，哈希表无法高效判断前缀</li>
+      <li><strong>Trie vs 哈希表</strong>：Trie 适合前缀搜索和自动补全，哈希表适合精确匹配</li>
+      <li><strong>空间优化</strong>：可以使用"压缩 Trie"或"双数组 Trie"减少空间占用</li>
+      <li><strong>变种扩展</strong>：可存储额外信息（如词频、热词），支持删除操作</li>
+      <li><strong>边界情况</strong>：空字符串、重复插入、特殊字符处理</li>
+    </ul>
+    
+    <div class="highlight-box" style="margin-top: 20px;">
+      <h4>进阶：带词频统计的 Trie</h4>
+      <p>每个节点额外维护 <code>count</code> 字段，记录经过该节点的单词数量，可用于实现热词推荐。</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2><span>🔗</span> 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a class="problem-card" href="https://leetcode.cn/problems/implement-trie-ii-prefix-tree/" target="_blank">
+        <h4>1804. 实现 Trie II（前缀树）</h4>
+        <p>增加计数功能，统计前缀对应的单词数量</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/word-search-ii/" target="_blank">
+        <h4>212. 单词搜索 II</h4>
+        <p>在二维网格中用 Trie 优化多单词搜索</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/design-add-and-search-words-data-structure/" target="_blank">
+        <h4>211. 添加与搜索单词 - 数据结构设计</h4>
+        <p>Trie 支持通配符 . 匹配任意字符</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/map-sum-pairs/" target="_blank">
+        <h4>677. 键值映射</h4>
+        <p>Trie 存储键值对，求前缀对应的值之和</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/replace-words/" target="_blank">
+        <h4>648. 单词替换</h4>
+        <p>用 Trie 快速找最短词根进行替换</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/lexicographical-numbers/" target="_blank">
+        <h4>386. 字典序排数</h4>
+        <p>利用 Trie 的前序遍历生成字典序数字</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Python代码，按行分割用于高亮
+    const codeLines = [
+      {line: 1, content: '<span class="keyword">class</span> <span class="class">TrieNode</span>:'},
+      {line: 2, content: '    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):'},
+      {line: 3, content: '        <span class="comment"># 子节点: 字符 -> TrieNode 的映射</span>'},
+      {line: 4, content: '        <span class="self">self</span>.children = {}'},
+      {line: 5, content: '        <span class="comment"># 标记到此节点是否构成完整单词</span>'},
+      {line: 6, content: '        <span class="self">self</span>.is_end = <span class="keyword">False</span>'},
+      {line: 7, content: ''},
+      {line: 8, content: '<span class="keyword">class</span> <span class="class">Trie</span>:'},
+      {line: 9, content: '    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):'},
+      {line: 10, content: '        <span class="comment"># 初始化根节点</span>'},
+      {line: 11, content: '        <span class="self">self</span>.root = TrieNode()'},
+      {line: 12, content: ''},
+      {line: 13, content: '    <span class="keyword">def</span> <span class="function">insert</span>(<span class="self">self</span>, <span class="param">word</span>: <span class="type">str</span>) -> <span class="keyword">None</span>:'},
+      {line: 14, content: '        node = <span class="self">self</span>.root  <span class="comment"># 从根节点开始</span>'},
+      {line: 15, content: '        <span class="keyword">for</span> char <span class="keyword">in</span> word:  <span class="comment"># 遍历每个字符</span>'},
+      {line: 16, content: '            <span class="keyword">if</span> char <span class="keyword">not in</span> node.children:'},
+      {line: 17, content: '                node.children[char] = TrieNode()  <span class="comment"># 创建新节点</span>'},
+      {line: 18, content: '            node = node.children[char]  <span class="comment"># 移动到子节点</span>'},
+      {line: 19, content: '        node.is_end = <span class="keyword">True</span>  <span class="comment"># 标记单词结尾</span>'},
+      {line: 20, content: ''},
+      {line: 21, content: '    <span class="keyword">def</span> <span class="function">search</span>(<span class="self">self</span>, <span class="param">word</span>: <span class="type">str</span>) -> <span class="type">bool</span>:'},
+      {line: 22, content: '        node = <span class="self">self</span>._find_node(word)'},
+      {line: 23, content: '        <span class="comment"># 路径存在且是完整单词</span>'},
+      {line: 24, content: '        <span class="keyword">return</span> node <span class="keyword">is not None</span> <span class="keyword">and</span> node.is_end'},
+      {line: 25, content: ''},
+      {line: 26, content: '    <span class="keyword">def</span> <span class="function">startsWith</span>(<span class="self">self</span>, <span class="param">prefix</span>: <span class="type">str</span>) -> <span class="type">bool</span>:'},
+      {line: 27, content: '        <span class="comment"># 只需路径存在</span>'},
+      {line: 28, content: '        <span class="keyword">return</span> <span class="self">self</span>._find_node(prefix) <span class="keyword">is not None</span>'},
+      {line: 29, content: ''},
+      {line: 30, content: '    <span class="keyword">def</span> <span class="function">_find_node</span>(<span class="self">self</span>, <span class="param">s</span>: <span class="type">str</span>):  <span class="comment"># 辅助: 查找路径</span>'},
+      {line: 31, content: '        node = <span class="self">self</span>.root'},
+      {line: 32, content: '        <span class="keyword">for</span> char <span class="keyword">in</span> s:'},
+      {line: 33, content: '            <span class="keyword">if</span> char <span class="keyword">not in</span> node.children:'},
+      {line: 34, content: '                <span class="keyword">return</span> <span class="keyword">None</span>  <span class="comment"># 路径不存在</span>'},
+      {line: 35, content: '            node = node.children[char]'},
+      {line: 36, content: '        <span class="keyword">return</span> node  <span class="comment"># 返回最后节点</span>'},
+    ];
+    
+    // 步骤与代码行映射
+    const steps = [
+      {id: 1, title: "定义 TrieNode 类", desc: "每个节点包含 children 字典和 is_end 标记", line: 1, state: "class TrieNode"},
+      {id: 2, title: "初始化节点", desc: "children 初始化为空字典，is_end 为 False", line: 2, state: "children={}, is_end=False"},
+      {id: 3, title: "定义 Trie 类", desc: "前缀树类，包含根节点", line: 8, state: "class Trie"},
+      {id: 4, title: "Trie 初始化", desc: "创建根节点 root", line: 9, state: "self.root = TrieNode()"},
+      {id: 5, title: "insert 方法开始", desc: "插入单词，从根节点出发", line: 13, state: "调用 insert(word)"},
+      {id: 6, title: "定位到根节点", desc: "node 指向 root，准备遍历", line: 14, state: "node = self.root"},
+      {id: 7, title: "遍历单词字符", desc: "逐个字符处理单词", line: 15, state: "for char in word"},
+      {id: 8, title: "检查子节点存在", desc: "如果当前字符不在 children 中", line: 16, state: "if char not in node.children"},
+      {id: 9, title: "创建新节点", desc: "为新字符创建 TrieNode", line: 17, state: "node.children[char] = TrieNode()"},
+      {id: 10, title: "移动到子节点", desc: "node 指向当前字符对应的子节点", line: 18, state: "node = node.children[char]"},
+      {id: 11, title: "标记单词结尾", desc: "循环结束，标记这是一个完整单词", line: 19, state: "node.is_end = True"},
+      {id: 12, title: "search 方法开始", desc: "搜索单词是否存在", line: 21, state: "调用 search(word)"},
+      {id: 13, title: "调用 _find_node", desc: "复用查找逻辑定位到结尾节点", line: 22, state: "node = self._find_node(word)"},
+      {id: 14, title: "检查结果", desc: "路径存在且 is_end=True 才返回 True", line: 24, state: "return node is not None and node.is_end"},
+      {id: 15, title: "startsWith 方法", desc: "检查前缀是否存在", line: 26, state: "调用 startsWith(prefix)"},
+      {id: 16, title: "前缀匹配逻辑", desc: "只需路径存在，不需要 is_end", line: 28, state: "return self._find_node(prefix) is not None"},
+      {id: 17, title: "_find_node 辅助方法", desc: "根据字符串查找对应的结束节点", line: 30, state: "def _find_node(self, s)"},
+      {id: 18, title: "从根开始遍历", desc: "node 指向 root，遍历字符串 s", line: 31, state: "node = self.root"},
+      {id: 19, title: "遍历字符串字符", desc: "逐个字符检查路径是否存在", line: 32, state: "for char in s"},
+      {id: 20, title: "路径不存在", desc: "某个字符不在 children 中，返回 None", line: 34, state: "return None"},
+      {id: 21, title: "移动到子节点", desc: "路径存在，继续向下", line: 35, state: "node = node.children[char]"},
+      {id: 22, title: "返回结束节点", desc: "遍历完成，返回最后的节点", line: 36, state: "return node"},
+    ];
+    
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({line, content}) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span class="code-content">${content}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line));
+      codeBlock.appendChild(div);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach(step => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = step.id;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="step-title">Step ${step.id}: ${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">对应代码行: ${step.line} | ${step.state}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(step.id));
+      vizSteps.appendChild(div);
+    });
+    
+    let activeStep = null;
+    
+    function highlightStep(stepId) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepId}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+      
+      // 高亮对应代码行
+      const step = steps.find(s => s.id === stepId);
+      if (step) {
+        const lineEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+        if (lineEl) {
+          lineEl.classList.add('active');
+          lineEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+      }
+      
+      activeStep = stepId;
+    }
+    
+    function highlightStepByLine(lineNum) {
+      const step = steps.find(s => s.line === lineNum);
+      if (step) {
+        highlightStep(step.id);
+      }
+    }
+    
+    // 默认高亮第一步
+    highlightStep(1);
+  </script>
+</body>
+</html>
