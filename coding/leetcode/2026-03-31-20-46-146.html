@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #146 - LRU缓存机制</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { color: var(--primary); margin-bottom: 8px; }
+    .subtitle { color: var(--text-muted); margin-bottom: 32px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty { 
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tag { 
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      border: 1px solid #30363d;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 2px 0; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+      padding-left: 3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+    }
+    .code-content { flex: 1; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      max-height: 500px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar {
+      width: 6px;
+    }
+    .viz-steps::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    .viz-step { 
+      padding: 14px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      background: #3d4e66;
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+    .step-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .step-state {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .complexity-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .type { color: #ff7b72; }
+    .param { color: #ffa657; }
+    .self { color: #79c0ff; }
+    .struct-title {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .cache-visual {
+      background: #0d1117;
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .cache-entry {
+      display: flex;
+      align-items: center;
+      padding: 6px 10px;
+      margin: 4px 0;
+      background: #1e293b;
+      border-radius: 6px;
+      border-left: 3px solid transparent;
+    }
+    .cache-entry.head { border-left-color: #22c55e; }
+    .cache-entry.tail { border-left-color: #ef4444; }
+    .cache-key { color: #f59e0b; min-width: 80px; }
+    .cache-val { color: #22c55e; }
+    .cache-arrow { color: var(--text-muted); margin: 0 10px; }
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .highlight-box h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #146 - LRU缓存机制</h1>
+  <p class="subtitle">设计并实现一个满足 LRU (最近最少使用) 缓存约束的数据结构</p>
+  
+  <div class="section">
+    <h2><span>📋</span> 题目描述</h2>
+    <div style="margin-bottom: 16px;">
+      <span class="difficulty">Medium</span>
+      <span class="tag">哈希表</span>
+      <span class="tag">双向链表</span>
+      <span class="tag">设计</span>
+    </div>
+    <p>请你设计并实现一个满足 <strong>LRU (最近最少使用) 缓存</strong> 约束的数据结构。</p>
+    <p>实现 <code>LRUCache</code> 类：</p>
+    <ul style="line-height: 2;">
+      <li><code>LRUCache(int capacity)</code> 以 <strong>正整数</strong> 作为容量 <code>capacity</code> 初始化 LRU 缓存</li>
+      <li><code>int get(int key)</code> 如果关键字 <code>key</code> 存在于缓存中，则返回关键字的值，否则返回 <code>-1</code></li>
+      <li><code>void put(int key, int value)</code> 如果关键字 <code>key</code> 已经存在，则变更其数据值 <code>value</code>；如果不存在，则向缓存中插入该组 <code>key-value</code>。如果插入操作导致关键字数量超过 <code>capacity</code>，则应该 <strong>逐出</strong> 最久未使用的关键字。</li>
+    </ul>
+    <p style="color: var(--text-muted); margin-top: 16px;">函数 <code>get</code> 和 <code>put</code> 必须以 <strong>O(1)</strong> 的平均时间复杂度运行。</p>
+  </div>
+  
+  <div class="section">
+    <h2><span>💡</span> 核心思路</h2>
+    <div class="highlight-box">
+      <h4>为什么需要双向链表 + 哈希表？</h4>
+      <p>LRU需要维护使用顺序，链表可以O(1)移动节点。但链表查找是O(n)，所以用哈希表记录key到节点的映射，实现O(1)查找。</p>
+    </div>
+    <p><strong>数据结构选择：</strong></p>
+    <ul>
+      <li><strong>双向链表</strong>：维护使用顺序，最近使用的放在头部，最久未使用的在尾部</li>
+      <li><strong>哈希表 (dict)</strong>：存储 key → 链表节点的映射，实现O(1)查找</li>
+    </ul>
+    <p><strong>关键操作：</strong></p>
+    <ul>
+      <li><code>get</code>：哈希表找到节点 → 移到链表头部 → 返回值</li>
+      <li><code>put</code>：存在则更新值+移头部；不存在则新建 → 超容则删尾部</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2><span>🎬</span> 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 class="struct-title">Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+    <div class="cache-visual" id="cacheViz" style="display: none;">
+      <div style="color: var(--text-muted); margin-bottom: 8px;">当前缓存状态：</div>
+      <div id="cacheContent"></div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2><span>📊</span> 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>操作</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>get</code></td>
+          <td><strong>O(1)</strong></td>
+          <td>O(1)</td>
+          <td>哈希表查找O(1) + 链表移动O(1)</td>
+        </tr>
+        <tr>
+          <td><code>put</code></td>
+          <td><strong>O(1)</strong></td>
+          <td>O(1)</td>
+          <td>哈希表操作O(1) + 链表操作O(1)</td>
+        </tr>
+        <tr>
+          <td>总体</td>
+          <td>O(1)</td>
+          <td><strong>O(capacity)</strong></td>
+          <td>最多存储capacity个键值对</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2><span>🎯</span> 面试要点</h2>
+    <ul style="line-height: 2;">
+      <li><strong>为什么用双向链表？</strong> 单向链表删除节点需要找到前驱节点O(n)，双向链表O(1)</li>
+      <li><strong>为什么用哈希表？</strong> 链表不支持O(1)按key查找</li>
+      <li><strong>边界情况</strong>：容量为0、重复put相同key、get不存在的key</li>
+      <li><strong>Python简化</strong>：可以用 <code>collections.OrderedDict</code> 或 <code>functools.lru_cache</code> 实现</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2><span>🔗</span> 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a class="problem-card" href="https://leetcode.cn/problems/lfu-cache/" target="_blank">
+        <h4>460. LFU缓存</h4>
+        <p>Least Frequently Used，最少使用频率淘汰策略，比LRU更难</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/design-hashmap/" target="_blank">
+        <h4>706. 设计哈希映射</h4>
+        <p>哈希表基础设计题，理解哈希表底层实现</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/design-linked-list/" target="_blank">
+        <h4>707. 设计链表</h4>
+        <p>链表基础设计题，实现双向链表的各种操作</p>
+      </a>
+      <a class="problem-card" href="https://leetcode.cn/problems/insert-delete-getrandom-o1/" target="_blank">
+        <h4>380. O(1)时间插入、删除和获取随机元素</h4>
+        <p>哈希表+数组的经典组合设计题</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Python代码，按行分割用于高亮
+    const codeLines = [
+      {line: 1, content: '<span class="keyword">class</span> <span class="class">DLinkedNode</span>:'},
+      {line: 2, content: '    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="param">key</span>=<span class="number">0</span>, <span class="param">val</span>=<span class="number">0</span>):'},
+      {line: 3, content: '        <span class="self">self</span>.key = key'},
+      {line: 4, content: '        <span class="self">self</span>.val = val'},
+      {line: 5, content: '        <span class="self">self</span>.prev = <span class="keyword">None</span>  <span class="comment"># 前驱指针</span>'},
+      {line: 6, content: '        <span class="self">self</span>.<span class="keyword">next</span> = <span class="keyword">None</span>  <span class="comment"># 后继指针</span>'},
+      {line: 7, content: ''},
+      {line: 8, content: '<span class="keyword">class</span> <span class="class">LRUCache</span>:'},
+      {line: 9, content: '    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="param">capacity</span>: <span class="type">int</span>):'},
+      {line: 10, content: '        <span class="self">self</span>.cache = {}  <span class="comment"># 哈希表: key -> DLinkedNode</span>'},
+      {line: 11, content: '        <span class="self">self</span>.cap = capacity'},
+      {line: 12, content: '        <span class="self">self</span>.size = <span class="number">0</span>'},
+      {line: 13, content: '        <span class="self">self</span>.head = DLinkedNode()  <span class="comment"># 伪头部</span>'},
+      {line: 14, content: '        <span class="self">self</span>.tail = DLinkedNode()  <span class="comment"># 伪尾部</span>'},
+      {line: 15, content: '        <span class="self">self</span>.head.<span class="keyword">next</span> = <span class="self">self</span>.tail  <span class="comment"># 初始化连接</span>'},
+      {line: 16, content: '        <span class="self">self</span>.tail.prev = <span class="self">self</span>.head'},
+      {line: 17, content: ''},
+      {line: 18, content: '    <span class="keyword">def</span> <span class="function">get</span>(<span class="self">self</span>, <span class="param">key</span>: <span class="type">int</span>) -> <span class="type">int</span>:'},
+      {line: 19, content: '        <span class="keyword">if</span> key <span class="keyword">not in</span> <span class="self">self</span>.cache:'},
+      {line: 20, content: '            <span class="keyword">return</span> -<span class="number">1</span>  <span class="comment"># 不存在返回-1</span>'},
+      {line: 21, content: '        node = <span class="self">self</span>.cache[key]'},
+      {line: 22, content: '        <span class="self">self</span>._move_to_head(node)  <span class="comment"># 移到头部(最近使用)</span>'},
+      {line: 23, content: '        <span class="keyword">return</span> node.val'},
+      {line: 24, content: ''},
+      {line: 25, content: '    <span class="keyword">def</span> <span class="function">put</span>(<span class="self">self</span>, <span class="param">key</span>: <span class="type">int</span>, <span class="param">value</span>: <span class="type">int</span>) -> <span class="keyword">None</span>:'},
+      {line: 26, content: '        <span class="keyword">if</span> key <span class="keyword">in</span> <span class="self">self</span>.cache:'},
+      {line: 27, content: '            node = <span class="self">self</span>.cache[key]'},
+      {line: 28, content: '            node.val = value  <span class="comment"># 更新值</span>'},
+      {line: 29, content: '            <span class="self">self</span>._move_to_head(node)  <span class="comment"># 移到头部</span>'},
+      {line: 30, content: '        <span class="keyword">else</span>:'},
+      {line: 31, content: '            node = DLinkedNode(key, value)  <span class="comment"># 新建节点</span>'},
+      {line: 32, content: '            <span class="self">self</span>.cache[key] = node'},
+      {line: 33, content: '            <span class="self">self</span>._add_to_head(node)  <span class="comment"># 添加到头部</span>'},
+      {line: 34, content: '            <span class="self">self</span>.size += <span class="number">1</span>'},
+      {line: 35, content: '            <span class="keyword">if</span> <span class="self">self</span>.size > <span class="self">self</span>.cap:'},
+      {line: 36, content: '                removed = <span class="self">self</span>._remove_tail()  <span class="comment"># 淘汰尾部</span>'},
+      {line: 37, content: '                <span class="keyword">del</span> <span class="self">self</span>.cache[removed.key]  <span class="comment"># 删除哈希表映射</span>'},
+      {line: 38, content: '                <span class="self">self</span>.size -= <span class="number">1</span>'},
+      {line: 39, content: ''},
+      {line: 40, content: '    <span class="keyword">def</span> <span class="function">_add_to_head</span>(<span class="self">self</span>, <span class="param">node</span>):  <span class="comment"># 辅助: 节点添加到头部</span>'},
+      {line: 41, content: '        node.prev = <span class="self">self</span>.head'},
+      {line: 42, content: '        node.<span class="keyword">next</span> = <span class="self">self</span>.head.<span class="keyword">next</span>'},
+      {line: 43, content: '        <span class="self">self</span>.head.<span class="keyword">next</span>.prev = node'},
+      {line: 44, content: '        <span class="self">self</span>.head.<span class="keyword">next</span> = node'},
+      {line: 45, content: ''},
+      {line: 46, content: '    <span class="keyword">def</span> <span class="function">_remove_node</span>(<span class="self">self</span>, <span class="param">node</span>):  <span class="comment"># 辅助: 删除指定节点</span>'},
+      {line: 47, content: '        node.prev.<span class="keyword">next</span> = node.<span class="keyword">next</span>'},
+      {line: 48, content: '        node.<span class="keyword">next</span>.prev = node.prev'},
+      {line: 49, content: ''},
+      {line: 50, content: '    <span class="keyword">def</span> <span class="function">_move_to_head</span>(<span class="self">self</span>, <span class="param">node</span>):  <span class="comment"># 辅助: 移到头部</span>'},
+      {line: 51, content: '        <span class="self">self</span>._remove_node(node)'},
+      {line: 52, content: '        <span class="self">self</span>._add_to_head(node)'},
+      {line: 53, content: ''},
+      {line: 54, content: '    <span class="keyword">def</span> <span class="function">_remove_tail</span>(<span class="self">self</span>):  <span class="comment"># 辅助: 删除尾部节点</span>'},
+      {line: 55, content: '        node = <span class="self">self</span>.tail.prev'},
+      {line: 56, content: '        <span class="self">self</span>._remove_node(node)'},
+      {line: 57, content: '        <span class="keyword">return</span> node'},
+    ];
+    
+    // 步骤与代码行映射
+    const steps = [
+      {id: 1, title: "定义双向链表节点", desc: "每个节点保存key、val、prev、next指针", line: 1, state: "初始化DLinkedNode类"},
+      {id: 2, title: "LRUCache初始化", desc: "创建哈希表、设置容量、建立伪头尾节点", line: 9, state: "cache={}, cap=capacity, size=0"},
+      {id: 3, title: "连接伪头尾节点", desc: "初始时链表为空，head.next=tail, tail.prev=head", line: 15, state: "head ↔ tail"},
+      {id: 4, title: "get方法开始", desc: "根据key获取值，不存在返回-1", line: 18, state: "调用get(key)"},
+      {id: 5, title: "检查key是否存在", desc: "哈希表O(1)查找，不存在直接返回-1", line: 19, state: "if key not in cache"},
+      {id: 6, title: "获取节点并移到头部", desc: "找到节点，移动到链表头部表示最近使用", line: 21, state: "node = cache[key]"},
+      {id: 7, title: "调用_move_to_head", desc: "先删除节点，再添加到头部", line: 22, state: "_move_to_head(node)"},
+      {id: 8, title: "返回节点值", desc: "get操作完成，返回node.val", line: 23, state: "return node.val"},
+      {id: 9, title: "put方法开始", desc: "插入或更新key-value", line: 25, state: "调用put(key, value)"},
+      {id: 10, title: "key已存在?", desc: "检查是否需要更新已有值", line: 26, state: "if key in cache"},
+      {id: 11, title: "更新已有节点", desc: "修改值并移到头部", line: 27, state: "node.val = value"},
+      {id: 12, title: "创建新节点", desc: "key不存在，新建DLinkedNode", line: 31, state: "node = DLinkedNode(key, value)"},
+      {id: 13, title: "加入哈希表", desc: "建立key到节点的映射", line: 32, state: "cache[key] = node"},
+      {id: 14, title: "添加到链表头部", desc: "新节点是最新使用的", line: 33, state: "_add_to_head(node)"},
+      {id: 15, title: "检查容量", desc: "size超过capacity需要淘汰", line: 35, state: "if size > cap"},
+      {id: 16, title: "淘汰最久未使用", desc: "删除尾部节点及其哈希映射", line: 36, state: "removed = _remove_tail()"},
+      {id: 17, title: "_add_to_head实现", desc: "将节点插入head和head.next之间", line: 40, state: "node插入头部"},
+      {id: 18, title: "_remove_node实现", desc: "修改前后指针跳过当前节点", line: 46, state: "从链表中断开node"},
+      {id: 19, title: "_move_to_head实现", desc: "组合remove和add操作", line: 50, state: "remove + add_to_head"},
+      {id: 20, title: "_remove_tail实现", desc: "删除tail.prev节点并返回", line: 54, state: "return tail.prev"},
+    ];
+    
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({line, content}) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line;
+      div.innerHTML = `<span class="line-number">${line}</span><span class="code-content">${content}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line));
+      codeBlock.appendChild(div);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach(step => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = step.id;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div class="step-title">Step ${step.id}: ${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">对应代码行: ${step.line} | ${step.state}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(step.id));
+      vizSteps.appendChild(div);
+    });
+    
+    let activeStep = null;
+    
+    function highlightStep(stepId) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepId}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+      
+      // 高亮对应代码行
+      const step = steps.find(s => s.id === stepId);
+      if (step) {
+        const lineEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+        if (lineEl) {
+          lineEl.classList.add('active');
+          lineEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+      }
+      
+      activeStep = stepId;
+    }
+    
+    function highlightStepByLine(lineNum) {
+      const step = steps.find(s => s.line === lineNum);
+      if (step) {
+        highlightStep(step.id);
+      }
+    }
+    
+    // 默认高亮第一步
+    highlightStep(1);
+  </script>
+</body>
+</html>
