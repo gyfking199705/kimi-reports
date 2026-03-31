@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #11 - 盛最多水的容器</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 8px; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.08); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { max-height: 400px; overflow-y: auto; }
+    .viz-step { padding: 14px 16px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #3d4b5f; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.25); }
+    .viz-step h4 { margin: 0 0 6px 0; color: #94a3b8; font-size: 12px; text-transform: uppercase; }
+    .viz-step p { margin: 0; font-size: 14px; }
+    .step-state { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; font-family: monospace; font-size: 12px; color: #a5d6ff; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+    .problem-card .difficulty { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 10px; }
+    .difficulty-easy { background: #166534; color: #4ade80; }
+    .difficulty-medium { background: #854d0e; color: #fbbf24; }
+    .difficulty-hard { background: #991b1b; color: #f87171; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .var { color: #ffa657; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    th { color: var(--primary); font-weight: 600; }
+    .visual-bar { height: 100px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin: 20px 0; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; }
+    .bar { width: 30px; background: linear-gradient(to top, #6366f1, #818cf8); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; color: white; font-size: 11px; padding-bottom: 4px; transition: all 0.3s; }
+    .bar.left { background: linear-gradient(to top, #10b981, #34d399); }
+    .bar.right { background: linear-gradient(to top, #f59e0b, #fbbf24); }
+    .bar.highlight { box-shadow: 0 0 20px var(--primary); transform: scaleY(1.05); }
+    .bar-arrow { position: absolute; bottom: -25px; font-size: 16px; }
+    .water-area { position: absolute; bottom: 0; background: rgba(99, 102, 241, 0.3); border-radius: 4px; transition: all 0.5s; }
+    h1 { font-size: 32px; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
+    .tag { display: inline-block; padding: 4px 12px; background: rgba(99,102,241,0.2); color: var(--primary); border-radius: 20px; font-size: 12px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #11 - 盛最多水的容器</h1>
+  <p class="subtitle">
+    <span class="tag">双指针</span>
+    <span class="tag">Medium</span>
+    <span class="tag">经典面试题</span>
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个长度为 n 的整数数组 height。有 n 条垂线，第 i 条线的两个端点是 (i, 0) 和 (i, height[i])。</p>
+    <p>找出其中的两条线，使得它们与 x 轴共同构成的容器可以容纳最多的水。</p>
+    <p>返回容器可以储存的最大水量。</p>
+    <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; margin-top: 16px;">
+      <strong>注意：</strong>你不能倾斜容器。
+    </div>
+    
+    <div class="visual-bar" id="demoBar">
+      <div class="bar left" style="height: 20%;">1</div>
+      <div class="bar" style="height: 100%;">8</div>
+      <div class="bar" style="height: 80%;">6</div>
+      <div class="bar" style="height: 66%;">2</div>
+      <div class="bar" style="height: 88%;">5</div>
+      <div class="bar" style="height: 50%;">4</div>
+      <div class="bar" style="height: 100%;">8</div>
+      <div class="bar right" style="height: 75%;">3</div>
+      <div class="bar" style="height: 90%;">7</div>
+    </div>
+    <p style="text-align: center; color: #94a3b8; font-size: 14px;">输入: height = [1,8,6,2,5,4,8,3,7] &nbsp;|&nbsp; 输出: 49</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps"></div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <tr>
+        <th>指标</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td>O(n)</td>
+        <td>双指针从两端向中间移动，最多遍历 n 个元素</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td>O(1)</td>
+        <td>只使用了常数级别的额外空间</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    <p><strong>核心思想：双指针</strong></p>
+    <p>设两个指针分别指向数组两端，计算当前容器的容量。由于容器的容量由较短的那条线决定，因此每次移动较短的那条线的指针，才有可能获得更大的容量。</p>
+    <ul>
+      <li>面积 = min(height[left], height[right]) × (right - left)</li>
+      <li>移动较高一侧的指针，宽度减小，高度受限于另一侧，面积必然减小</li>
+      <li>移动较短一侧的指针，虽然宽度减小，但高度可能增加，面积可能增大</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/trapping-rain-water/" class="problem-card" target="_blank">
+        <h4>#42 接雨水</h4>
+        <p>同样是"水"相关的问题，但考查的是不同的思路：每个位置能接多少水取决于左右最高高度。</p>
+        <span class="difficulty difficulty-hard">Hard</span>
+      </a>
+      <a href="https://leetcode.cn/problems/container-with-most-water-ii/" class="problem-card" target="_blank">
+        <h4>#双指针专题</h4>
+        <p>双指针是面试中非常常见的技巧，建议多做类似题目巩固。</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+      <a href="https://leetcode.cn/problems/two-sum/" class="problem-card" target="_blank">
+        <h4>#1 两数之和</h4>
+        <p>同样是数组问题，可以用哈希表或双指针解决，是入门经典题。</p>
+        <span class="difficulty difficulty-easy">Easy</span>
+      </a>
+      <a href="https://leetcode.cn/problems/3sum/" class="problem-card" target="_blank">
+        <h4>#15 三数之和</h4>
+        <p>排序后使用双指针，是双指针技巧的经典应用。</p>
+        <span class="difficulty difficulty-medium">Medium</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Python代码
+    const pythonCode = `class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        left, right = 0, len(height) - 1
+        max_area = 0
+        
+        while left < right:
+            # 计算当前面积
+            width = right - left
+            h = min(height[left], height[right])
+            current_area = width * h
+            max_area = max(max_area, current_area)
+            
+            # 移动较短的那一侧
+            if height[left] < height[right]:
+                left += 1
+            else:
+                right -= 1
+        
+        return max_area`;
+
+    // 步骤与代码行映射
+    const steps = [
+      {title: "初始化指针", desc: "left指针指向数组开头，right指针指向数组末尾", line: 2, state: {left: 0, right: 8, max_area: 0}},
+      {title: "进入循环", desc: "当left < right时继续循环", line: 4, state: {condition: "0 < 8 = True"}},
+      {title: "计算宽度", desc: "width = right - left = 8 - 0 = 8", line: 6, state: {width: 8}},
+      {title: "计算高度", desc: "h = min(height[0], height[8]) = min(1, 7) = 1", line: 7, state: {height_left: 1, height_right: 7, h: 1}},
+      {title: "计算面积", desc: "current_area = 8 × 1 = 8", line: 8, state: {current_area: 8}},
+      {title: "更新最大面积", desc: "max_area = max(0, 8) = 8", line: 8, state: {max_area: 8}},
+      {title: "比较高度并移动", desc: "height[left]=1 < height[right]=7，移动left指针", line: 11, state: {action: "left += 1"}},
+      {title: "移动指针", desc: "left从0移动到1", line: 12, state: {left: 1, right: 8}},
+      {title: "下一轮循环", desc: "计算新面积: width=7, h=min(8,7)=7, area=49", line: 4, state: {current_area: 49, max_area: 49}},
+      {title: "继续直到相遇", desc: "重复上述过程直到left >= right", line: 4, state: {result: "返回max_area"}}
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    const lines = pythonCode.split('\n');
+    codeBlock.innerHTML = lines.map((line, i) => 
+      `<div class="code-line" data-line="${i+1}">
+        <span class="line-number">${i+1}</span>
+        <span>${highlightSyntax(line)}</span>
+      </div>`
+    ).join('');
+
+    function highlightSyntax(line) {
+      return line
+        .replace(/\b(def|class|if|else|while|return|import|from)\b/g, '<span class="keyword">$1</span>')
+        .replace(/\b(self|height|left|right|max_area|width|h|current_area|len|min|max|List|int)\b/g, '<span class="var">$1</span>')
+        .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
+        .replace(/#.*/g, '<span class="comment">$&</span>');
+    }
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    vizSteps.innerHTML = steps.map((step, i) => 
+      `<div class="viz-step" data-step="${i}" data-line="${step.line}">
+        <h4>步骤 ${i+1}</h4>
+        <p><strong>${step.title}</strong></p>
+        <p>${step.desc}</p>
+        ${formatState(step.state)}
+      </div>`
+    ).join('');
+
+    function formatState(state) {
+      const items = Object.entries(state).map(([k, v]) => `${k}=${v}`).join(', ');
+      return `<div class="step-state">${items}</div>`;
+    }
+
+    // 交互逻辑
+    let activeStep = -1;
+    let activeLine = -1;
+
+    document.querySelectorAll('.viz-step').forEach(step => {
+      step.addEventListener('click', () => {
+        const stepIdx = parseInt(step.dataset.step);
+        const lineNum = parseInt(step.dataset.line);
+        activateStep(stepIdx, lineNum);
+      });
+    });
+
+    document.querySelectorAll('.code-line').forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        // 找到对应的步骤
+        const stepIdx = steps.findIndex(s => s.line === lineNum);
+        if (stepIdx !== -1) {
+          activateStep(stepIdx, lineNum);
+        }
+      });
+    });
+
+    function activateStep(stepIdx, lineNum) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // 高亮对应代码行
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) {
+        lineEl.classList.add('active');
+        lineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      activeStep = stepIdx;
+      activeLine = lineNum;
+    }
+
+    // 默认激活第一步
+    activateStep(0, 2);
+  </script>
+</body>
+</html>
