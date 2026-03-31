@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #55 - 跳跃游戏</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-light: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.8;
+    }
+    h1 { 
+      font-size: 2.2rem; 
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .difficulty.medium {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left-color: var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.9rem;
+    }
+    .code-content {
+      font-family: 'SF Mono', monospace;
+      font-size: 0.95rem;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-step { 
+      padding: 16px; 
+      margin: 8px 0; 
+      border-radius: 12px; 
+      background: var(--surface-light); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover {
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.25);
+    }
+    .viz-step .step-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .viz-step .step-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .viz-step .step-state {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-var {
+      color: var(--warning);
+    }
+    .state-val {
+      color: var(--success);
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .prob-num {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .problem-card .prob-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .problem-card .prob-tag {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--surface-light);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .boolean { color: #ff7b72; }
+    .operator { color: #f0883e; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-light);
+    }
+    th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .array-viz {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .array-item {
+      width: 50px;
+      height: 50px;
+      background: var(--surface-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .array-item.reachable {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--success);
+    }
+    .array-item.current {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #55 - 跳跃游戏</h1>
+  <p class="subtitle"><span class="difficulty medium">Medium</span> 贪心算法 · 数组 · 动态规划</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个非负整数数组 <code>nums</code> ，你最初位于数组的 <strong>第一个下标</strong> 。</p>
+    <p>数组中的每个元素代表你在该位置可以跳跃的 <strong>最大长度</strong> 。</p>
+    <p>判断你是否能够到达最后一个下标。</p>
+    
+    <div class="highlight-box">
+      <strong>核心洞察：</strong>不需要模拟每一步的跳跃，只需关心「最远能到达哪里」。如果当前位置在可达范围内，就更新最远可达距离。
+    </div>
+    
+    <h3>示例</h3>
+    <pre style="background: rgba(0,0,0,0.2); margin-top: 12px;">
+输入: nums = [2,3,1,1,4]
+输出: true
+解释: 可以先跳 1 步，从下标 0 到达下标 1，然后再从下标 1 跳 3 步到达最后一个下标。
+
+输入: nums = [3,2,1,0,4]
+输出: false
+解释: 无论怎样，你总会到达下标为 3 的位置。但该下标的最大跳跃长度是 0，所以你永远不可能到达最后一个下标。</pre>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="array-viz" id="arrayViz">
+      <div class="array-item current" data-idx="0">2</div>
+      <div class="array-item" data-idx="1">3</div>
+      <div class="array-item" data-idx="2">1</div>
+      <div class="array-item" data-idx="3">1</div>
+      <div class="array-item" data-idx="4">4</div>
+    </div>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top: 0;">Python 实现</h3>
+        <pre><code id="codeBlock">
+        </code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>算法</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>贪心（推荐）</td>
+          <td>O(n)</td>
+          <td>O(1)</td>
+          <td>只需遍历一次，维护最远可达位置</td>
+        </tr>
+        <tr>
+          <td>动态规划</td>
+          <td>O(n²)</td>
+          <td>O(n)</td>
+          <td>dp[i]表示能否到达i，对每个位置检查前面所有可达位置</td>
+        </tr>
+        <tr>
+          <td>回溯（超时）</td>
+          <td>O(2ⁿ)</td>
+          <td>O(n)</td>
+          <td>枚举所有跳跃组合，不推荐</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 关键思路</h2>
+    <p><strong>贪心策略：</strong>维护一个变量 <code>max_reach</code> 表示当前能够到达的最远位置。</p>
+    <ul>
+      <li>遍历数组的每个位置 <code>i</code></li>
+      <li>如果 <code>i &gt; max_reach</code>，说明当前位置不可达，直接返回 <code>false</code></li>
+      <li>否则，更新 <code>max_reach = max(max_reach, i + nums[i])</code></li>
+      <li>如果 <code>max_reach &gt;= n-1</code>，提前返回 <code>true</code></li>
+    </ul>
+    
+    <div class="highlight-box">
+      <strong>为什么贪心是对的？</strong><br>
+      我们不关心具体怎么跳到位置 i，只关心「能不能跳到」。只要 i 在可达范围内（i ≤ max_reach），那么从 i 出发能到达的所有位置也都是可达的。这是一个典型的贪心选择性质——局部最优（尽可能延伸可达范围）导致全局最优（到达终点）。
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/jump-game-ii/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #45</div>
+        <div class="prob-title">跳跃游戏 II</div>
+        <span class="prob-tag">贪心 · 数组</span>
+      </a>
+      <a href="https://leetcode.cn/problems/jump-game-iii/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #1306</div>
+        <div class="prob-title">跳跃游戏 III</div>
+        <span class="prob-tag">BFS · DFS</span>
+      </a>
+      <a href="https://leetcode.cn/problems/jump-game-vii/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #1871</div>
+        <div class="prob-title">跳跃游戏 VII</div>
+        <span class="prob-tag">贪心 · 滑动窗口</span>
+      </a>
+      <a href="https://leetcode.cn/problems/gas-station/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #134</div>
+        <div class="prob-title">加油站</div>
+        <span class="prob-tag">贪心 · 数组</span>
+      </a>
+      <a href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #121</div>
+        <div class="prob-title">买卖股票的最佳时机</div>
+        <span class="prob-tag">贪心 · 动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/candy/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #135</div>
+        <div class="prob-title">分发糖果</div>
+        <span class="prob-tag">贪心 · 数组</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">canJump</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>]) -> <span class="keyword">bool</span>:' },
+      { num: 3, content: '        n = <span class="function">len</span>(nums)' },
+      { num: 4, content: '        max_reach = <span class="number">0</span>  <span class="comment"># 当前能到达的最远位置</span>' },
+      { num: 5, content: '        ' },
+      { num: 6, content: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):' },
+      { num: 7, content: '            <span class="comment"># 如果当前位置超过了最远可达位置，说明 unreachable</span>' },
+      { num: 8, content: '            <span class="keyword">if</span> i > max_reach:' },
+      { num: 9, content: '                <span class="keyword">return</span> <span class="boolean">False</span>' },
+      { num: 10, content: '            ' },
+      { num: 11, content: '            <span class="comment"># 更新最远可达位置</span>' },
+      { num: 12, content: '            max_reach = <span class="function">max</span>(max_reach, i + nums[i])' },
+      { num: 13, content: '            ' },
+      { num: 14, content: '            <span class="comment"># 如果能到达或超过最后一个位置，提前返回</span>' },
+      { num: 15, content: '            <span class="keyword">if</span> max_reach >= n - <span class="number">1</span>:' },
+      { num: 16, content: '                <span class="keyword">return</span> <span class="boolean">True</span>' },
+      { num: 17, content: '        ' },
+      { num: 18, content: '        <span class="keyword">return</span> <span class="boolean">True</span>  <span class="comment"># 循环结束说明可以到达</span>' },
+    ];
+    
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "初始化", 
+        desc: "获取数组长度，初始化 max_reach = 0", 
+        line: 4,
+        state: { n: 5, max_reach: 0, i: "—" }
+      },
+      {
+        title: "遍历数组 - i=0", 
+        desc: "位置0可达(0≤0)，从0可跳到位置2，更新max_reach=2", 
+        line: 12,
+        state: { i: 0, nums_i: 2, "i+nums[i]": 2, max_reach: 2 }
+      },
+      {
+        title: "遍历数组 - i=1", 
+        desc: "位置1可达(1≤2)，从1可跳到位置4，更新max_reach=4", 
+        line: 12,
+        state: { i: 1, nums_i: 3, "i+nums[i]": 4, max_reach: 4 }
+      },
+      {
+        title: "提前终止检查", 
+        desc: "max_reach(4) >= n-1(4)，已经可以到达终点，返回True", 
+        line: 16,
+        state: { max_reach: 4, "n-1": 4, result: "True ✓" }
+      }
+    ];
+    
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="code-content">${line.content}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line.num));
+      codeBlock.appendChild(div);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.dataset.line = step.line;
+      
+      let stateHtml = '<div class="step-state">';
+      for (const [key, val] of Object.entries(step.state)) {
+        stateHtml += `<span class="state-var">${key}</span>=<span class="state-val">${val}</span>  `;
+      }
+      stateHtml += '</div>';
+      
+      div.innerHTML = `
+        <div class="step-title">步骤 ${idx + 1}: ${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        ${stateHtml}
+      `;
+      div.addEventListener('click', () => highlightStep(idx));
+      vizSteps.appendChild(div);
+    });
+    
+    // 高亮步骤
+    function highlightStep(stepIdx) {
+      // 清除所有高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.array-item').forEach(el => el.classList.remove('current'));
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const lineNum = steps[stepIdx].line;
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 更新数组可视化
+      if (steps[stepIdx].state.i !== "—") {
+        const idx = steps[stepIdx].state.i;
+        const arrItem = document.querySelector(`.array-item[data-idx="${idx}"]`);
+        if (arrItem) arrItem.classList.add('current');
+      }
+    }
+    
+    // 根据代码行高亮步骤
+    function highlightStepByLine(lineNum) {
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+        if (stepEl) stepEl.classList.add('active');
+      }
+    }
+    
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
