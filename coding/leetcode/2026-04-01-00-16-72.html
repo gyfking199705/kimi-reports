@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #72 - 编辑距离</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --accent: #22d3ee; --success: #4ade80; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.8; }
+    h1 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 16px; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .difficulty { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #dc2626; color: white; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+    .code-line { display: flex; padding: 3px 12px; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.08); }
+    .code-line.active { background: rgba(99, 102, 241, 0.35); border-left: 3px solid #6366f1; margin-left: -3px; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .code-content { flex: 1; white-space: pre; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; margin: 20px 0; }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { padding: 14px 16px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(4px); border-color: rgba(99, 102, 241, 0.5); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+    .viz-step h4 { margin: 0 0 6px 0; color: var(--accent); font-size: 14px; }
+    .viz-step p { margin: 0; font-size: 13px; color: #cbd5e1; }
+    .dp-table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+    .dp-cell { padding: 10px; text-align: center; border-radius: 6px; background: #1e293b; font-family: monospace; font-size: 14px; }
+    .dp-cell.highlight { background: var(--primary); font-weight: bold; }
+    .dp-cell.current { background: var(--accent); color: #0f172a; }
+    .problem-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 20px; border: 1px solid #475569; transition: all 0.3s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--primary); }
+    .problem-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .complexity-table th, .complexity-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+    .complexity-table th { color: var(--primary); font-weight: 600; }
+    .complexity-table tr:hover { background: rgba(255,255,255,0.03); }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .operator { color: #79c0ff; } .builtin { color: #ffa657; }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; margin-right: 8px; background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+    .formula { background: #0d1117; padding: 16px 20px; border-radius: 10px; margin: 16px 0; font-family: monospace; border-left: 3px solid var(--primary); }
+    .example-box { background: #0d1117; border-radius: 10px; padding: 20px; margin: 16px 0; }
+    .example-box h4 { margin: 0 0 10px 0; color: var(--accent); }
+    .state-box { background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 8px; padding: 12px; margin-top: 10px; font-family: monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #72 - 编辑距离 <span class="difficulty">Hard</span></h1>
+  
+  <div style="margin-bottom: 24px;">
+    <span class="tag">动态规划</span>
+    <span class="tag">字符串</span>
+    <span class="tag">经典难题</span>
+  </div>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你两个单词 <code>word1</code> 和 <code>word2</code>，请返回将 <code>word1</code> 转换成 <code>word2</code> 所使用的最少操作数。</p>
+    <p>你可以对一个单词进行如下三种操作：</p>
+    <ul>
+      <li><strong>插入</strong> 一个字符</li>
+      <li><strong>删除</strong> 一个字符</li>
+      <li><strong>替换</strong> 一个字符</li>
+    </ul>
+    
+    <div class="example-box">
+      <h4>示例 1</h4>
+      <p><strong>输入：</strong>word1 = "horse", word2 = "ros"</p>
+      <p><strong>输出：</strong>3</p>
+      <p><strong>解释：</strong></p>
+      <p>horse → rorse (将 'h' 替换为 'r')</p>
+      <p>rorse → rose (删除 'r')</p>
+      <p>rose → ros (删除 'e')</p>
+    </div>
+    
+    <div class="example-box">
+      <h4>示例 2</h4>
+      <p><strong>输入：</strong>word1 = "intention", word2 = "execution"</p>
+      <p><strong>输出：</strong>5</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心思路</h2>
+    <p>这是一个经典的<strong>动态规划</strong>问题。定义 <code>dp[i][j]</code> 表示将 <code>word1[0..i-1]</code> 转换成 <code>word2[0..j-1]</code> 所需的最少操作数。</p>
+    
+    <div class="formula">
+      <strong>状态转移方程：</strong><br><br>
+      如果 word1[i-1] == word2[j-1]:<br>
+      &nbsp;&nbsp;dp[i][j] = dp[i-1][j-1]  &nbsp;&nbsp;// 字符相同，无需操作<br><br>
+      否则:<br>
+      &nbsp;&nbsp;dp[i][j] = min(<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;dp[i-1][j] + 1,    &nbsp;&nbsp;// 删除 word1[i-1]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;dp[i][j-1] + 1,    &nbsp;&nbsp;// 在 word1 中插入 word2[j-1]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;dp[i-1][j-1] + 1   &nbsp;&nbsp;// 替换 word1[i-1] 为 word2[j-1]<br>
+      &nbsp;&nbsp;)
+    </div>
+    
+    <p>关键是理解：<strong>增删改三种操作实际上是对称的</strong>。word1的删除 = word2的插入，word1的插入 = word2的删除。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top: 0; color: var(--accent);">Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>指标</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td>O(m × n)</td>
+        <td>需要填充 m×n 的DP表格，m和n分别是两个单词长度</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td>O(m × n)</td>
+        <td>二维DP数组空间，可优化至 O(min(m,n))</td>
+      </tr>
+      <tr>
+        <td>最优解法</td>
+        <td>DP + 滚动数组优化</td>
+        <td>空间优化后 O(min(m,n))</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🚀 空间优化版本</h2>
+    <pre><code><span class="code-line"><span class="line-number">1</span><span class="code-content"><span class="keyword">class</span> <span class="class">Solution</span>:</span></span>
+<span class="code-line"><span class="line-number">2</span><span class="code-content">    <span class="keyword">def</span> <span class="function">minDistance</span>(<span class="builtin">self</span>, word1: <span class="builtin">str</span>, word2: <span class="builtin">str</span>) -> <span class="builtin">int</span>:</span></span>
+<span class="code-line"><span class="line-number">3</span><span class="code-content">        m, n = <span class="builtin">len</span>(word1), <span class="builtin">len</span>(word2)</span></span>
+<span class="code-line"><span class="line-number">4</span><span class="code-content">        <span class="comment"># 确保 word1 是较短的，节省空间</span></span></span>
+<span class="code-line"><span class="line-number">5</span><span class="code-content">        <span class="keyword">if</span> m < n:</span></span>
+<span class="code-line"><span class="line-number">6</span><span class="code-content">            <span class="keyword">return</span> <span class="builtin">self</span>.minDistance(word2, word1)</span></span>
+<span class="code-line"><span class="line-number">7</span><span class="code-content">        </span></span>
+<span class="code-line"><span class="line-number">8</span><span class="code-content">        <span class="comment"># 只保留两行：上一行和当前行</span></span></span>
+<span class="code-line"><span class="line-number">9</span><span class="code-content">        prev = <span class="builtin">list</span>(<span class="builtin">range</span>(n + <span class="number">1</span>))</span></span>
+<span class="code-line"><span class="line-number">10</span><span class="code-content">        curr = [<span class="number">0</span>] * (n + <span class="number">1</span>)</span></span>
+<span class="code-line"><span class="line-number">11</span><span class="code-content">        </span></span>
+<span class="code-line"><span class="line-number">12</span><span class="code-content">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">1</span>, m + <span class="number">1</span>):</span></span>
+<span class="code-line"><span class="line-number">13</span><span class="code-content">            curr[<span class="number">0</span>] = i  <span class="comment"># 第一列：word1[0..i-1] 转空串需 i 次删除</span></span></span>
+<span class="code-line"><span class="line-number">14</span><span class="code-content">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">1</span>, n + <span class="number">1</span>):</span></span>
+<span class="code-line"><span class="line-number">15</span><span class="code-content">                <span class="keyword">if</span> word1[i - <span class="number">1</span>] == word2[j - <span class="number">1</span>]:</span></span>
+<span class="code-line"><span class="line-number">16</span><span class="code-content">                    curr[j] = prev[j - <span class="number">1</span>]</span></span>
+<span class="code-line"><span class="line-number">17</span><span class="code-content">                <span class="keyword">else</span>:</span></span>
+<span class="code-line"><span class="line-number">18</span><span class="code-content">                    curr[j] = <span class="builtin">min</span>(</span></span>
+<span class="code-line"><span class="line-number">19</span><span class="code-content">                        prev[j] + <span class="number">1</span>,      <span class="comment"># 删除</span></span></span>
+<span class="code-line"><span class="line-number">20</span><span class="code-content">                        curr[j - <span class="number">1</span>] + <span class="number">1</span>,  <span class="comment"># 插入</span></span></span>
+<span class="code-line"><span class="line-number">21</span><span class="code-content">                        prev[j - <span class="number">1</span>] + <span class="number">1</span>   <span class="comment"># 替换</span></span></span>
+<span class="code-line"><span class="line-number">22</span><span class="code-content">                    )</span></span>
+<span class="code-line"><span class="line-number">23</span><span class="code-content">            prev, curr = curr, prev  <span class="comment"># 交换引用，复用数组</span></span></span>
+<span class="code-line"><span class="line-number">24</span><span class="code-content">        </span></span>
+<span class="code-line"><span class="line-number">25</span><span class="code-content">        <span class="keyword">return</span> prev[n]</span></span></code></pre>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/delete-operation-for-two-strings/" class="problem-card" target="_blank">
+        <h4>#583 两个字符串的删除操作</h4>
+        <p>编辑距离的简化版，只允许删除操作。本质求最长公共子序列。</p>
+      </a>
+      <a href="https://leetcode.cn/problems/distinct-subsequences/" class="problem-card" target="_blank">
+        <h4>#115 不同的子序列</h4>
+        <p>动态规划求子序列个数，状态定义与编辑距离类似。</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-common-subsequence/" class="problem-card" target="_blank">
+        <h4>#1143 最长公共子序列</h4>
+        <p>编辑距离的孪生问题，LCS长度决定最少删除次数。</p>
+      </a>
+      <a href="https://leetcode.cn/problems/one-edit-distance/" class="problem-card" target="_blank">
+        <h4>#161 相隔为1的编辑距离</h4>
+        <p>判断两个字符串是否只相差一次编辑操作，编辑距离的应用。</p>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📝 面试要点</h2>
+    <ul>
+      <li><strong>状态定义</strong>：dp[i][j] 的含义是什么？为什么这样定义？</li>
+      <li><strong>边界条件</strong>：第一行和第一列如何初始化？</li>
+      <li><strong>状态转移</strong>：字符相等和不相等时分别怎么处理？</li>
+      <li><strong>空间优化</strong>：如何从 O(mn) 优化到 O(min(m,n))？</li>
+      <li><strong>变种问题</strong>：如果只允许两种操作怎么办？（考虑LCS）</li>
+    </ul>
+  </div>
+
+  <script>
+    // Python代码，按行分割
+    const pythonCode = `class Solution:
+    def minDistance(self, word1: str, word2: str) -> int:
+        m, n = len(word1), len(word2)
+        # dp[i][j] = word1[0..i-1] 转 word2[0..j-1] 的最少操作数
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+        
+        # 初始化第一行：空串转 word2[0..j-1] 需要 j 次插入
+        for j in range(n + 1):
+            dp[0][j] = j
+        
+        # 初始化第一列：word1[0..i-1] 转空串需要 i 次删除
+        for i in range(m + 1):
+            dp[i][0] = i
+        
+        # 填充DP表格
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if word1[i - 1] == word2[j - 1]:
+                    # 字符相同，无需操作，继承左上角
+                    dp[i][j] = dp[i - 1][j - 1]
+                else:
+                    # 取三种操作的最小值 + 1
+                    dp[i][j] = min(
+                        dp[i - 1][j] + 1,      # 删除
+                        dp[i][j - 1] + 1,      # 插入
+                        dp[i - 1][j - 1] + 1   # 替换
+                    )
+        
+        return dp[m][n]`;
+
+    // 步骤与代码行映射（基于上面的代码行号）
+    const steps = [
+      {title: "Step 1: 初始化方法", desc: "定义dp数组维度 (m+1) × (n+1)", line: 3, state: {m: 5, n: 3}},
+      {title: "Step 2: 创建DP表格", desc: "初始化 m+1 行 n+1 列的二维数组，全部置0", line: 4, state: {dp: "6×4 的零矩阵"}},
+      {title: "Step 3: 第一行初始化", desc: "dp[0][j] = j，空串转 word2[0..j-1] 需 j 次插入", line: 7, state: {row0: "[0, 1, 2, 3]"}},
+      {title: "Step 4: 第一列初始化", desc: "dp[i][0] = i，word1[0..i-1] 转空串需 i 次删除", line: 10, state: {col0: "[0, 1, 2, 3, 4, 5]"}},
+      {title: "Step 5: 进入主循环 i=1", desc: "处理 word1[0] = 'h'，与 word2 各字符比较", line: 13, state: {i: 1, char: "h"}},
+      {title: "Step 6: 内层循环 j=1", desc: "比较 word1[0]='h' 与 word2[0]='r'，不相等", line: 15, state: {j: 1, match: false}},
+      {title: "Step 7: 计算最小操作", desc: "min(dp[0][1]+1, dp[1][0]+1, dp[0][0]+1) = min(2,2,1) = 1", line: 19, state: {dp[1][1]: 1}},
+      {title: "Step 8: 内层循环 j=2", desc: "比较 'h' 与 'o'，不相等，计算得 dp[1][2]=2", line: 19, state: {dp[1][2]: 2}},
+      {title: "Step 9: 内层循环 j=3", desc: "比较 'h' 与 's'，不相等，计算得 dp[1][3]=3", line: 19, state: {dp[1][3]: 3}},
+      {title: "Step 10: 外层循环 i=2", desc: "处理 word1[1] = 'o'", line: 13, state: {i: 2, char: "o"}},
+      {title: "Step 11: 发现匹配 j=2", desc: "word1[1]='o' == word2[1]='o'，无需操作", line: 16, state: {match: true, dp[2][2]: 1}},
+      {title: "Step 12: 继续填充", desc: "利用已计算的子问题填充剩余单元格", line: 14, state: {progress: "33%"}},
+      {title: "Step 13: 外层循环继续", desc: "i=3 处理 'r'，发现与 word2[0]='r' 匹配", line: 15, state: {i: 3, j: 1, match: true}},
+      {title: "Step 14: 关键匹配点", desc: "'r'=='r'，继承 dp[2][0]=2，dp[3][1]=2", line: 17, state: {dp[3][1]: 2}},
+      {title: "Step 15: 完成DP表格", desc: "所有单元格计算完毕，dp[5][3] 即为答案", line: 24, state: {dp[5][3]: 3}},
+      {title: "Step 16: 返回结果", desc: "将 'horse' 转成 'ros' 最少需要 3 次操作", line: 26, state: {result: 3}}
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    const lines = pythonCode.split('\n');
+    codeBlock.innerHTML = lines.map((line, idx) => {
+      const highlighted = highlightSyntax(line);
+      return `<div class="code-line" data-line="${idx + 1}" onclick="selectStep(${idx + 1})">
+        <span class="line-number">${idx + 1}</span>
+        <span class="code-content">${highlighted}</span>
+      </div>`;
+    }).join('');
+
+    // 简单语法高亮
+    function highlightSyntax(line) {
+      return line
+        .replace(/\b(class|def|return|if|else|for|in|range)\b/g, '<span class="keyword">$1</span>')
+        .replace(/\b(len|min|list|str|int)\b/g, '<span class="builtin">$1</span>')
+        .replace(/(#.*)$/g, '<span class="comment">$1</span>')
+        .replace(/('[^']*'|"[^"]*")/g, '<span class="string">$1</span>')
+        .replace(/\b\d+\b/g, '<span class="number">$1</span>')
+        .replace(/\b(self|dp|word1|word2|m|n)\b/g, '<span class="class">$1</span>');
+    }
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    vizSteps.innerHTML = steps.map((step, idx) => `
+      <div class="viz-step" data-step="${idx}" data-line="${step.line}" onclick="selectStep(${step.line}, ${idx})">
+        <h4>${step.title}</h4>
+        <p>${step.desc}</p>
+        ${step.state ? `<div class="state-box">${JSON.stringify(step.state).slice(1, -1).replace(/"/g, '').replace(/,/g, ', ')}</div>` : ''}
+      </div>
+    `).join('');
+
+    // 选择步骤/代码行
+    let currentStep = 0;
+    
+    function selectStep(line, stepIdx) {
+      // 清除所有active
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 如果传了stepIdx，用传值，否则找最接近的
+      if (stepIdx !== undefined) {
+        currentStep = stepIdx;
+      } else {
+        // 找最接近的step
+        let closest = 0;
+        let minDiff = Infinity;
+        steps.forEach((step, idx) => {
+          const diff = Math.abs(step.line - line);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = idx;
+          }
+        });
+        currentStep = closest;
+      }
+      
+      // 高亮
+      const targetLine = steps[currentStep].line;
+      document.querySelector(`.viz-step[data-step="${currentStep}"]`).classList.add('active');
+      document.querySelector(`.code-line[data-line="${targetLine}"]`).classList.add('active');
+      
+      // 滚动到可视区域
+      document.querySelector(`.viz-step[data-step="${currentStep}"]`).scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    }
+
+    // 初始化选择第一个
+    selectStep(1, 0);
+  </script>
+</body>
+</html>
