@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #215 - 数组中的第K个最大元素</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-light: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.6;
+    }
+    h1 { color: var(--primary); margin-bottom: 8px; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+    .badge { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .badge-medium { background: var(--warning); color: #000; }
+    .badge-tag { background: var(--surface-light); color: var(--text-muted); }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px; 
+      border: 1px solid var(--border);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px; }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 0 4px 4px 0;
+    }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left: 3px solid #6366f1; 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    .viz-steps { 
+      max-height: 450px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 8px 0; 
+      border-radius: 10px; 
+      background: var(--surface-light);
+      cursor: pointer; 
+      border: 2px solid transparent; 
+      transition: all 0.2s;
+    }
+    .viz-step:hover { border-color: var(--primary); }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step .step-num {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    .viz-step .step-title { font-weight: 600; margin-bottom: 4px; }
+    .viz-step .step-desc { font-size: 13px; color: var(--text-muted); }
+    .viz-step .step-state { 
+      margin-top: 8px; 
+      padding: 8px 12px; 
+      background: var(--bg);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .code-container { background: var(--bg); border-radius: 12px; padding: 16px; }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 16px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .p-num { color: var(--primary); font-weight: bold; }
+    .problem-card .p-title { font-weight: 600; margin: 4px 0; }
+    .problem-card .p-tag { font-size: 12px; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--primary); font-weight: 600; background: var(--bg); }
+    tr:hover { background: var(--bg); }
+    .method-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .method-tab {
+      padding: 8px 16px;
+      background: var(--surface-light);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .method-tab:hover { background: var(--border); }
+    .method-tab.active { background: var(--primary); }
+    .method-content { display: none; }
+    .method-content.active { display: block; }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .operator { color: #ff7b72; }
+    .array-visual {
+      display: flex;
+      gap: 4px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      flex-wrap: wrap;
+    }
+    .array-item {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-light);
+      border-radius: 6px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .array-item.pivot { background: var(--warning); color: #000; }
+    .array-item.left { background: var(--success); }
+    .array-item.right { background: var(--primary); }
+    .array-item.target { background: #ef4444; animation: pulse 1s infinite; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <h1>🎯 LeetCode #215 - 数组中的第K个最大元素</h1>
+  <div class="subtitle">
+    <span class="badge badge-medium">Medium</span>
+    <span class="badge badge-tag">经典算法</span>
+    <span class="badge badge-tag">快排</span>
+    <span class="badge badge-tag">堆</span>
+  </div>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定整数数组 <code>nums</code> 和整数 <code>k</code>，请返回数组中第 <code>k</code> 个最大的元素。</p>
+    <p>请注意，你需要找的是数组排序后的第 <code>k</code> 个最大的元素，而不是第 <code>k</code> 个不同的元素。</p>
+    <p>你必须设计并实现时间复杂度为 <code>O(n)</code> 的算法解决此问题。</p>
+    
+    <div class="highlight-box">
+      <strong>💡 关键理解：</strong><br>
+      第k大 = 升序排列后的倒数第k个 = 下标为 <code>len(nums) - k</code> 的元素<br>
+      例如：nums=[3,2,1,5,6,4], k=2 → 排序后[1,2,3,4,5,6] → 第2大是5
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔧 解法对比</h2>
+    <div class="method-tabs">
+      <button class="method-tab active" onclick="showMethod('quickselect')">快速选择 O(n)</button>
+      <button class="method-tab" onclick="showMethod('heap')">最小堆 O(nlogk)</button>
+      <button class="method-tab" onclick="showMethod('sort')">排序 O(nlogn)</button>
+    </div>
+
+    <div id="quickselect" class="method-content active">
+      <div class="highlight-box">
+        <strong>核心思想：</strong>基于快速排序的分区思想，每次分区后判断第k大元素在左半部分还是右半部分，只递归处理一半数据
+      </div>
+      
+      <h3>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h3>
+      <div class="array-visual" id="arrayViz">
+        <div class="array-item">3</div>
+        <div class="array-item">2</div>
+        <div class="array-item">1</div>
+        <div class="array-item">5</div>
+        <div class="array-item">6</div>
+        <div class="array-item">4</div>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted);">示例：nums=[3,2,1,5,6,4], k=2 → 目标下标 = 6-2 = 4（即第5个元素，值为5）</p>
+      
+      <div class="viz-container">
+        <div class="viz-steps" id="vizSteps">
+          <!-- 步骤由JS生成 -->
+        </div>
+        <div class="code-container">
+          <h3>Python 实现（快速选择）</h3>
+          <pre><code id="codeBlock">
+          </code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div id="heap" class="method-content">
+      <div class="highlight-box">
+        <strong>核心思想：</strong>维护一个大小为k的最小堆，堆顶就是第k大的元素。遍历数组，如果当前元素比堆顶大就替换
+      </div>
+      <pre><code><span class="keyword">import</span> heapq
+
+<span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:
+        <span class="comment"># 维护大小为k的最小堆</span>
+        min_heap = []
+        
+        <span class="keyword">for</span> num <span class="keyword">in</span> nums:
+            <span class="keyword">if</span> <span class="function">len</span>(min_heap) < k:
+                heapq.heappush(min_heap, num)
+            <span class="keyword">elif</span> num > min_heap[<span class="number">0</span>]:
+                heapq.heapreplace(min_heap, num)
+        
+        <span class="keyword">return</span> min_heap[<span class="number">0</span>]</code></pre>
+    </div>
+
+    <div id="sort" class="method-content">
+      <div class="highlight-box">
+        <strong>核心思想：</strong>直接排序后取倒数第k个元素。虽然不符合题目O(n)的要求，但面试时可先提这个解法
+      </div>
+      <pre><code><span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:
+        nums.sort()
+        <span class="keyword">return</span> nums[-k]</code></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>解法</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>适用场景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>快速选择</strong></td>
+          <td>O(n) 平均 / O(n²) 最坏</td>
+          <td>O(log n) 递归栈</td>
+          <td>追求最优时间，数据随机</td>
+        </tr>
+        <tr>
+          <td><strong>最小堆</strong></td>
+          <td>O(n log k)</td>
+          <td>O(k)</td>
+          <td>数据流场景，k较小</td>
+        </tr>
+        <tr>
+          <td><strong>排序</strong></td>
+          <td>O(n log n)</td>
+          <td>O(log n) ~ O(n)</td>
+          <td>快速实现，面试保底</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🎯 面试要点</h2>
+    <ul>
+      <li><strong>快排分区思想：</strong>partition函数返回pivot的最终位置</li>
+      <li><strong>下标转换：</strong>第k大 = 第(n-k)小（升序）</li>
+      <li><strong>最坏情况：</strong>数组已有序，每次只减少一个元素 → O(n²)</li>
+      <li><strong>优化：</strong>随机选择pivot避免最坏情况</li>
+      <li><strong>空间优化：</strong>原地修改数组，只需O(log n)递归栈</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/kth-largest-element-in-a-stream/" class="problem-card" target="_blank">
+        <div class="p-num">#703</div>
+        <div class="p-title">数据流中的第 K 大元素</div>
+        <div class="p-tag">设计 + 堆 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/wiggle-sort-ii/" class="problem-card" target="_blank">
+        <div class="p-num">#324</div>
+        <div class="p-title">摆动排序 II</div>
+        <div class="p-tag">快速选择变形 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/k-closest-points-to-origin/" class="problem-card" target="_blank">
+        <div class="p-num">#973</div>
+        <div class="p-title">最接近原点的 K 个点</div>
+        <div class="p-tag">TopK问题 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/top-k-frequent-elements/" class="problem-card" target="_blank">
+        <div class="p-num">#347</div>
+        <div class="p-title">前 K 个高频元素</div>
+        <div class="p-tag">哈希表 + 堆 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/find-median-from-data-stream/" class="problem-card" target="_blank">
+        <div class="p-num">#295</div>
+        <div class="p-title">数据流的中位数</div>
+        <div class="p-tag">双堆技巧 · Hard</div>
+      </a>
+      <a href="https://leetcode.cn/problems/sort-an-array/" class="problem-card" target="_blank">
+        <div class="p-num">#912</div>
+        <div class="p-title">排序数组</div>
+        <div class="p-tag">排序算法综合 · Medium</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Python代码
+    const pythonCode = `<span class="keyword">import</span> random
+
+<span class="keyword">class</span> <span class="class">Solution</span>:
+    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:
+        <span class="comment"># 第k大 = 升序第n-k个元素</span>
+        <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, <span class="number">0</span>, <span class="function">len</span>(nums) - <span class="number">1</span>, <span class="function">len</span>(nums) - k)
+    
+    <span class="keyword">def</span> <span class="function">quickSelect</span>(<span class="keyword">self</span>, nums, left, right, k_smallest):
+        <span class="comment"># 递归终止：区间只有一个元素</span>
+        <span class="keyword">if</span> left == right:
+            <span class="keyword">return</span> nums[left]
+        
+        <span class="comment"># 随机选择pivot，避免最坏情况</span>
+        pivot_index = random.randint(left, right)
+        
+        <span class="comment"># 将pivot移到最右</span>
+        nums[pivot_index], nums[right] = nums[right], nums[pivot_index]
+        
+        <span class="comment"># 分区操作</span>
+        pivot_index = <span class="keyword">self</span>.partition(nums, left, right)
+        
+        <span class="comment"># 根据pivot位置决定搜索方向</span>
+        <span class="keyword">if</span> k_smallest == pivot_index:
+            <span class="keyword">return</span> nums[k_smallest]
+        <span class="keyword">elif</span> k_smallest < pivot_index:
+            <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, left, pivot_index - <span class="number">1</span>, k_smallest)
+        <span class="keyword">else</span>:
+            <span class="keyword">return</span> <span class="keyword">self</span>.quickSelect(nums, pivot_index + <span class="number">1</span>, right, k_smallest)
+    
+    <span class="keyword">def</span> <span class="function">partition</span>(<span class="keyword">self</span>, nums, left, right):
+        <span class="comment"># 以最右元素为pivot</span>
+        pivot = nums[right]
+        
+        <span class="comment"># store_index指向pivot应放置的位置</span>
+        store_index = left
+        
+        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(left, right):
+            <span class="keyword">if</span> nums[i] < pivot:
+                nums[store_index], nums[i] = nums[i], nums[store_index]
+                store_index += <span class="number">1</span>
+        
+        <span class="comment"># 将pivot放到正确位置</span>
+        nums[right], nums[store_index] = nums[store_index], nums[right]
+        
+        <span class="keyword">return</span> store_index`;
+
+    // 步骤数据
+    const steps = [
+      {title: "初始化", desc: "调用 quickSelect(nums, 0, 5, 4)", line: 6, state: "区间 [0,5]，目标第4小元素"},
+      {title: "随机选pivot", desc: "假设随机到 index=3 (值为5)", line: 12, state: "pivot=5, pivot_index=3"},
+      {title: "交换到最右", desc: "将pivot与最右元素交换", line: 15, state: "nums=[3,2,1,4,6,5]"},
+      {title: "开始分区", desc: "store_index=0，遍历 [0,4]", line: 18, state: "pivot=5, store_index=0"},
+      {title: "遍历比较", desc: "nums[0]=3 < 5，与store_index交换", line: 24, state: "i=0: 3<5 ✓, nums不变, store_index→1"},
+      {title: "遍历比较", desc: "nums[1]=2 < 5，与store_index交换", line: 24, state: "i=1: 2<5 ✓, nums不变, store_index→2"},
+      {title: "遍历比较", desc: "nums[2]=1 < 5，与store_index交换", line: 24, state: "i=2: 1<5 ✓, nums不变, store_index→3"},
+      {title: "遍历比较", desc: "nums[3]=4 < 5，与store_index交换", line: 24, state: "i=3: 4<5 ✓, swap(nums[3],nums[3]), store_index→4"},
+      {title: "遍历比较", desc: "nums[4]=6 > 5，跳过", line: 24, state: "i=4: 6<5 ✗, store_index保持4"},
+      {title: "放置pivot", desc: "将pivot(5)放到store_index(4)位置", line: 28, state: "nums=[3,2,1,4,5,6], pivot_index=4"},
+      {title: "判断位置", desc: "k_smallest(4) == pivot_index(4) ✓", line: 31, state: "找到目标！返回 nums[4]=5"},
+      {title: "返回结果", desc: "第2大元素是 5", line: 32, state: "结果: 5"}
+    ];
+
+    // 生成代码HTML
+    const lines = pythonCode.split('\n');
+    const codeBlock = document.getElementById('codeBlock');
+    let lineNum = 1;
+    lines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = lineNum;
+      div.innerHTML = `<span class="line-number">${lineNum}</span><span>${line || '&nbsp;'}</span>`;
+      div.onclick = () => highlightStep(lineNum);
+      codeBlock.appendChild(div);
+      lineNum++;
+    });
+
+    // 生成步骤HTML
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.dataset.line = step.line;
+      div.innerHTML = `
+        <div><span class="step-num">${idx + 1}</span><span class="step-title">${step.title}</span></div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">${step.state}</div>
+      `;
+      div.onclick = () => highlightStep(step.line, idx);
+      vizSteps.appendChild(div);
+    });
+
+    // 高亮逻辑
+    function highlightStep(line, stepIdx = null) {
+      // 找到对应的step
+      if (stepIdx === null) {
+        const matchingStep = steps.findIndex(s => s.line === line);
+        stepIdx = matchingStep !== -1 ? matchingStep : null;
+      }
+      
+      // 清除所有高亮
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      
+      // 高亮代码行
+      const codeLine = document.querySelector(`.code-line[data-line="${line}"]`);
+      if (codeLine) codeLine.classList.add('active');
+      
+      // 高亮步骤
+      if (stepIdx !== null) {
+        const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+        if (stepEl) {
+          stepEl.classList.add('active');
+          stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    // 切换解法
+    function showMethod(method) {
+      document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.method-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(method).classList.add('active');
+    }
+
+    // 默认高亮第一步
+    highlightStep(6, 0);
+  </script>
+</body>
+</html>
