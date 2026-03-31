@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #215 - 数组中的第K个最大元素</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-light: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.8;
+    }
+    h1 { 
+      font-size: 2.2rem; 
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .difficulty.medium {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left-color: var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.9rem;
+    }
+    .code-content {
+      font-family: 'SF Mono', monospace;
+      font-size: 0.95rem;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-step { 
+      padding: 16px; 
+      margin: 8px 0; 
+      border-radius: 12px; 
+      background: var(--surface-light); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover {
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.25);
+    }
+    .viz-step .step-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .viz-step .step-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .viz-step .step-state {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-var {
+      color: var(--warning);
+    }
+    .state-val {
+      color: var(--success);
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .prob-num {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .problem-card .prob-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .problem-card .prob-tag {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--surface-light);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .boolean { color: #ff7b72; }
+    .operator { color: #f0883e; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-light);
+    }
+    th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .method-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .method-tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: var(--surface-light);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .method-tab:hover {
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .method-tab.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.25);
+    }
+    .partition-viz {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .partition-item {
+      width: 45px;
+      height: 45px;
+      background: var(--surface-light);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    .partition-item.pivot {
+      background: rgba(245, 158, 11, 0.3);
+      border-color: var(--warning);
+    }
+    .partition-item.left {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--success);
+    }
+    .partition-item.right {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger);
+    }
+    .partition-item.current {
+      transform: scale(1.15);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+    }
+    .arrow {
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+    .k-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #215 - 数组中的第K个最大元素</h1>
+  <p class="subtitle"><span class="difficulty medium">Medium</span> 快速选择 · 堆 · 分治</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定整数数组 <code>nums</code> 和整数 <code>k</code>，请返回数组中第 <code>k</code> 个最大的元素。</p>
+    <p>请注意，你需要找的是数组排序后的第 <code>k</code> 个最大的元素，而不是第 <code>k</code> 个不同的元素。</p>
+    <p>你必须设计并实现时间复杂度为 <code>O(n)</code> 的算法解决此问题。</p>
+    
+    <div class="highlight-box">
+      <strong>核心洞察：</strong>TopK 问题的经典解法有两种：1) 快速选择（Quick Select）平均 O(n)；2) 最小堆维护 K 个元素 O(n log k)。面试时推荐先说堆解法，再优化到快速选择。
+    </div>
+    
+    <h3>示例</h3>
+    <pre style="background: rgba(0,0,0,0.2); margin-top: 12px;">
+输入: nums = [3,2,1,5,6,4], k = 2
+输出: 5
+解释: 排序后数组为 [1,2,3,4,5,6]，第 2 大的元素是 5。
+
+输入: nums = [3,2,3,1,2,4,5,5,6], k = 4
+输出: 4
+解释: 排序后数组为 [1,2,2,3,3,4,5,5,6]，第 4 大的元素是 4。</pre>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 快速选择算法执行过程</h2>
+    <p>示例：<code>nums = [3,2,1,5,6,4]</code>, <span class="k-indicator">k = 2</span></p>
+    
+    <div class="partition-viz" id="partitionViz">
+      <div class="partition-item" data-idx="0">3</div>
+      <div class="partition-item" data-idx="1">2</div>
+      <div class="partition-item" data-idx="2">1</div>
+      <div class="partition-item pivot" data-idx="3">5</div>
+      <div class="partition-item" data-idx="4">6</div>
+      <div class="partition-item" data-idx="5">4</div>
+    </div>
+    
+    <div class="method-tabs">
+      <div class="method-tab active" onclick="switchMethod('quickselect')">快速选择 O(n)</div>
+      <div class="method-tab" onclick="switchMethod('heap')">最小堆 O(n log k)</div>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top: 0;">Python 实现</h3>
+        <pre><code id="codeBlock">
+        </code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>算法</th>
+          <th>时间复杂度</th>
+          <th>空间复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>快速选择（推荐）</td>
+          <td>O(n) 平均 / O(n²) 最坏</td>
+          <td>O(1)</td>
+          <td>基于快排的分治，平均线性时间，最坏情况可通过随机化避免</td>
+        </tr>
+        <tr>
+          <td>最小堆</td>
+          <td>O(n log k)</td>
+          <td>O(k)</td>
+          <td>维护大小为k的最小堆，适合数据流场景</td>
+        </tr>
+        <tr>
+          <td>排序</td>
+          <td>O(n log n)</td>
+          <td>O(1) ~ O(n)</td>
+          <td>最直观但非最优，面试时不推荐先说</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 关键思路</h2>
+    
+    <h3>方法一：快速选择（Quick Select）</h3>
+    <p>基于快速排序的 partition 思想：</p>
+    <ol>
+      <li>随机选择一个 pivot，将数组分为三部分：<span style="color: var(--success)">大于 pivot</span>、<span style="color: var(--warning)">等于 pivot</span>、<span style="color: var(--danger)">小于 pivot</span></li>
+      <li>计算「大于 pivot」的元素个数 <code>cnt</code></li>
+      <li>如果 <code>cnt >= k</code>，第 k 大在左边，递归处理左边</li>
+      <li>如果 <code>cnt + pivot_count >= k</code>，pivot 就是答案</li>
+      <li>否则，第 k 大在右边，递归处理右边（k 需要减去左边和中间的数量）</li>
+    </ol>
+    
+    <div class="highlight-box">
+      <strong>为什么平均是 O(n)？</strong><br>
+      每次 partition 后问题规模减半：T(n) = T(n/2) + O(n) = O(n)。最坏情况是每次 pivot 都选到最大/最小值，通过随机化 pivot 可以极大降低这种概率。
+    </div>
+    
+    <h3>方法二：最小堆</h3>
+    <p>维护一个大小为 k 的最小堆：</p>
+    <ol>
+      <li>遍历数组，将元素加入堆</li>
+      <li>当堆大小超过 k 时，弹出堆顶（最小元素）</li>
+      <li>遍历结束后，堆顶就是第 k 大的元素</li>
+    </ol>
+    <p>堆中始终保留遍历过的最大的 k 个元素，堆顶是这 k 个中最小的，即全局第 k 大。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/kth-largest-element-in-a-stream/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #703</div>
+        <div class="prob-title">数据流中的第 K 大元素</div>
+        <span class="prob-tag">堆 · 设计</span>
+      </a>
+      <a href="https://leetcode.cn/problems/find-median-from-data-stream/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #295</div>
+        <div class="prob-title">数据流的中位数</div>
+        <span class="prob-tag">双堆 · 设计</span>
+      </a>
+      <a href="https://leetcode.cn/problems/top-k-frequent-elements/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #347</div>
+        <div class="prob-title">前 K 个高频元素</div>
+        <span class="prob-tag">堆 · 哈希表</span>
+      </a>
+      <a href="https://leetcode.cn/problems/k-closest-points-to-origin/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #973</div>
+        <div class="prob-title">最接近原点的 K 个点</div>
+        <span class="prob-tag">堆 · 排序</span>
+      </a>
+      <a href="https://leetcode.cn/problems/sort-an-array/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #912</div>
+        <div class="prob-title">排序数组</div>
+        <span class="prob-tag">快排 · 归并</span>
+      </a>
+      <a href="https://leetcode.cn/problems/wiggle-sort-ii/" class="problem-card" target="_blank">
+        <div class="prob-num">LeetCode #324</div>
+        <div class="prob-title">摆动排序 II</div>
+        <span class="prob-tag">快速选择 · 排序</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 快速选择代码
+    const quickSelectCode = [
+      { num: 1, content: '<span class="keyword">import</span> random' },
+      { num: 2, content: '' },
+      { num: 3, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 4, content: '    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:' },
+      { num: 5, content: '        <span class="keyword">return</span> <span class="keyword">self</span>.quick_select(nums, <span class="number">0</span>, <span class="function">len</span>(nums) - <span class="number">1</span>, k)' },
+      { num: 6, content: '    ' },
+      { num: 7, content: '    <span class="keyword">def</span> <span class="function">quick_select</span>(<span class="keyword">self</span>, nums, left, right, k):' },
+      { num: 8, content: '        <span class="comment"># 随机选择 pivot</span>' },
+      { num: 9, content: '        pivot_idx = random.<span class="function">randint</span>(left, right)' },
+      { num: 10, content: '        pivot = nums[pivot_idx]' },
+      { num: 11, content: '        ' },
+      { num: 12, content: '        <span class="comment"># 将 pivot 移到最右</span>' },
+      { num: 13, content: '        nums[pivot_idx], nums[right] = nums[right], nums[pivot_idx]' },
+      { num: 14, content: '        ' },
+      { num: 15, content: '        <span class="comment"># 三路划分：&gt;pivot | =pivot | &lt;pivot</span>' },
+      { num: 16, content: '        store_idx = left' },
+      { num: 17, content: '        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(left, right):' },
+      { num: 18, content: '            <span class="keyword">if</span> nums[i] > pivot:' },
+      { num: 19, content: '                nums[store_idx], nums[i] = nums[i], nums[store_idx]' },
+      { num: 20, content: '                store_idx += <span class="number">1</span>' },
+      { num: 21, content: '        ' },
+      { num: 22, content: '        <span class="comment"># 将 pivot 放到正确位置</span>' },
+      { num: 23, content: '        nums[store_idx], nums[right] = nums[right], nums[store_idx]' },
+      { num: 24, content: '        ' },
+      { num: 25, content: '        <span class="comment"># 计算各部分大小</span>' },
+      { num: 26, content: '        cnt_large = store_idx - left  <span class="comment"># 大于 pivot 的个数</span>' },
+      { num: 27, content: '        cnt_equal = <span class="number">1</span>  <span class="comment"># pivot 本身</span>' },
+      { num: 28, content: '        ' },
+      { num: 29, content: '        <span class="keyword">if</span> k <= cnt_large:' },
+      { num: 30, content: '            <span class="keyword">return</span> <span class="keyword">self</span>.quick_select(nums, left, store_idx - <span class="number">1</span>, k)' },
+      { num: 31, content: '        <span class="keyword">elif</span> k <= cnt_large + cnt_equal:' },
+      { num: 32, content: '            <span class="keyword">return</span> pivot' },
+      { num: 33, content: '        <span class="keyword">else</span>:' },
+      { num: 34, content: '            <span class="keyword">return</span> <span class="keyword">self</span>.quick_select(nums, store_idx + <span class="number">1</span>, right, ' },
+      { num: 35, content: '                                   k - cnt_large - cnt_equal)' },
+    ];
+    
+    // 最小堆代码
+    const heapCode = [
+      { num: 1, content: '<span class="keyword">import</span> heapq' },
+      { num: 2, content: '' },
+      { num: 3, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 4, content: '    <span class="keyword">def</span> <span class="function">findKthLargest</span>(<span class="keyword">self</span>, nums: List[<span class="keyword">int</span>], k: <span class="keyword">int</span>) -> <span class="keyword">int</span>:' },
+      { num: 5, content: '        <span class="comment"># 维护大小为 k 的最小堆</span>' },
+      { num: 6, content: '        min_heap = []' },
+      { num: 7, content: '        ' },
+      { num: 8, content: '        <span class="keyword">for</span> num <span class="keyword">in</span> nums:' },
+      { num: 9, content: '            heapq.<span class="function">heappush</span>(min_heap, num)' },
+      { num: 10, content: '            ' },
+      { num: 11, content: '            <span class="comment"># 堆超过 k 个元素，弹出最小的</span>' },
+      { num: 12, content: '            <span class="keyword">if</span> <span class="function">len</span>(min_heap) > k:' },
+      { num: 13, content: '                heapq.<span class="function">heappop</span>(min_heap)' },
+      { num: 14, content: '        ' },
+      { num: 15, content: '        <span class="comment"># 堆顶就是第 k 大</span>' },
+      { num: 16, content: '        <span class="keyword">return</span> min_heap[<span class="number">0</span>]' },
+    ];
+    
+    // 快速选择步骤
+    const quickSelectSteps = [
+      { title: "初始调用", desc: "在 [3,2,1,5,6,4] 中找第 2 大，范围 [0,5]", line: 5, state: { nums: "[3,2,1,5,6,4]", left: 0, right: 5, k: 2 } },
+      { title: "随机选 pivot", desc: "随机选到索引 3，pivot = 5", line: 10, state: { pivot_idx: 3, pivot: 5 } },
+      { title: "Partition 开始", desc: "将大于 5 的元素移到左边", line: 17, state: { store_idx: 0, i: 0 } },
+      { title: "发现 6 > 5", desc: "6 大于 pivot，交换到左边", line: 19, state: { "nums[0]": 6, "nums[4]": 3, store_idx: 1 } },
+      { title: "放置 pivot", desc: "将 5 放到正确位置（索引 1）", line: 23, state: { nums: "[6,5,1,2,3,4]", store_idx: 1 } },
+      { title: "计算分区", desc: "大于 5 的有 1 个（6），等于的有 1 个（5）", line: 26, state: { cnt_large: 1, cnt_equal: 1 } },
+      { title: "确定位置", desc: "k=2，cnt_large+1=2，所以第 2 大就是 pivot", line: 32, state: { result: 5 } },
+    ];
+    
+    // 最小堆步骤
+    const heapSteps = [
+      { title: "初始化堆", desc: "创建空的最小堆", line: 6, state: { min_heap: "[]" } },
+      { title: "加入 3", desc: "堆变为 [3]", line: 9, state: { num: 3, heap: "[3]" } },
+      { title: "加入 2", desc: "堆变为 [2,3]", line: 9, state: { num: 2, heap: "[2,3]" } },
+      { title: "加入 1", desc: "堆变为 [1,3,2]，大小超过 k=2，弹出 1", line: 13, state: { num: 1, heap: "[2,3]" } },
+      { title: "加入 5", desc: "堆变为 [2,3,5]，弹出 2", line: 13, state: { num: 5, heap: "[3,5]" } },
+      { title: "加入 6", desc: "堆变为 [3,5,6]，弹出 3", line: 13, state: { num: 6, heap: "[5,6]" } },
+      { title: "加入 4", desc: "堆变为 [4,6,5]，弹出 4", line: 13, state: { num: 4, heap: "[5,6]" } },
+      { title: "返回结果", desc: "堆顶 5 就是第 2 大元素", line: 16, state: { result: 5 } },
+    ];
+    
+    let currentMethod = 'quickselect';
+    let currentSteps = quickSelectSteps;
+    let currentCode = quickSelectCode;
+    
+    function renderCode() {
+      const codeBlock = document.getElementById('codeBlock');
+      codeBlock.innerHTML = '';
+      currentCode.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'code-line';
+        div.dataset.line = line.num;
+        div.innerHTML = `<span class="line-number">${line.num}</span><span class="code-content">${line.content}</span>`;
+        div.addEventListener('click', () => highlightStepByLine(line.num));
+        codeBlock.appendChild(div);
+      });
+    }
+    
+    function renderSteps() {
+      const vizSteps = document.getElementById('vizSteps');
+      vizSteps.innerHTML = '';
+      currentSteps.forEach((step, idx) => {
+        const div = document.createElement('div');
+        div.className = 'viz-step';
+        div.dataset.step = idx;
+        div.dataset.line = step.line;
+        
+        let stateHtml = '<div class="step-state">';
+        for (const [key, val] of Object.entries(step.state)) {
+          stateHtml += `<span class="state-var">${key}</span>=<span class="state-val">${val}</span>  `;
+        }
+        stateHtml += '</div>';
+        
+        div.innerHTML = `
+          <div class="step-title">步骤 ${idx + 1}: ${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+          ${stateHtml}
+        `;
+        div.addEventListener('click', () => highlightStep(idx));
+        vizSteps.appendChild(div);
+      });
+    }
+    
+    function switchMethod(method) {
+      currentMethod = method;
+      document.querySelectorAll('.method-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (method === 'quickselect') {
+        currentSteps = quickSelectSteps;
+        currentCode = quickSelectCode;
+      } else {
+        currentSteps = heapSteps;
+        currentCode = heapCode;
+      }
+      
+      renderCode();
+      renderSteps();
+      highlightStep(0);
+    }
+    
+    function highlightStep(stepIdx) {
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      const lineNum = currentSteps[stepIdx].line;
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) lineEl.classList.add('active');
+    }
+    
+    function highlightStepByLine(lineNum) {
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      const stepIdx = currentSteps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+        if (stepEl) stepEl.classList.add('active');
+      }
+    }
+    
+    // 初始化
+    renderCode();
+    renderSteps();
+    highlightStep(0);
+  </script>
+</body>
+</html>
