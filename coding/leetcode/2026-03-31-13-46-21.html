@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #21 - 合并两个有序链表</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-hover: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.7;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .tag-easy { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .tag-medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .tag-hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+    }
+    .line-content {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.95rem;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 768px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px;
+    }
+    .viz-step { 
+      padding: 16px; 
+      border-radius: 12px; 
+      background: var(--bg); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .viz-step-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .viz-step-state {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .code-container h3 {
+      margin-top: 0;
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .problem-card-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .operator { color: #ff9bcc; }
+    .var { color: #79c0ff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      color: var(--primary);
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    .complexity-good {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+    .algo-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 20px;
+      background: var(--bg);
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+    .flow-node {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+    }
+    .flow-arrow {
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #21 - 合并两个有序链表</h1>
+  <p class="subtitle">
+    <span class="tag tag-easy">Easy</span>
+    链表 · 递归 · 双指针
+  </p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>将两个升序链表合并为一个新的<strong>升序</strong>链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。</p>
+    
+    <div class="highlight-box">
+      <strong>示例 1：</strong><br>
+      输入：l1 = [1,2,4], l2 = [1,3,4]<br>
+      输出：[1,1,2,3,4,4]
+    </div>
+    
+    <div class="highlight-box">
+      <strong>示例 2：</strong><br>
+      输入：l1 = [], l2 = []<br>
+      输出：[]
+    </div>
+    
+    <div class="highlight-box">
+      <strong>示例 3：</strong><br>
+      输入：l1 = [], l2 = [0]<br>
+      输出：[0]
+    </div>
+    
+    <p><strong>提示：</strong></p>
+    <ul>
+      <li>两个链表的节点数目范围是 <code>[0, 50]</code></li>
+      <li><code>-100 <= Node.val <= 100</code></li>
+      <li><code>l1</code> 和 <code>l2</code> 均按 <strong>非递减顺序</strong> 排列</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    
+    <h3>方法一：迭代法（双指针）</h3>
+    <div class="algo-flow">
+      <div class="flow-node">创建哨兵节点</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">比较两链表头</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">较小者接入结果</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">指针后移</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">连接剩余部分</div>
+    </div>
+    <p>使用<strong>哨兵节点（dummy node）</strong>简化边界处理。维护一个 <code>prev</code> 指针指向已合并链表的最后一个节点，比较两个链表当前节点的值，将较小者接入结果链表，直到其中一个链表为空，再将剩余部分直接接上。</p>
+    
+    <h3>方法二：递归法</h3>
+    <p>递归的核心思想：比较两个链表的头节点，较小者作为合并后链表的头节点，然后递归合并剩余部分。</p>
+    <ul>
+      <li>终止条件：任一链表为空，返回另一链表</li>
+      <li>递归调用：较小节点的 next 指向剩余部分的合并结果</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行可视化（点击步骤或代码行查看对应关系）</h2>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>🐍 Python 实现（迭代法）</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <tr>
+        <th>解法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>迭代法</td>
+        <td class="complexity-good">O(m + n)</td>
+        <td class="complexity-good">O(1)</td>
+        <td>只需常数额外空间，遍历每个节点一次</td>
+      </tr>
+      <tr>
+        <td>递归法</td>
+        <td class="complexity-good">O(m + n)</td>
+        <td>O(m + n)</td>
+        <td>递归栈空间，代码更简洁</td>
+      </tr>
+    </table>
+    <p>其中 <code>m</code> 和 <code>n</code> 分别为两个链表的长度。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/merge-k-sorted-lists/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#23 合并K个升序链表 <span class="tag tag-hard">Hard</span></div>
+        <div class="problem-card-desc">本题进阶版，使用优先队列或分治合并</div>
+      </a>
+      <a href="https://leetcode.cn/problems/sort-list/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#148 排序链表 <span class="tag tag-medium">Medium</span></div>
+        <div class="problem-card-desc">归并排序思想，需要掌握链表的中点查找</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-duplicates-from-sorted-list/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#83 删除排序链表中的重复元素 <span class="tag tag-easy">Easy</span></div>
+        <div class="problem-card-desc">遍历一次，跳过重复节点即可</div>
+      </a>
+      <a href="https://leetcode.cn/problems/add-two-numbers/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#2 两数相加 <span class="tag tag-medium">Medium</span></div>
+        <div class="problem-card-desc">链表模拟加法，注意进位处理</div>
+      </a>
+      <a href="https://leetcode.cn/problems/intersection-of-two-linked-lists/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#160 相交链表 <span class="tag tag-easy">Easy</span></div>
+        <div class="problem-card-desc">双指针法，让两个指针走过相同的长度</div>
+      </a>
+      <a href="https://leetcode.cn/problems/reverse-linked-list/" class="problem-card" target="_blank">
+        <div class="problem-card-title">#206 反转链表 <span class="tag tag-easy">Easy</span></div>
+        <div class="problem-card-desc">链表基础操作，迭代/递归都要掌握</div>
+      </a>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📝 递归法代码（备选）</h2>
+    <pre><code><span class="line-content"><span class="keyword">class</span> <span class="class">Solution</span>:</span>
+<span class="line-content">    <span class="keyword">def</span> <span class="function">mergeTwoLists</span>(<span class="var">self</span>, <span class="var">list1</span>: <span class="class">Optional</span>[<span class="class">ListNode</span>], <span class="var">list2</span>: <span class="class">Optional</span>[<span class="class">ListNode</span>]) -> <span class="class">Optional</span>[<span class="class">ListNode</span>]:</span>
+<span class="line-content">        <span class="comment"># 递归终止条件</span></span>
+<span class="line-content">        <span class="keyword">if</span> <span class="keyword">not</span> list1:</span>
+<span class="line-content">            <span class="keyword">return</span> list2</span>
+<span class="line-content">        <span class="keyword">if</span> <span class="keyword">not</span> list2:</span>
+<span class="line-content">            <span class="keyword">return</span> list1</span>
+<span class="line-content">        </span>
+<span class="line-content">        <span class="comment"># 较小值作为头节点</span></span>
+<span class="line-content">        <span class="keyword">if</span> list1.val <= list2.val:</span>
+<span class="line-content">            list1.next = <span class="var">self</span>.mergeTwoLists(list1.next, list2)</span>
+<span class="line-content">            <span class="keyword">return</span> list1</span>
+<span class="line-content">        <span class="keyword">else</span>:</span>
+<span class="line-content">            list2.next = <span class="var">self</span>.mergeTwoLists(list1, list2.next)</span>
+<span class="line-content">            <span class="keyword">return</span> list2</span></code></pre>
+  </div>
+  
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">mergeTwoLists</span>(<span class="var">self</span>, <span class="var">list1</span>: <span class="class">Optional</span>[<span class="class">ListNode</span>], <span class="var">list2</span>: <span class="class">Optional</span>[<span class="class">ListNode</span>]) -> <span class="class">Optional</span>[<span class="class">ListNode</span>]:' },
+      { num: 3, content: '        <span class="comment"># 创建哨兵节点，简化边界处理</span>' },
+      { num: 4, content: '        dummy = <span class="class">ListNode</span>(<span class="number">-1</span>)' },
+      { num: 5, content: '        prev = dummy' },
+      { num: 6, content: '        ' },
+      { num: 7, content: '        <span class="comment"># 同时遍历两个链表</span>' },
+      { num: 8, content: '        <span class="keyword">while</span> list1 <span class="keyword">and</span> list2:' },
+      { num: 9, content: '            <span class="keyword">if</span> list1.val <= list2.val:' },
+      { num: 10, content: '                prev.next = list1' },
+      { num: 11, content: '                list1 = list1.next' },
+      { num: 12, content: '            <span class="keyword">else</span>:' },
+      { num: 13, content: '                prev.next = list2' },
+      { num: 14, content: '                list2 = list2.next' },
+      { num: 15, content: '            prev = prev.next' },
+      { num: 16, content: '        ' },
+      { num: 17, content: '        <span class="comment"># 连接剩余部分</span>' },
+      { num: 18, content: '        prev.next = list1 <span class="keyword">if</span> list1 <span class="keyword">else</span> list2' },
+      { num: 19, content: '        ' },
+      { num: 20, content: '        <span class="keyword">return</span> dummy.next' }
+    ];
+    
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "① 初始化哨兵节点",
+        desc: "创建 dummy 节点作为结果链表的头节点前哨，prev 指针用于追踪结果链表的末尾",
+        line: 4,
+        state: "dummy → ListNode(-1)\nprev = dummy\nlist1: [1,2,4], list2: [1,3,4]"
+      },
+      {
+        title: "② 进入循环比较",
+        desc: "当两个链表都不为空时，持续比较当前节点的值",
+        line: 8,
+        state: "list1.val = 1, list2.val = 1\n1 <= 1，选择 list1"
+      },
+      {
+        title: "③ 接入较小节点",
+        desc: "list1 的当前节点值较小（或相等），将其接入结果链表",
+        line: 10,
+        state: "prev.next = list1\n结果: [-1] → [1]"
+      },
+      {
+        title: "④ 移动 list1 指针",
+        desc: "list1 指针后移，指向下一个待比较节点",
+        line: 11,
+        state: "list1 → [2,4]\nlist2 保持不变: [1,3,4]"
+      },
+      {
+        title: "⑤ 移动 prev 指针",
+        desc: "prev 指向刚接入的节点，为下一次连接做准备",
+        line: 15,
+        state: "prev → 节点1\ndummy → 节点1"
+      },
+      {
+        title: "⑥ 下一轮比较",
+        desc: "再次比较，list2.val = 1 < list1.val = 2",
+        line: 9,
+        state: "选择 list2 的节点1"
+      },
+      {
+        title: "⑦ 接入 list2 节点",
+        desc: "将 list2 的当前节点接入结果链表",
+        line: 13,
+        state: "prev.next = list2\n结果: [-1] → [1] → [1]"
+      },
+      {
+        title: "⑧ 连接剩余部分",
+        desc: "当一个链表耗尽后，直接将另一个链表的剩余部分接上",
+        line: 18,
+        state: "假设 list1 耗尽:\nprev.next = list2"
+      },
+      {
+        title: "⑨ 返回结果",
+        desc: "返回 dummy.next，即真正的头节点",
+        line: 20,
+        state: "返回: [1,1,2,3,4,4]"
+      }
+    ];
+    
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.dataset.line = line.num;
+      lineDiv.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      lineDiv.addEventListener('click', () => highlightByLine(line.num));
+      codeBlock.appendChild(lineDiv);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.idx = idx;
+      stepDiv.dataset.line = step.line;
+      stepDiv.innerHTML = `
+        <div class="viz-step-title">${step.title}</div>
+        <div class="viz-step-desc">${step.desc}</div>
+        <div class="viz-step-state">${step.state.replace(/\n/g, '<br>')}</div>
+      `;
+      stepDiv.addEventListener('click', () => highlightByStep(idx));
+      vizSteps.appendChild(stepDiv);
+    });
+    
+    // 高亮函数
+    function highlightByLine(lineNum) {
+      // 清除所有高亮
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      
+      // 高亮代码行
+      const codeLine = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (codeLine) codeLine.classList.add('active');
+      
+      // 高亮对应步骤
+      const stepEl = document.querySelector(`.viz-step[data-line="${lineNum}"]`);
+      if (stepEl) {
+        stepEl.classList.add('active');
+        stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+    
+    function highlightByStep(idx) {
+      const step = steps[idx];
+      
+      // 清除所有高亮
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      
+      // 高亮步骤
+      const stepEl = document.querySelector(`.viz-step[data-idx="${idx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const codeLine = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (codeLine) {
+        codeLine.classList.add('active');
+        codeLine.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+    
+    // 默认高亮第一步
+    highlightByStep(0);
+  </script>
+</body>
+</html>
