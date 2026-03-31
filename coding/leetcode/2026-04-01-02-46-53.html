@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #53 - 最大子数组和</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9; 
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --accent: #ec4899;
+    }
+    body { 
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.3); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    .line-content {
+      flex: 1;
+    }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 900px) {
+      .viz-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .viz-steps {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .viz-step { 
+      padding: 14px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: rgba(255,255,255,0.05); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      background: rgba(255,255,255,0.08);
+      transform: translateX(5px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+    .step-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .step-desc {
+      font-size: 0.95rem;
+      color: #94a3b8;
+    }
+    .step-state {
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .code-container h3 {
+      margin-top: 0;
+      color: var(--secondary);
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      margin-bottom: 12px;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+    }
+    .problem-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; font-style: italic; } 
+    .class { color: #ffa657; }
+    .operator { color: #ff7b72; }
+    .builtin { color: #56d364; }
+    
+    .array-viz {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .array-cell {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #475569;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .array-cell.highlight {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+      transform: scale(1.1);
+    }
+    .array-cell.best {
+      background: rgba(34, 197, 94, 0.3);
+      border-color: var(--success);
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+    }
+    
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .complexity-table tr:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .tag-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .tag-dp { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .tag-greedy { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+    .tag-array { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    
+    .algo-explanation {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .algo-explanation h4 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    
+    .problem-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .example-box {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+    .example-box .input { color: #a5d6ff; }
+    .example-box .output { color: #22c55e; }
+    .example-box .explanation { color: #94a3b8; font-size: 0.95rem; }
+    
+    .state-display {
+      display: flex;
+      gap: 20px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .state-item {
+      background: rgba(0,0,0,0.4);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+    }
+    .state-item .label {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .state-item .value {
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #53 - 最大子数组和</h1>
+  <p class="subtitle">Maximum Subarray - 经典的动态规划入门题</p>
+  
+  <div class="problem-meta">
+    <span class="tag tag-medium">Medium</span>
+    <span class="tag tag-dp">动态规划</span>
+    <span class="tag tag-greedy">贪心</span>
+    <span class="tag tag-array">数组</span>
+  </div>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个整数数组 <code>nums</code>，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。</p>
+    <p style="color: #94a3b8; font-size: 0.95rem;">子数组是数组中的一个连续部分。</p>
+    
+    <div class="example-box">
+      <div class="input"><strong>输入：</strong>nums = [-2,1,-3,4,-1,2,1,-5,4]</div>
+      <div class="output"><strong>输出：</strong>6</div>
+      <div class="explanation"><strong>解释：</strong>连续子数组 [4,-1,2,1] 的和最大，为 6。</div>
+    </div>
+    
+    <div class="example-box">
+      <div class="input"><strong>输入：</strong>nums = [1]</div>
+      <div class="output"><strong>输出：</strong>1</div>
+    </div>
+    
+    <div class="example-box">
+      <div class="input"><strong>输入：</strong>nums = [5,4,-1,7,8]</div>
+      <div class="output"><strong>输出：</strong>23</div>
+      <div class="explanation"><strong>解释：</strong>整个数组都是最大子数组，和为 23。</div>
+    </div>
+  </div>
+  
+  <div class="algo-explanation">
+    <h4>💡 核心思想：Kadane 算法</h4>
+    <p>这是一个经典的<strong>动态规划</strong>问题。我们定义 <code>current_sum</code> 为以当前位置结尾的最大子数组和。</p>
+    <p><strong>状态转移：</strong>对于每个位置 i，我们有两种选择：</p>
+    <ul>
+      <li><strong>延续前面的子数组：</strong>current_sum + nums[i]</li>
+      <li><strong>重新开始：</strong>nums[i]</li>
+    </ul>
+    <p>取两者中的较大值：<code>current_sum = max(nums[i], current_sum + nums[i])</code></p>
+    <p>同时维护全局最大值 <code>max_sum</code>。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行可视化（点击步骤或代码行查看联动）</h2>
+    
+    <div class="array-viz" id="arrayViz">
+      <div class="array-cell" data-idx="0">-2</div>
+      <div class="array-cell" data-idx="1">1</div>
+      <div class="array-cell" data-idx="2">-3</div>
+      <div class="array-cell" data-idx="3">4</div>
+      <div class="array-cell" data-idx="4">-1</div>
+      <div class="array-cell" data-idx="5">2</div>
+      <div class="array-cell" data-idx="6">1</div>
+      <div class="array-cell" data-idx="7">-5</div>
+      <div class="array-cell" data-idx="8">4</div>
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现 (Kadane算法)</h3>
+        <pre><code id="codeBlock">
+<!-- 每行代码用 .code-line 包裹，带行号 -->
+        </code></pre>
+      </div>
+    </div>
+    
+    <div class="state-display">
+      <div class="state-item">
+        <div class="label">当前索引 i</div>
+        <div class="value" id="stateIdx">-</div>
+      </div>
+      <div class="state-item">
+        <div class="label">当前子数组和 current_sum</div>
+        <div class="value" id="stateCurrent">-</div>
+      </div>
+      <div class="state-item">
+        <div class="label">最大子数组和 max_sum</div>
+        <div class="value" id="stateMax">-</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>⏱️ 复杂度分析</h2>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>复杂度</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>时间复杂度</td>
+          <td><strong>O(n)</strong></td>
+          <td>只需要遍历数组一次</td>
+        </tr>
+        <tr>
+          <td>空间复杂度</td>
+          <td><strong>O(1)</strong></td>
+          <td>只使用常数额外空间（current_sum 和 max_sum）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>📝 拓展：分治法解法</h2>
+    <p>除了Kadane算法，本题还可以用<strong>分治法</strong>解决：</p>
+    <ul>
+      <li>最大子数组和可能在左半部分、右半部分，或跨越中点</li>
+      <li>跨越中点的子数组需要从中点向两边扩展求最大和</li>
+      <li>时间复杂度：O(n log n)，空间复杂度：O(log n)（递归栈）</li>
+    </ul>
+    <p style="color: #94a3b8;">面试时推荐先讲Kadane算法（最优），再提分治法（展示思维的全面性）。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转 LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/" target="_blank" class="problem-card">
+        <h4>#121 买卖股票的最佳时机</h4>
+        <p>同样是遍历一遍找最大差值，思路类似</p>
+      </a>
+      <a href="https://leetcode.cn/problems/maximum-product-subarray/" target="_blank" class="problem-card">
+        <h4>#152 乘积最大子数组</h4>
+        <p>最大子数组和的变形，需要考虑负数</p>
+      </a>
+      <a href="https://leetcode.cn/problems/maximum-sum-circular-subarray/" target="_blank" class="problem-card">
+        <h4>#918 环形子数组的最大和</h4>
+        <p>数组变为环形，需要额外考虑跨越首尾的情况</p>
+      </a>
+      <a href="https://leetcode.cn/problems/longest-turbulent-subarray/" target="_blank" class="problem-card">
+        <h4>#978 最长湍流子数组</h4>
+        <p>动态规划思路的拓展应用</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 算法步骤数据
+    const steps = [
+      {title: "初始化", desc: "设置 current_sum 和 max_sum 为数组第一个元素", line: 2, state: {idx: 0, current: -2, max: -2}, highlight: [0]},
+      {title: "遍历 i=1", desc: "num=1，current_sum = max(1, -2+1) = 1，重新开始的收益更大", line: 5, state: {idx: 1, current: 1, max: 1}, highlight: [1]},
+      {title: "更新 max_sum", desc: "max_sum = max(1, -2) = 1", line: 6, state: {idx: 1, current: 1, max: 1}, highlight: [1]},
+      {title: "遍历 i=2", desc: "num=-3，current_sum = max(-3, 1-3) = -2，选择重新开始但负数更小", line: 5, state: {idx: 2, current: -2, max: 1}, highlight: [2]},
+      {title: "更新 max_sum", desc: "max_sum = max(1, -2) = 1，保持不变", line: 6, state: {idx: 2, current: -2, max: 1}, highlight: [2]},
+      {title: "遍历 i=3", desc: "num=4，current_sum = max(4, -2+4) = 4，重新开始的收益更大", line: 5, state: {idx: 3, current: 4, max: 4}, highlight: [3]},
+      {title: "更新 max_sum", desc: "max_sum = max(4, 1) = 4，找到新的最大值", line: 6, state: {idx: 3, current: 4, max: 4}, highlight: [3]},
+      {title: "遍历 i=4", desc: "num=-1，current_sum = max(-1, 4-1) = 3，延续前面的子数组", line: 5, state: {idx: 4, current: 3, max: 4}, highlight: [4]},
+      {title: "更新 max_sum", desc: "max_sum = max(3, 4) = 4，保持不变", line: 6, state: {idx: 4, current: 3, max: 4}, highlight: [4]},
+      {title: "遍历 i=5", desc: "num=2，current_sum = max(2, 3+2) = 5，延续前面的子数组", line: 5, state: {idx: 5, current: 5, max: 5}, highlight: [5]},
+      {title: "更新 max_sum", desc: "max_sum = max(5, 4) = 5，找到新的最大值", line: 6, state: {idx: 5, current: 5, max: 5}, highlight: [5]},
+      {title: "遍历 i=6", desc: "num=1，current_sum = max(1, 5+1) = 6，延续前面的子数组", line: 5, state: {idx: 6, current: 6, max: 6}, highlight: [6]},
+      {title: "更新 max_sum", desc: "max_sum = max(6, 5) = 6，找到新的最大值 [4,-1,2,1]", line: 6, state: {idx: 6, current: 6, max: 6}, highlight: [6]},
+      {title: "遍历 i=7", desc: "num=-5，current_sum = max(-5, 6-5) = 1，延续前面的子数组", line: 5, state: {idx: 7, current: 1, max: 6}, highlight: [7]},
+      {title: "更新 max_sum", desc: "max_sum = max(1, 6) = 6，保持不变", line: 6, state: {idx: 7, current: 1, max: 6}, highlight: [7]},
+      {title: "遍历 i=8", desc: "num=4，current_sum = max(4, 1+4) = 5，延续前面的子数组", line: 5, state: {idx: 8, current: 5, max: 6}, highlight: [8]},
+      {title: "更新 max_sum", desc: "max_sum = max(5, 6) = 6，保持不变", line: 6, state: {idx: 8, current: 5, max: 6}, highlight: [8]},
+      {title: "返回结果", desc: "遍历完成，返回 max_sum = 6", line: 8, state: {idx: "完成", current: 5, max: 6}, highlight: [3,4,5,6]}
+    ];
+
+    // 代码行
+    const codeLines = [
+      '<span class="keyword">def</span> <span class="function">maxSubArray</span>(<span class="builtin">self</span>, nums: List[<span class="keyword">int</span>]) -> <span class="keyword">int</span>:',
+      '    current_sum = max_sum = nums[<span class="number">0</span>]',
+      '    ',
+      '    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">1</span>, <span class="builtin">len</span>(nums)):',
+      '        num = nums[i]',
+      '        current_sum = <span class="builtin">max</span>(num, current_sum + num)',
+      '        max_sum = <span class="builtin">max</span>(max_sum, current_sum)',
+      '    ',
+      '    <span class="keyword">return</span> max_sum'
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach((line, idx) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.dataset.line = idx;
+      lineDiv.innerHTML = `<span class="line-number">${idx + 1}</span><span class="line-content">${line}</span>`;
+      lineDiv.addEventListener('click', () => highlightStepByLine(idx));
+      codeBlock.appendChild(lineDiv);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.step = idx;
+      stepDiv.innerHTML = `
+        <div class="step-title">
+          <span>Step ${idx + 1}: ${step.title}</span>
+          <span style="color: #64748b; font-size: 0.85rem;">行 ${step.line + 1}</span>
+        </div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">
+          i=${step.state.idx}, current_sum=${step.state.current}, max_sum=${step.state.max}
+        </div>
+      `;
+      stepDiv.addEventListener('click', () => highlightStep(idx));
+      vizSteps.appendChild(stepDiv);
+    });
+
+    // 高亮步骤
+    function highlightStep(stepIdx) {
+      // 清除之前的高亮
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.array-cell').forEach(el => {
+        el.classList.remove('highlight', 'best');
+      });
+      
+      // 高亮当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 高亮对应代码行
+      const step = steps[stepIdx];
+      const lineEl = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 更新状态显示
+      document.getElementById('stateIdx').textContent = step.state.idx;
+      document.getElementById('stateCurrent').textContent = step.state.current;
+      document.getElementById('stateMax').textContent = step.state.max;
+      
+      // 高亮数组元素
+      step.highlight.forEach(idx => {
+        const cell = document.querySelector(`.array-cell[data-idx="${idx}"]`);
+        if (cell) {
+          if (stepIdx === steps.length - 1) {
+            cell.classList.add('best');
+          } else {
+            cell.classList.add('highlight');
+          }
+        }
+      });
+      
+      // 滚动到可视区域
+      stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 通过代码行高亮步骤
+    function highlightStepByLine(lineIdx) {
+      const stepIdx = steps.findIndex(s => s.line === lineIdx);
+      if (stepIdx !== -1) {
+        highlightStep(stepIdx);
+      }
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
