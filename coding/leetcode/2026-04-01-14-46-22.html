@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #22 - 括号生成</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .section h2 { color: var(--primary); margin-top: 0; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { background: rgba(99, 102, 241, 0.3); border-left-color: #6366f1; }
+    .line-number { color: #484f58; min-width: 40px; text-align: right; padding-right: 16px; user-select: none; }
+    .line-content { flex: 1; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { max-height: 400px; overflow-y: auto; }
+    .viz-step { padding: 16px; margin: 8px 0; border-radius: 12px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { background: #475569; }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.3); }
+    .step-title { font-weight: 600; color: #a5b4fc; margin-bottom: 4px; }
+    .step-desc { font-size: 0.9em; color: #94a3b8; }
+    .state-box { background: #0d1117; padding: 12px; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 0.85em; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 16px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; margin: 8px 0; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .problem-title { font-weight: 600; color: var(--primary); }
+    .problem-tag { font-size: 0.8em; color: #94a3b8; margin-top: 4px; }
+    .complexity-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .complexity-table th, .complexity-table td { padding: 12px; text-align: left; border-bottom: 1px solid #475569; }
+    .complexity-table th { color: var(--primary); }
+    .keyword { color: #ff7b72; }
+    .function { color: #d2a8ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; }
+    .class { color: #ffa657; }
+  </style>
+</head>
+<body>
+  <h1>🎯 LeetCode #22 - 括号生成</h1>
+  <p style="color: #94a3b8;">数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 <strong>有效的</strong> 括号组合。</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p><strong>难度：</strong><span style="color: #fbbf24;">Medium</span> &nbsp;|&nbsp; <strong>标签：</strong>字符串、动态规划、回溯</p>
+    <div style="background: #0d1117; padding: 20px; border-radius: 12px; margin: 16px 0;">
+      <p style="margin: 0;">数字 <code>n</code> 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 <strong>有效的</strong> 括号组合。</p>
+    </div>
+    <p><strong>示例 1：</strong></p>
+    <pre>输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]</pre>
+    <p><strong>示例 2：</strong></p>
+    <pre>输入：n = 1
+输出：["()"]</pre>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    <p>这是一道经典的<strong>回溯算法</strong>题目。核心思想是：</p>
+    <ul>
+      <li>我们有两个选择：添加左括号 <code>(</code> 或右括号 <code>)</code></li>
+      <li>但需要满足约束条件才能生成<strong>有效</strong>的括号组合</li>
+    </ul>
+    <p><strong>关键约束条件：</strong></p>
+    <ol>
+      <li>只有当「左括号剩余数量 &gt; 0」时，才能添加 <code>(</code></li>
+      <li>只有当「右括号剩余数量 &gt; 左括号剩余数量」时，才能添加 <code>)</code>（保证有效性）</li>
+    </ol>
+    <p>当左右括号都用完时，就得到了一个有效组合。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p style="color: #94a3b8; font-size: 0.9em;">💡 点击左侧步骤或右侧代码行，查看对应关系</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS动态生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top: 0;">Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr><th>维度</th><th>复杂度</th><th>说明</th></tr>
+      <tr><td>时间复杂度</td><td>O(4ⁿ/√n)</td><td>卡特兰数，n对括号的有效组合数</td></tr>
+      <tr><td>空间复杂度</td><td>O(n)</td><td>递归栈深度最多为 2n</td></tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <p>这些题目涉及类似的回溯或括号相关技巧：</p>
+    <a href="https://leetcode.cn/problems/valid-parentheses/" target="_blank" class="problem-card">
+      <div class="problem-title">20. 有效的括号</div>
+      <div class="problem-tag">栈 · Easy</div>
+    </a>
+    <a href="https://leetcode.cn/problems/combinations/" target="_blank" class="problem-card">
+      <div class="problem-title">77. 组合</div>
+      <div class="problem-tag">回溯 · Medium</div>
+    </a>
+    <a href="https://leetcode.cn/problems/permutations/" target="_blank" class="problem-card">
+      <div class="problem-title">46. 全排列</div>
+      <div class="problem-tag">回溯 · Medium</div>
+    </a>
+  </div>
+  
+  <div class="section">
+    <h2>📝 代码详解</h2>
+    <p>上面的回溯算法使用了「剪枝」技巧——提前排除不可能产生有效解的路径。</p>
+    <p>例如，当 <code>left &gt; right</code> 时，说明当前路径中右括号比左括号多，无论如何都无法形成有效括号，直接剪枝。</p>
+  </div>
+
+  <script>
+    // 代码行（每行对应一个步骤）
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">generateParenthesis</span>(<span class="keyword">self</span>, n: <span class="keyword">int</span>) -> List[<span class="keyword">str</span>]:' },
+      { num: 3, content: '        result = []' },
+      { num: 4, content: '        <span class="keyword">self</span>.backtrack(result, <span class="string">""</span>, n, n)' },
+      { num: 5, content: '        <span class="keyword">return</span> result' },
+      { num: 6, content: '' },
+      { num: 7, content: '    <span class="keyword">def</span> <span class="function">backtrack</span>(<span class="keyword">self</span>, result, current, left, right):' },
+      { num: 8, content: '        <span class="comment"># 剪枝：右括号不能比左括号多</span>' },
+      { num: 9, content: '        <span class="keyword">if</span> left > right:' },
+      { num: 10, content: '            <span class="keyword">return</span>' },
+      { num: 11, content: '        <span class="comment"># 括号用完，得到一个有效组合</span>' },
+      { num: 12, content: '        <span class="keyword">if</span> left == <span class="number">0</span> <span class="keyword">and</span> right == <span class="number">0</span>:' },
+      { num: 13, content: '            result.append(current)' },
+      { num: 14, content: '            <span class="keyword">return</span>' },
+      { num: 15, content: '        <span class="comment"># 选择1：添加左括号</span>' },
+      { num: 16, content: '        <span class="keyword">if</span> left > <span class="number">0</span>:' },
+      { num: 17, content: '            <span class="keyword">self</span>.backtrack(result, current + <span class="string">"("</span>, left - <span class="number">1</span>, right)' },
+      { num: 18, content: '        <span class="comment"># 选择2：添加右括号</span>' },
+      { num: 19, content: '        <span class="keyword">if</span> right > <span class="number">0</span>:' },
+      { num: 20, content: '            <span class="keyword">self</span>.backtrack(result, current + <span class="string">")"</span>, left, right - <span class="number">1</span>)' }
+    ];
+    
+    // 可视化步骤（对应代码行）
+    const steps = [
+      { title: "初始化", desc: "创建结果列表，调用回溯函数开始递归", line: 3, state: { result: "[]", current: '""', left: 3, right: 3 } },
+      { title: "剪枝检查", desc: "检查 left > right？否，继续", line: 9, state: { result: "[]", current: '""', left: 3, right: 3 } },
+      { title: "完成检查", desc: "括号都用完？否，继续递归", line: 12, state: { result: "[]", current: '""', left: 3, right: 3 } },
+      { title: "选择左括号", desc: "添加 '('，left 减 1", line: 17, state: { result: "[]", current: '"("', left: 2, right: 3 } },
+      { title: "递归进入", desc: "继续递归，检查剪枝条件", line: 9, state: { result: "[]", current: '"("', left: 2, right: 3 } },
+      { title: "继续添加左括号", desc: "添加 '('，current 变为 '(('", line: 17, state: { result: "[]", current: '"(("', left: 1, right: 3 } },
+      { title: "再添加左括号", desc: "添加 '('，current 变为 '(((', left 用完", line: 17, state: { result: "[]", current: '"((("', left: 0, right: 3 } },
+      { title: "只能添加右括号", desc: "left=0，只能选择添加 ')'", line: 20, state: { result: "[]", current: '"((()"', left: 0, right: 2 } },
+      { title: "继续添加右括号", desc: "current 变为 '((())'", line: 20, state: { result: "[]", current: '"((())"', left: 0, right: 1 } },
+      { title: "添加最后一个右括号", desc: "current 变为 '((()))'，完成一个组合", line: 20, state: { result: "[]→['((()))']", current: '"((()))"', left: 0, right: 0 } },
+      { title: "记录结果", desc: "将有效组合加入结果列表", line: 13, state: { result: "['((()))']", current: '"((()))"', left: 0, right: 0 } },
+      { title: "回溯返回", desc: "递归返回，探索其他分支...", line: 14, state: { result: "['((()))']", current: "回溯中", left: "-", right: "-" } }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      div.onclick = () => highlightStepByLine(line.num);
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.idx = idx;
+      div.dataset.line = step.line;
+      div.onclick = () => highlightStep(idx);
+      div.innerHTML = `
+        <div class="step-title">Step ${idx + 1}: ${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="state-box">
+          result: ${step.state.result}<br>
+          current: ${step.state.current}<br>
+          left: ${step.state.left}, right: ${step.state.right}
+        </div>
+      `;
+      vizSteps.appendChild(div);
+    });
+
+    // 高亮步骤
+    function highlightStep(idx) {
+      document.querySelectorAll('.viz-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+      
+      const step = document.querySelector(`.viz-step[data-idx="${idx}"]`);
+      const line = document.querySelector(`.code-line[data-line="${steps[idx].line}"]`);
+      
+      if (step) { step.classList.add('active'); step.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      if (line) { line.classList.add('active'); }
+    }
+
+    // 通过代码行高亮步骤
+    function highlightStepByLine(lineNum) {
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) highlightStep(stepIdx);
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
