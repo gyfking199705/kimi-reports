@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode #322 - 零钱兑换</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --secondary: #8b5cf6;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-hover: #334155;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+      line-height: 1.6;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      margin-bottom: 8px;
+    }
+    .subtitle { color: var(--text-muted); margin-bottom: 30px; }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px; 
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600;
+    }
+    .medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 0; 
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 4px 20px; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      border-left: 3px solid transparent;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.2); 
+      border-left: 3px solid var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 45px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+      font-family: monospace;
+    }
+    .line-content { font-family: 'Fira Code', monospace; font-size: 14px; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    .viz-steps { 
+      max-height: 500px; 
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-steps::-webkit-scrollbar { width: 6px; }
+    .viz-steps::-webkit-scrollbar-thumb { 
+      background: var(--surface-hover); 
+      border-radius: 3px; 
+    }
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 8px 0; 
+      border-radius: 10px; 
+      background: var(--bg); 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      border-color: var(--surface-hover);
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .viz-step .step-num {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .viz-step .step-title {
+      font-weight: 500;
+      margin: 4px 0;
+    }
+    .viz-step .step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .dp-table {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .dp-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--bg);
+      font-family: monospace;
+      transition: all 0.3s;
+    }
+    .dp-cell.highlight {
+      background: rgba(99, 102, 241, 0.4);
+      border: 2px solid var(--primary);
+      font-weight: 600;
+    }
+    .dp-cell.target {
+      background: rgba(34, 197, 94, 0.3);
+      border: 2px solid var(--success);
+    }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 16px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card .prob-num {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .problem-card .prob-title {
+      font-weight: 600;
+      margin: 8px 0;
+    }
+    .problem-card .prob-tag {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-hover);
+    }
+    .complexity-table th {
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .key-point {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .state-display {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 16px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .state-var { color: var(--primary); }
+    .state-val { color: var(--success); }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .var { color: #ffa657; }
+    .op { color: #ff7b72; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #322 - 零钱兑换</h1>
+  <p class="subtitle">Coin Change <span class="difficulty medium">Medium</span> · 完全背包问题 · 动态规划</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个整数数组 <code>coins</code> 表示不同面额的硬币，另给一个整数 <code>amount</code> 表示总金额。</p>
+    <p>请你计算并返回<strong>可以凑成总金额的硬币个数的最小值</strong>。如果没有任何一种硬币组合能组成总金额，返回 <strong>-1</strong>。</p>
+    <p>你可以认为每种硬币的数量是<strong>无限的</strong>。</p>
+    
+    <div class="key-point">
+      <strong>核心问题：</strong>给定无限供应的不同面值硬币，凑出金额 <code>amount</code> 所需的最少硬币数量是多少？
+    </div>
+
+    <h3>示例</h3>
+    <pre style="padding: 16px 20px;">
+<strong>输入:</strong> coins = [1, 2, 5], amount = 11
+<strong>输出:</strong> 3
+<strong>解释:</strong> 11 = 5 + 5 + 1, 最少需要3枚硬币
+
+<strong>输入:</strong> coins = [2], amount = 3
+<strong>输出:</strong> -1
+<strong>解释:</strong> 无法用面额2的硬币凑出金额3</pre>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行互相高亮）</h2>
+    
+    <div class="dp-table" id="dpTable">
+      <!-- DP表格由JS生成 -->
+    </div>
+    <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">
+      dp[i] 表示凑出金额 i 所需的最少硬币数（灰色=∞，绿色=已计算）
+    </div>
+    
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现（完全背包）</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+    
+    <div class="state-display" id="stateDisplay">
+      <strong>当前状态：</strong>点击上方步骤或代码行查看执行状态
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>维度</th>
+        <th>复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td>O(n × amount)</td>
+        <td>n为硬币种类数，需要遍历每个硬币和每个金额</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td>O(amount)</td>
+        <td>一维dp数组，大小为amount+1</td>
+      </tr>
+    </table>
+    
+    <div class="key-point">
+      <strong>优化要点：</strong>这是一个经典的<strong>完全背包问题</strong>。每种硬币可以使用无限次，因此内层循环从小到大遍历（与0-1背包相反）。
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题思路</h2>
+    <h3>1. 状态定义</h3>
+    <p><code>dp[i]</code> 表示凑出金额 <code>i</code> 所需的最少硬币数量。</p>
+    
+    <h3>2. 状态转移</h3>
+    <p>对于每个金额 <code>i</code>，我们可以选择使用任意一种硬币 <code>coin</code>：</p>
+    <pre style="padding: 16px 20px;">dp[i] = min(dp[i], dp[i - coin] + 1)</pre>
+    <p>意思是：使用一枚 <code>coin</code> 硬币，再加上凑出剩余金额 <code>i-coin</code> 所需的最少硬币数。</p>
+    
+    <h3>3. 初始化</h3>
+    <p><code>dp[0] = 0</code>（凑出金额0需要0枚硬币）</p>
+    <p>其他 <code>dp[i] = ∞</code>（初始表示不可达）</p>
+    
+    <h3>4. 遍历顺序（关键！）</h3>
+    <p>由于硬币数量无限（完全背包），内层循环需要<strong>从小到大</strong>遍历金额，这样同一个硬币可以被多次使用。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/coin-change-ii/" class="problem-card" target="_blank">
+        <span class="prob-num">#518</span>
+        <div class="prob-title">零钱兑换 II</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">求方案数而非最少数</p>
+        <span class="prob-tag">完全背包 · 组合数</span>
+      </a>
+      <a href="https://leetcode.cn/problems/perfect-squares/" class="problem-card" target="_blank">
+        <span class="prob-num">#279</span>
+        <div class="prob-title">完全平方数</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">最少完全平方数之和</p>
+        <span class="prob-tag">完全背包 · BFS</span>
+      </a>
+      <a href="https://leetcode.cn/problems/combination-sum-iv/" class="problem-card" target="_blank">
+        <span class="prob-num">#377</span>
+        <div class="prob-title">组合总和 Ⅳ</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">求排列数</p>
+        <span class="prob-tag">完全背包 · 排列</span>
+      </a>
+      <a href="https://leetcode.cn/problems/minimum-cost-for-tickets/" class="problem-card" target="_blank">
+        <span class="prob-num">#983</span>
+        <div class="prob-title">最低票价</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">旅行计划类DP</p>
+        <span class="prob-tag">动态规划</span>
+      </a>
+      <a href="https://leetcode.cn/problems/ones-and-zeroes/" class="problem-card" target="_blank">
+        <span class="prob-num">#474</span>
+        <div class="prob-title">一和零</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">二维费用背包</p>
+        <span class="prob-tag">0-1背包 · 二维</span>
+      </a>
+      <a href="https://leetcode.cn/problems/target-sum/" class="problem-card" target="_blank">
+        <span class="prob-num">#494</span>
+        <div class="prob-title">目标和</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">加减号分配问题</p>
+        <span class="prob-tag">0-1背包 · 变形</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码行数据
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">coinChange</span>(self, coins: List[<span class="class">int</span>], amount: <span class="class">int</span>) -> <span class="class">int</span>:' },
+      { num: 3, content: '        <span class="comment"># dp[i] 表示凑出金额 i 所需的最少硬币数</span>' },
+      { num: 4, content: '        <span class="var">dp</span> = [<span class="var">float</span>(<span class="string">"inf"</span>)] * (amount + <span class="number">1</span>)' },
+      { num: 5, content: '        <span class="var">dp</span>[<span class="number">0</span>] = <span class="number">0</span>  <span class="comment"># 凑出金额0需要0枚硬币</span>' },
+      { num: 6, content: '        ' },
+      { num: 7, content: '        <span class="comment"># 外层遍历每种硬币</span>' },
+      { num: 8, content: '        <span class="keyword">for</span> coin <span class="keyword">in</span> coins:' },
+      { num: 9, content: '            <span class="comment"># 内层从小到大遍历金额（完全背包）</span>' },
+      { num: 10, content: '            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(coin, amount + <span class="number">1</span>):' },
+      { num: 11, content: '                <span class="comment"># 如果 i-coin 可达，则更新 dp[i]</span>' },
+      { num: 12, content: '                <span class="keyword">if</span> <span class="var">dp</span>[i - coin] != <span class="var">float</span>(<span class="string">"inf"</span>):' },
+      { num: 13, content: '                    <span class="var">dp</span>[i] = <span class="function">min</span>(<span class="var">dp</span>[i], <span class="var">dp</span>[i - coin] + <span class="number">1</span>)' },
+      { num: 14, content: '        ' },
+      { num: 15, content: '        <span class="comment"># 如果 amount 仍不可达，返回-1</span>' },
+      { num: 16, content: '        <span class="keyword">return</span> <span class="var">dp</span>[amount] <span class="keyword">if</span> <span class="var">dp</span>[amount] != <span class="var">float</span>(<span class="string">"inf"</span>) <span class="keyword">else</span> -<span class="number">1</span>' },
+    ];
+    
+    // 步骤数据
+    const steps = [
+      { title: "初始化DP数组", desc: "创建dp数组，所有值设为∞，dp[0]=0", line: 4, state: { dp: "[0, ∞, ∞, ∞, ∞, ∞, ∞, ∞, ∞, ∞, ∞, ∞]", coin: "-", amount: "11" } },
+      { title: "选择硬币1", desc: "外层循环，coin = 1", line: 8, state: { dp: "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]", coin: "1", i: "1-11" } },
+      { title: "计算dp[1]", desc: "使用硬币1，dp[1] = dp[0] + 1 = 1", line: 13, state: { dp: "[0, 1, ...]", coin: "1", i: "1", dp_0: "0" } },
+      { title: "计算dp[2]", desc: "使用硬币1，dp[2] = dp[1] + 1 = 2", line: 13, state: { dp: "[0, 1, 2, ...]", coin: "1", i: "2", dp_1: "1" } },
+      { title: "选择硬币2", desc: "外层循环，coin = 2", line: 8, state: { dp: "[0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6]", coin: "2", i: "2-11" } },
+      { title: "优化dp[2]", desc: "dp[2] = min(2, dp[0]+1) = 1", line: 13, state: { dp: "[0, 1, 1, ...]", coin: "2", i: "2", new_val: "1" } },
+      { title: "优化dp[4]", desc: "dp[4] = min(2, dp[2]+1) = 2 → 但仍优于硬币1", line: 13, state: { dp: "[0, 1, 1, 2, 2, ...]", coin: "2", i: "4" } },
+      { title: "选择硬币5", desc: "外层循环，coin = 5", line: 8, state: { dp: "处理中...", coin: "5", i: "5-11" } },
+      { title: "关键优化dp[10]", desc: "dp[10] = min(5, dp[5]+1) = 2 (两个5)", line: 13, state: { dp: "[0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, ...]", coin: "5", i: "10" } },
+      { title: "计算dp[11]", desc: "dp[11] = min(6, dp[6]+1) = 3", line: 13, state: { dp: "[0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3]", coin: "5", i: "11", dp_6: "2" } },
+      { title: "返回结果", desc: "dp[11] = 3，返回3", line: 16, state: { dp: "[0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3]", result: "3" } },
+    ];
+    
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach((line, idx) => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.dataset.idx = idx;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      div.onclick = () => selectByLine(idx);
+      codeBlock.appendChild(div);
+    });
+    
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.idx = idx;
+      div.innerHTML = `
+        <span class="step-num">步骤 ${idx + 1}</span>
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+      `;
+      div.onclick = () => selectByStep(idx);
+      vizSteps.appendChild(div);
+    });
+    
+    // 渲染DP表格
+    const dpTable = document.getElementById('dpTable');
+    const dpValues = ['0', '1', '1', '2', '2', '1', '2', '2', '3', '3', '2', '3'];
+    for (let i = 0; i <= 11; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'dp-cell' + (i === 11 ? ' target' : '');
+      cell.textContent = i <= 10 || i === 11 ? dpValues[i] || '∞' : '';
+      cell.title = `dp[${i}]`;
+      dpTable.appendChild(cell);
+    }
+    
+    // 状态显示
+    const stateDisplay = document.getElementById('stateDisplay');
+    
+    function updateState(step) {
+      stateDisplay.innerHTML = `
+        <strong>当前状态：</strong> ${step.title}<br>
+        <span class="state-var">coin</span> = <span class="state-val">${step.state.coin || '-'}</span> | 
+        <span class="state-var">dp</span> = <span style="font-size:11px;">${step.state.dp || '...'}</span><br>
+        ${step.state.result ? `<span class="state-var">结果</span> = <span class="state-val" style="font-size:18px;">${step.state.result}</span>` : ''}
+      `;
+    }
+    
+    function selectByStep(idx) {
+      // 清除所有active
+      document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      
+      // 激活当前步骤
+      const stepEl = document.querySelector(`.viz-step[data-idx="${idx}"]`);
+      if (stepEl) stepEl.classList.add('active');
+      
+      // 激活对应代码行
+      const lineNum = steps[idx].line;
+      const codeEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (codeEl) {
+        codeEl.classList.add('active');
+        codeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
+      updateState(steps[idx]);
+    }
+    
+    function selectByLine(lineIdx) {
+      const lineNum = codeLines[lineIdx].num;
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        selectByStep(stepIdx);
+      }
+    }
+    
+    // 默认选中第一步
+    selectByStep(0);
+  </script>
+</body>
+</html>
