@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #15 - 三数之和</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 24px; }
+    .badge { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 0.85rem; 
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    .badge-medium { background: var(--warning); color: #000; }
+    .badge-tag { background: #334155; color: var(--text); }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section h3 { color: var(--text); margin-top: 0; }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 0;
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 4px 20px; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left-color: var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 50px; 
+      text-align: right; 
+      padding-right: 20px;
+      user-select: none;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.9rem;
+    }
+    .line-content { font-family: 'SF Mono', monospace; font-size: 0.9rem; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 380px 1fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    @media (max-width: 900px) {
+      .viz-container { grid-template-columns: 1fr; }
+    }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { 
+      padding: 16px; 
+      margin: 8px 0; 
+      border-radius: 12px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { border-color: #475569; }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .viz-step .step-title { font-weight: 600; margin-bottom: 4px; }
+    .viz-step .step-desc { font-size: 0.9rem; color: var(--text-secondary); }
+    .viz-step .step-state { 
+      margin-top: 8px; 
+      padding-top: 8px; 
+      border-top: 1px solid #475569;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-var { color: var(--success); }
+    .state-val { color: var(--warning); }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block; 
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+    }
+    .problem-card .p-num { color: var(--primary); font-weight: 600; }
+    .problem-card .p-title { font-weight: 500; margin: 4px 0; }
+    .problem-card .p-tag { font-size: 0.85rem; color: var(--text-secondary); }
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th, .complexity-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .complexity-table th {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .tip-box {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid var(--success);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .tip-box strong { color: var(--success); }
+    .array-viz {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .array-item {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #334155;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .array-item.fixed { background: var(--primary); }
+    .array-item.left { background: var(--success); }
+    .array-item.right { background: var(--warning); }
+    .array-item.sum { background: var(--error); animation: pulse 1s infinite; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .arrow { color: var(--primary); font-size: 1.2rem; }
+    .code-keyword { color: #ff7b72; }
+    .code-function { color: #d2a8ff; }
+    .code-string { color: #a5d6ff; }
+    .code-number { color: #79c0ff; }
+    .code-comment { color: #8b949e; }
+    .code-class { color: #ffa657; }
+    .code-param { color: #ffa657; }
+    .code-return { color: #ff7b72; }
+    .links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .link-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); }
+    .points { margin: 0; padding-left: 20px; }
+    .points li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #15 - 三数之和</h1>
+  <p class="subtitle">
+    <span class="badge badge-medium">Medium</span>
+    <span class="badge badge-tag">数组</span>
+    <span class="badge badge-tag">双指针</span>
+    <span class="badge badge-tag">排序</span>
+  </p>
+
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你一个整数数组 <code>nums</code> ，判断是否存在三元组 <code>[nums[i], nums[j], nums[k]]</code> 满足 <code>i != j</code>、<code>i != k</code> 且 <code>j != k</code> ，同时还满足 <code>nums[i] + nums[j] + nums[k] == 0</code>。</p>
+    <p>请你返回所有和为 <code>0</code> 且不重复的三元组。</p>
+    <p style="color: var(--text-secondary);">注意：答案中不可以包含重复的三元组。</p>
+    
+    <div class="highlight-box">
+      <strong>示例：</strong><br>
+      输入：nums = [-1,0,1,2,-1,-4]<br>
+      输出：[[-1,-1,2], [-1,0,1]]<br><br>
+      <strong>解释：</strong><br>
+      nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 ✓<br>
+      nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 ✓ (重复，忽略)<br>
+      nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 ✓
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>💡 核心思路</h2>
+    <div class="tip-box">
+      <strong>关键洞察：</strong>排序后，固定一个数，剩下两数用双指针从两端向中间逼近。这样可以将 O(n³) 暴力解法优化到 O(n²)。
+    </div>
+    <ul class="points">
+      <li><strong>排序：</strong>排序是前提，便于使用双指针和去重</li>
+      <li><strong>固定 + 双指针：</strong>固定 nums[i]，在 (i+1, n-1) 范围内找两数之和等于 -nums[i]</li>
+      <li><strong>去重：</strong>跳过重复元素，避免结果中出现重复三元组</li>
+      <li><strong>剪枝：</strong>利用排序后的单调性提前终止不可能的情况</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🎬 算法执行可视化（点击步骤或代码行联动）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>维度</th>
+        <th>复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td><span style="color: var(--success);">O(n²)</span></td>
+        <td>排序 O(n log n) + 双指针遍历 O(n²)，总体 O(n²)</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td><span style="color: var(--success);">O(1)</span> / <span style="color: var(--warning);">O(log n)</span></td>
+        <td>忽略结果数组，仅使用常数额外空间（排序栈空间 O(log n)）</td>
+      </tr>
+    </table>
+    
+    <div class="tip-box" style="margin-top: 20px;">
+      <strong>面试追问：</strong><br>
+      • 如果数组已排序，时间复杂度是多少？→ 仍是 O(n²)，排序不是瓶颈<br>
+      • 如果要求返回的是下标而不是数值？→ 排序会破坏原下标，需要用哈希表做法（更复杂）<br>
+      • 扩展：四数之和怎么做？→ 固定两个数，剩下两个用双指针，O(n³)
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转 LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/two-sum/" class="problem-card" target="_blank">
+        <span class="p-num">#1</span>
+        <div class="p-title">两数之和</div>
+        <div class="p-tag">哈希表 · Easy</div>
+      </a>
+      <a href="https://leetcode.cn/problems/3sum-closest/" class="problem-card" target="_blank">
+        <span class="p-num">#16</span>
+        <div class="p-title">最接近的三数之和</div>
+        <div class="p-tag">双指针 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/4sum/" class="problem-card" target="_blank">
+        <span class="p-num">#18</span>
+        <div class="p-title">四数之和</div>
+        <div class="p-tag">双指针 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/container-with-most-water/" class="problem-card" target="_blank">
+        <span class="p-num">#11</span>
+        <div class="p-title">盛最多水的容器</div>
+        <div class="p-tag">双指针 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/" class="problem-card" target="_blank">
+        <span class="p-num">#167</span>
+        <div class="p-title">两数之和 II</div>
+        <div class="p-tag">双指针 · Medium</div>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-duplicates-from-sorted-array/" class="problem-card" target="_blank">
+        <span class="p-num">#26</span>
+        <div class="p-title">删除有序数组中的重复项</div>
+        <div class="p-tag">双指针 · Easy</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📝 关键点总结</h2>
+    <ul class="points">
+      <li><strong>排序是双指针的前提</strong> —— 没有排序，双指针无从下手</li>
+      <li><strong>去重是难点</strong> —— 三个位置都要去重（固定位置、左指针、右指针）</li>
+      <li><strong>剪枝优化</strong> —— nums[i] > 0 时直接 break，利用单调性</li>
+      <li><strong>空间换时间 vs 时间换空间</strong> —— 本题用双指针 O(1) 空间，哈希表做法需要 O(n) 空间</li>
+    </ul>
+  </div>
+
+  <div class="section" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);">
+    <h3 style="margin-top: 0;">🔗 在线练习</h3>
+    <div class="links">
+      <a href="https://leetcode.cn/problems/3sum/" class="link-btn" target="_blank">LeetCode 中文版 →</a>
+      <a href="https://leetcode.com/problems/3sum/" class="link-btn" target="_blank">LeetCode 国际版 →</a>
+    </div>
+  </div>
+
+  <script>
+    // Python 代码行
+    const codeLines = [
+      { num: 1, content: '<span class="code-class">class</span> <span class="code-function">Solution</span>:' },
+      { num: 2, content: '    <span class="code-keyword">def</span> <span class="code-function">threeSum</span>(self, nums: List[<span class="code-class">int</span>]) -> List[List[<span class="code-class">int</span>]]:' },
+      { num: 3, content: '        n = <span class="code-function">len</span>(nums)' },
+      { num: 4, content: '        <span class="code-keyword">if</span> n < <span class="code-number">3</span>:' },
+      { num: 5, content: '            <span class="code-keyword">return</span> []' },
+      { num: 6, content: '        ' },
+      { num: 7, content: '        nums.sort()  <span class="code-comment"># 排序是双指针的前提</span>' },
+      { num: 8, content: '        res = []' },
+      { num: 9, content: '        ' },
+      { num: 10, content: '        <span class="code-keyword">for</span> i <span class="code-keyword">in</span> <span class="code-function">range</span>(n - <span class="code-number">2</span>):  <span class="code-comment"># 固定第一个数</span>' },
+      { num: 11, content: '            <span class="code-comment"># 剪枝1: 当前数已大于0，后面不可能有三数和为0</span>' },
+      { num: 12, content: '            <span class="code-keyword">if</span> nums[i] > <span class="code-number">0</span>:' },
+      { num: 13, content: '                <span class="code-keyword">break</span>' },
+      { num: 14, content: '            ' },
+      { num: 15, content: '            <span class="code-comment"># 去重: 跳过重复的nums[i]</span>' },
+      { num: 16, content: '            <span class="code-keyword">if</span> i > <span class="code-number">0</span> <span class="code-keyword">and</span> nums[i] == nums[i-<span class="code-number">1</span>]:' },
+      { num: 17, content: '                <span class="code-keyword">continue</span>' },
+      { num: 18, content: '            ' },
+      { num: 19, content: '            left, right = i + <span class="code-number">1</span>, n - <span class="code-number">1</span>  <span class="code-comment"># 双指针</span>' },
+      { num: 20, content: '            ' },
+      { num: 21, content: '            <span class="code-keyword">while</span> left < right:' },
+      { num: 22, content: '                total = nums[i] + nums[left] + nums[right]' },
+      { num: 23, content: '                ' },
+      { num: 24, content: '                <span class="code-keyword">if</span> total == <span class="code-number">0</span>:' },
+      { num: 25, content: '                    res.append([nums[i], nums[left], nums[right]])' },
+      { num: 26, content: '                    ' },
+      { num: 27, content: '                    <span class="code-comment"># 去重: 跳过重复的nums[left]</span>' },
+      { num: 28, content: '                    <span class="code-keyword">while</span> left < right <span class="code-keyword">and</span> nums[left] == nums[left+<span class="code-number">1</span>]:' },
+      { num: 29, content: '                        left += <span class="code-number">1</span>' },
+      { num: 30, content: '                    ' },
+      { num: 31, content: '                    <span class="code-comment"># 去重: 跳过重复的nums[right]</span>' },
+      { num: 32, content: '                    <span class="code-keyword">while</span> left < right <span class="code-keyword">and</span> nums[right] == nums[right-<span class="code-number">1</span>]:' },
+      { num: 33, content: '                        right -= <span class="code-number">1</span>' },
+      { num: 34, content: '                    ' },
+      { num: 35, content: '                    left += <span class="code-number">1</span>' },
+      { num: 36, content: '                    right -= <span class="code-number">1</span>' },
+      { num: 37, content: '                ' },
+      { num: 38, content: '                <span class="code-keyword">elif</span> total < <span class="code-number">0</span>:' },
+      { num: 39, content: '                    left += <span class="code-number">1</span>  <span class="code-comment"># 和太小，左指针右移</span>' },
+      { num: 40, content: '                ' },
+      { num: 41, content: '                <span class="code-keyword">else</span>:' },
+      { num: 42, content: '                    right -= <span class="code-number">1</span>  <span class="code-comment"># 和太大，右指针左移</span>' },
+      { num: 43, content: '        ' },
+      { num: 44, content: '        <span class="code-keyword">return</span> res' },
+    ];
+
+    // 步骤定义（映射到代码行）
+    const steps = [
+      { 
+        title: "1. 初始检查", 
+        desc: "数组长度小于3，直接返回空", 
+        line: 4, 
+        state: { nums: "[-1,0,1,2,-1,-4]", n: 6, action: "继续执行" }
+      },
+      { 
+        title: "2. 排序数组", 
+        desc: "排序是双指针的前提，排序后 nums = [-4,-1,-1,0,1,2]", 
+        line: 7, 
+        state: { nums: "[-4,-1,-1,0,1,2]", res: "[]" }
+      },
+      { 
+        title: "3. 外层循环开始", 
+        desc: "i=0, 固定 nums[0] = -4", 
+        line: 10, 
+        state: { i: 0, "nums[i]": -4, left: 1, right: 5 }
+      },
+      { 
+        title: "4. 剪枝检查", 
+        desc: "nums[0] = -4 < 0, 不剪枝，继续执行", 
+        line: 12, 
+        state: { "nums[i]": -4, condition: "-4 > 0 ? 否" }
+      },
+      { 
+        title: "5. 去重检查", 
+        desc: "i=0 是第一个元素，不需要去重", 
+        line: 16, 
+        state: { i: 0, "i > 0": "否", action: "继续执行" }
+      },
+      { 
+        title: "6. 初始化双指针", 
+        desc: "left = i+1 = 1, right = n-1 = 5", 
+        line: 19, 
+        state: { left: 1, "nums[left]": -1, right: 5, "nums[right]": 2 }
+      },
+      { 
+        title: "7. 第一次计算总和", 
+        desc: "total = -4 + (-1) + 2 = -3 < 0", 
+        line: 22, 
+        state: { total: -3, comparison: "-3 < 0" }
+      },
+      { 
+        title: "8. 左指针右移", 
+        desc: "和太小，需要增大，left += 1", 
+        line: 39, 
+        state: { old_left: 1, new_left: 2, "nums[new_left]": -1 }
+      },
+      { 
+        title: "9. 第二次计算总和", 
+        desc: "total = -4 + (-1) + 2 = -3 < 0 (left=2)", 
+        line: 22, 
+        state: { left: 2, right: 5, total: -3 }
+      },
+      { 
+        title: "10. 左指针再次右移", 
+        desc: "和仍然太小，left += 1，现在 left=3", 
+        line: 39, 
+        state: { new_left: 3, "nums[3]": 0 }
+      },
+      { 
+        title: "11. 第三次计算总和", 
+        desc: "total = -4 + 0 + 2 = -2 < 0", 
+        line: 22, 
+        state: { left: 3, total: -2 }
+      },
+      { 
+        title: "12. 继续左移", 
+        desc: "left += 1, 现在 left=4, nums[4]=1", 
+        line: 39, 
+        state: { new_left: 4, "nums[4]": 1 }
+      },
+      { 
+        title: "13. 第四次计算总和", 
+        desc: "total = -4 + 1 + 2 = -1 < 0", 
+        line: 22, 
+        state: { total: -1 }
+      },
+      { 
+        title: "14. 左移后 left >= right", 
+        desc: "left += 1 → left=5, left >= right, 内层循环结束", 
+        line: 39, 
+        state: { left: 5, right: 5, "left < right": "否" }
+      },
+      { 
+        title: "15. 外层循环 i=1", 
+        desc: "固定 nums[1] = -1, 这是第一个-1", 
+        line: 10, 
+        state: { i: 1, "nums[i]": -1, left: 2, right: 5 }
+      },
+      { 
+        title: "16. 双指针找目标", 
+        desc: "需要找两数之和 = 1 (即 -(-1))", 
+        line: 19, 
+        state: { target: 1, left: 2, right: 5 }
+      },
+      { 
+        title: "17. 找到第一个解！", 
+        desc: "total = -1 + (-1) + 2 = 0 ✓ 加入结果", 
+        line: 25, 
+        state: { total: 0, result: "[-1,-1,2]", action: "append to res" }
+      },
+      { 
+        title: "18. 去重左指针", 
+        desc: "跳过重复的 nums[left], left 从2移到3", 
+        line: 28, 
+        state: { "nums[2]": -1, "nums[3]": 0, new_left: 3 }
+      },
+      { 
+        title: "19. 去重右指针", 
+        desc: "nums[right]=2 不重复，right 移到4", 
+        line: 32, 
+        state: { old_right: 5, new_right: 4, "nums[4]": 1 }
+      },
+      { 
+        title: "20. 继续双指针", 
+        desc: "left=3, right=4, total = -1+0+1 = 0 ✓", 
+        line: 25, 
+        state: { total: 0, result: "[-1,0,1]", res: "[[-1,-1,2], [-1,0,1]]" }
+      },
+      { 
+        title: "21. 移动指针继续", 
+        desc: "left+=1 → 4, right-=1 → 3, left >= right", 
+        line: 35, 
+        state: { left: 4, right: 3, continue: "结束内层循环" }
+      },
+      { 
+        title: "22. i=2 去重跳过", 
+        desc: "nums[2]==nums[1], continue跳过", 
+        line: 16, 
+        state: { i: 2, "nums[2]": -1, "nums[1]": -1, action: "skip (continue)" }
+      },
+      { 
+        title: "23. i=3, nums[3]=0", 
+        desc: "left=4, right=5, 需要找和为0的两数", 
+        line: 10, 
+        state: { i: 3, "nums[i]": 0, left: 4, right: 5 }
+      },
+      { 
+        title: "24. 计算总和", 
+        desc: "total = 0 + 1 + 2 = 3 > 0", 
+        line: 22, 
+        state: { total: 3, comparison: "3 > 0" }
+      },
+      { 
+        title: "25. 右指针左移", 
+        desc: "和太大，right -= 1", 
+        line: 42, 
+        state: { new_right: 4, "left < right": "否" }
+      },
+      { 
+        title: "26. i=4, 剪枝生效", 
+        desc: "nums[4]=1 > 0, 直接break!", 
+        line: 12, 
+        state: { i: 4, "nums[i]": 1, condition: "1 > 0 ? 是", action: "break" }
+      },
+      { 
+        title: "27. 返回结果", 
+        desc: "返回最终结果 [[-1,-1,2], [-1,0,1]]", 
+        line: 44, 
+        state: { final_result: "[[-1,-1,2], [-1,0,1]]" }
+      },
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'code-line';
+      div.dataset.line = line.num;
+      div.innerHTML = `<span class="line-number">${line.num}</span><span class="line-content">${line.content}</span>`;
+      div.addEventListener('click', () => highlightStepByLine(line.num));
+      codeBlock.appendChild(div);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.step = idx;
+      div.dataset.line = step.line;
+      
+      let stateHtml = '';
+      for (let [k, v] of Object.entries(step.state)) {
+        stateHtml += `<div><span class="state-var">${k}</span>: <span class="state-val">${v}</span></div>`;
+      }
+      
+      div.innerHTML = `
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${step.desc}</div>
+        <div class="step-state">${stateHtml}</div>
+      `;
+      div.addEventListener('click', () => highlightStep(idx));
+      vizSteps.appendChild(div);
+    });
+
+    // 当前激活状态
+    let currentStep = 0;
+
+    function highlightStep(stepIdx) {
+      // 更新步骤样式
+      document.querySelectorAll('.viz-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === stepIdx);
+      });
+      
+      // 更新代码行样式
+      const line = steps[stepIdx].line;
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line) === line);
+      });
+      
+      // 滚动到可视区域
+      const activeStep = document.querySelector(`.viz-step[data-step="${stepIdx}"]`);
+      const activeLine = document.querySelector(`.code-line[data-line="${line}"]`);
+      if (activeStep) activeStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (activeLine) activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      currentStep = stepIdx;
+    }
+
+    function highlightStepByLine(lineNum) {
+      // 找到最近的步骤
+      let closestStep = 0;
+      let minDiff = Infinity;
+      steps.forEach((step, idx) => {
+        const diff = Math.abs(step.line - lineNum);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestStep = idx;
+        }
+      });
+      highlightStep(closestStep);
+    }
+
+    // 默认高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
