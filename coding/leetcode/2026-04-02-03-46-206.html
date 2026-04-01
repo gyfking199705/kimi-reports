@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #206 - 反转链表</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --primary-light: #818cf8;
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --surface-hover: #2d3748;
+      --text: #f1f5f9; 
+      --text-muted: #94a3b8;
+      --code-bg: #0d1117;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    h1 { 
+      font-size: 2.5rem; 
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle { 
+      color: var(--text-muted); 
+      font-size: 1.1rem; 
+      margin-bottom: 32px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .difficulty { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 0.85rem; 
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    .easy { background: #166534; color: #86efac; }
+    .medium { background: #713f12; color: #fde047; }
+    .hard { background: #7f1d1d; color: #fca5a5; }
+    
+    pre { 
+      background: var(--code-bg); 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 2px 8px; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-radius: 4px;
+      margin: 1px 0;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.08); 
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary); 
+      margin-left: -3px;
+      padding-left: 11px;
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 36px; 
+      text-align: right; 
+      padding-right: 16px; 
+      user-select: none;
+    }
+    
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0;
+    }
+    .viz-steps { 
+      background: var(--code-bg); 
+      border-radius: 12px; 
+      padding: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .viz-step { 
+      padding: 14px 16px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #1e293b; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      background: var(--surface-hover);
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+    }
+    .step-title { 
+      font-weight: 600; 
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .step-desc { 
+      font-size: 0.9rem; 
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .step-state { 
+      margin-top: 10px; 
+      padding: 8px 12px; 
+      background: var(--code-bg);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .step-state strong { color: var(--primary-light); }
+    
+    .linked-list-viz {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .node {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background: var(--code-bg);
+      transition: all 0.3s;
+    }
+    .node.highlight {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+    }
+    .node.null {
+      border-color: var(--text-muted);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .arrow {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+    .pointer-label {
+      font-size: 0.75rem;
+      color: #f472b6;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .pointer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .code-container { max-height: 500px; overflow-y: auto; }
+    .code-container h3 { 
+      margin-top: 0; 
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card { 
+      background: var(--code-bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid var(--border); 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      cursor: pointer;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+    }
+    .problem-card .p-num { 
+      color: var(--primary-light); 
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .problem-card .p-title { 
+      font-weight: 600; 
+      margin: 6px 0;
+      font-size: 1.05rem;
+    }
+    .problem-card .p-tag { 
+      font-size: 0.85rem; 
+      color: var(--text-muted);
+    }
+    
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .complexity-table th,
+    .complexity-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .complexity-table th {
+      color: var(--primary-light);
+      font-weight: 600;
+      background: var(--code-bg);
+    }
+    .complexity-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .highlight-box {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+    .highlight-box strong { color: var(--primary-light); }
+    
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; font-style: italic; } 
+    .class { color: #ffa657; }
+    .var { color: #79c0ff; }
+    
+    .method-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .method-tab {
+      padding: 10px 20px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .method-tab:hover { background: var(--surface-hover); }
+    .method-tab.active {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    @media (max-width: 900px) {
+      .viz-container { grid-template-columns: 1fr; }
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #206 <span class="difficulty easy">Easy</span></h1>
+  <p class="subtitle">反转链表 | Reverse Linked List</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给你单链表的头节点 <code>head</code>，请你反转链表，并返回反转后的链表的头节点。</p>
+    
+    <div class="highlight-box">
+      <strong>核心考点：</strong>链表指针操作的经典入门题，掌握迭代和递归两种解法，理解指针的「前驱-当前-后继」关系。
+    </div>
+    
+    <h3 style="margin-top: 24px; color: var(--text-muted); font-size: 1rem;">示例</h3>
+    <p><strong>输入：</strong>head = [1, 2, 3, 4, 5]</p>
+    <p><strong>输出：</strong>[5, 4, 3, 2, 1]</p>
+    
+    <p><strong>输入：</strong>head = [1, 2]</p>
+    <p><strong>输出：</strong>[2, 1]</p>
+    
+    <p><strong>输入：</strong>head = []</p>
+    <p><strong>输出：</strong>[]</p>
+    
+    <h3 style="margin-top: 24px; color: var(--text-muted); font-size: 1rem;">约束条件</h3>
+    <ul style="color: var(--text-muted);">
+      <li>链表中节点的数目范围是 <code>[0, 5000]</code></li>
+      <li><code>-5000 <= Node.val <= 5000</code></li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程可视化</h2>
+    <p style="color: var(--text-muted); margin-bottom: 16px;">点击下方步骤查看链表变化，或点击代码行高亮对应步骤。</p>
+    
+    <div class="viz-container">
+      <div>
+        <div class="viz-steps" id="vizSteps">
+          <!-- 步骤由JS生成 -->
+        </div>
+      </div>
+      <div class="code-container">
+        <h3>Python 实现 - 迭代法</h3>
+        <pre><code id="codeBlock">
+<div class="code-line" data-line="1"><span class="line-number">1</span><span class="keyword">class</span> <span class="class">ListNode</span>:</span></div>
+<div class="code-line" data-line="2"><span class="line-number">2</span>    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="var">self</span>, val=<span class="number">0</span>, next=<span class="keyword">None</span>):</span></div>
+<div class="code-line" data-line="3"><span class="line-number">3</span>        <span class="var">self</span>.val = val</span></div>
+<div class="code-line" data-line="4"><span class="line-number">4</span>        <span class="var">self</span>.next = next</span></div>
+<div class="code-line" data-line="5"><span class="line-number">5</span></span></div>
+<div class="code-line" data-line="6"><span class="line-number">6</span><span class="keyword">class</span> <span class="class">Solution</span>:</span></div>
+<div class="code-line" data-line="7"><span class="line-number">7</span>    <span class="keyword">def</span> <span class="function">reverseList</span>(<span class="var">self</span>, head: ListNode) -> ListNode:</span></div>
+<div class="code-line" data-line="8"><span class="line-number">8</span>        <span class="comment"># prev: 已反转部分的头节点</span></span></div>
+<div class="code-line" data-line="9"><span class="line-number">9</span>        prev = <span class="keyword">None</span>          <span class="comment"># 前驱指针</span></span></div>
+<div class="code-line" data-line="10"><span class="line-number">10</span>        curr = head          <span class="comment"># 当前指针</span></span></div>
+<div class="code-line" data-line="11"><span class="line-number">11</span></span></div>
+<div class="code-line" data-line="12"><span class="line-number">12</span>        <span class="keyword">while</span> curr:          <span class="comment"># 遍历链表</span></span></div>
+<div class="code-line" data-line="13"><span class="line-number">13</span>            next_temp = curr.next   <span class="comment"># 暂存后继</span></span></div>
+<div class="code-line" data-line="14"><span class="line-number">14</span>            curr.next = prev        <span class="comment"># 反转指针</span></span></div>
+<div class="code-line" data-line="15"><span class="line-number">15</span>            prev = curr             <span class="comment"># 前移prev</span></span></div>
+<div class="code-line" data-line="16"><span class="line-number">16</span>            curr = next_temp        <span class="comment"># 前移curr</span></span></div>
+<div class="code-line" data-line="17"><span class="line-number">17</span></span></div>
+<div class="code-line" data-line="18"><span class="line-number">18</span>        <span class="keyword">return</span> prev          <span class="comment"># 返回新头节点</span></span></div>
+        </code></pre>
+      </div>
+    </div>
+    
+    <div id="linkedListViz" style="margin-top: 20px; padding: 20px; background: var(--code-bg); border-radius: 12px;">
+      <p style="color: var(--text-muted); margin-bottom: 12px;">链表状态：</p>
+      <div class="linked-list-viz" id="listViz"></div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table class="complexity-table">
+      <tr>
+        <th>方法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td><strong>迭代法</strong></td>
+        <td><code>O(n)</code></td>
+        <td><code>O(1)</code></td>
+        <td>只需遍历一遍，使用固定数量的指针</td>
+      </tr>
+      <tr>
+        <td><strong>递归法</strong></td>
+        <td><code>O(n)</code></td>
+        <td><code>O(n)</code></td>
+        <td>递归栈空间，尾递归可优化但Python不支持</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心思路解析</h2>
+    
+    <h3 style="color: var(--primary-light);">迭代法三指针技巧</h3>
+    <p>反转链表的核心是<strong>改变每个节点的 next 指向</strong>。我们需要三个指针协同工作：</p>
+    <ul style="line-height: 2;">
+      <li><code>prev</code> - 已反转部分的头节点（初始为 None）</li>
+      <li><code>curr</code> - 当前正在处理的节点</li>
+      <li><code>next_temp</code> - 临时保存 curr 的后继，防止断链后丢失</li>
+    </ul>
+    
+    <div class="highlight-box">
+      <strong>关键操作顺序：</strong>保存后继 → 反转指向 → 前移指针。<br>
+      顺序不能错！如果先反转，会丢失后继节点的引用。
+    </div>
+    
+    <h3 style="color: var(--primary-light); margin-top: 24px;">递归法思路</h3>
+    <p>递归到底层（最后一个节点），然后逐层返回时反转指针：</p>
+    <ol style="line-height: 2;">
+      <li>递归到链表末尾，找到新的头节点</li>
+      <li>让当前节点的下一个节点指向自己（<code>head.next.next = head</code>）</li>
+      <li>断开当前节点的 next 指向，避免成环</li>
+      <li>返回新的头节点</li>
+    </ol>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/reverse-linked-list-ii/" class="problem-card" target="_blank">
+        <span class="p-num">#92</span>
+        <div class="p-title">反转链表 II</div>
+        <span class="p-tag">Medium · 反转指定区间</span>
+      </a>
+      <a href="https://leetcode.cn/problems/swap-nodes-in-pairs/" class="problem-card" target="_blank">
+        <span class="p-num">#24</span>
+        <div class="p-title">两两交换链表中的节点</div>
+        <span class="p-tag">Medium · 指针操作</span>
+      </a>
+      <a href="https://leetcode.cn/problems/palindrome-linked-list/" class="problem-card" target="_blank">
+        <span class="p-num">#234</span>
+        <div class="p-title">回文链表</div>
+        <span class="p-tag">Easy · 反转+双指针</span>
+      </a>
+      <a href="https://leetcode.cn/problems/reverse-nodes-in-k-group/" class="problem-card" target="_blank">
+        <span class="p-num">#25</span>
+        <div class="p-title">K 个一组翻转链表</div>
+        <span class="p-tag">Hard · 进阶挑战</span>
+      </a>
+      <a href="https://leetcode.cn/problems/merge-two-sorted-lists/" class="problem-card" target="_blank">
+        <span class="p-num">#21</span>
+        <div class="p-title">合并两个有序链表</div>
+        <span class="p-tag">Easy · 双指针</span>
+      </a>
+      <a href="https://leetcode.cn/problems/remove-nth-node-from-end-of-list/" class="problem-card" target="_blank">
+        <span class="p-num">#19</span>
+        <div class="p-title">删除链表的倒数第 N 个结点</div>
+        <span class="p-tag">Medium · 快慢指针</span>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 步骤与代码行映射
+    const steps = [
+      {
+        title: "初始化指针",
+        desc: "prev 指向 None（反转后的尾），curr 指向 head（原链表头）",
+        line: 9,
+        list: [1, 2, 3, 4, 5],
+        prevPos: -1,
+        currPos: 0
+      },
+      {
+        title: "第1次循环：暂存后继",
+        desc: "保存 curr.next，防止反转后丢失",
+        line: 13,
+        list: [1, 2, 3, 4, 5],
+        prevPos: -1,
+        currPos: 0,
+        highlight: [0, 1]
+      },
+      {
+        title: "第1次循环：反转指针",
+        desc: "让 1 指向 prev（None），1 成为反转链表的头",
+        line: 14,
+        list: [1, 2, 3, 4, 5],
+        prevPos: -1,
+        currPos: 0,
+        arrow: {from: 0, to: -1}
+      },
+      {
+        title: "第1次循环：前移指针",
+        desc: "prev 移到 1，curr 移到 2",
+        line: 15,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 0,
+        currPos: 1
+      },
+      {
+        title: "第2次循环：反转 2",
+        desc: "暂存 3，让 2 指向 1，前移指针",
+        line: 14,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 0,
+        currPos: 1,
+        arrow: {from: 1, to: 0}
+      },
+      {
+        title: "第2次循环：指针前移",
+        desc: "prev 移到 2，curr 移到 3",
+        line: 16,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 1,
+        currPos: 2
+      },
+      {
+        title: "第3次循环：反转 3",
+        desc: "3 指向 2，链表变成 3→2→1→None",
+        line: 14,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 1,
+        currPos: 2,
+        arrow: {from: 2, to: 1}
+      },
+      {
+        title: "第3次循环：指针前移",
+        desc: "prev 移到 3，curr 移到 4",
+        line: 16,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 2,
+        currPos: 3
+      },
+      {
+        title: "第4次循环：反转 4",
+        desc: "4 指向 3，链表变成 4→3→2→1→None",
+        line: 14,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 2,
+        currPos: 3,
+        arrow: {from: 3, to: 2}
+      },
+      {
+        title: "第4次循环：指针前移",
+        desc: "prev 移到 4，curr 移到 5",
+        line: 16,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 3,
+        currPos: 4
+      },
+      {
+        title: "第5次循环：反转 5",
+        desc: "5 指向 4，链表变成 5→4→3→2→1→None",
+        line: 14,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 3,
+        currPos: 4,
+        arrow: {from: 4, to: 3}
+      },
+      {
+        title: "第5次循环：指针前移",
+        desc: "prev 移到 5，curr 移到 None（结束循环）",
+        line: 16,
+        list: [1, 2, 3, 4, 5],
+        prevPos: 4,
+        currPos: -1
+      },
+      {
+        title: "返回结果",
+        desc: "curr 为 None 退出循环，返回 prev（5）作为新头节点",
+        line: 18,
+        list: [5, 4, 3, 2, 1],
+        prevPos: 4,
+        currPos: -1,
+        reversed: true
+      }
+    ];
+
+    let activeStep = 0;
+
+    function renderSteps() {
+      const container = document.getElementById('vizSteps');
+      container.innerHTML = steps.map((step, idx) => `
+        <div class="viz-step ${idx === activeStep ? 'active' : ''}" data-idx="${idx}">
+          <div class="step-title">${idx + 1}. ${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+        </div>
+      `).join('');
+      
+      // 绑定点击事件
+      container.querySelectorAll('.viz-step').forEach(el => {
+        el.addEventListener('click', () => {
+          activeStep = parseInt(el.dataset.idx);
+          updateUI();
+        });
+      });
+    }
+
+    function renderLinkedList() {
+      const step = steps[activeStep];
+      const container = document.getElementById('listViz');
+      const list = step.reversed ? step.list : step.list;
+      
+      let html = '';
+      
+      // prev 指针
+      if (step.prevPos >= 0) {
+        html += `<div class="pointer-container">
+          <div class="node ${step.prevPos === step.currPos ? 'highlight' : ''}">${list[step.prevPos]}</div>
+          <div class="pointer-label">prev</div>
+        </div>`;
+      } else {
+        html += `<div class="pointer-container">
+          <div class="node null">None</div>
+          <div class="pointer-label">prev</div>
+        </div>`;
+      }
+      
+      html += `<span class="arrow">→</span>`;
+      
+      // 当前节点
+      if (step.currPos >= 0) {
+        html += `<div class="pointer-container">
+          <div class="node highlight">${list[step.currPos]}</div>
+          <div class="pointer-label">curr</div>
+        </div>`;
+      } else {
+        html += `<div class="pointer-container">
+          <div class="node null">None</div>
+          <div class="pointer-label">curr</div>
+        </div>`;
+      }
+      
+      // 剩余节点
+      if (step.currPos >= 0 && step.currPos < list.length - 1) {
+        html += `<span class="arrow">→</span>`;
+        for (let i = step.currPos + 1; i < list.length; i++) {
+          html += `<div class="node">${list[i]}</div>`;
+          if (i < list.length - 1) html += `<span class="arrow">→</span>`;
+        }
+      }
+      
+      html += `<span class="arrow">→</span><div class="node null">None</div>`;
+      
+      if (step.reversed) {
+        html = '<div style="width:100%;"><p style="color:var(--primary-light);margin-bottom:10px;">✅ 反转完成！</p>' + html + '</div>';
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function highlightCodeLine() {
+      const step = steps[activeStep];
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.remove('active');
+        if (parseInt(el.dataset.line) === step.line) {
+          el.classList.add('active');
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
+    function updateUI() {
+      renderSteps();
+      renderLinkedList();
+      highlightCodeLine();
+    }
+
+    // 代码行点击事件
+    document.querySelectorAll('.code-line').forEach(el => {
+      el.addEventListener('click', () => {
+        const line = parseInt(el.dataset.line);
+        const stepIdx = steps.findIndex(s => s.line === line);
+        if (stepIdx >= 0) {
+          activeStep = stepIdx;
+          updateUI();
+        }
+      });
+    });
+
+    // 初始化
+    updateUI();
+  </script>
+</body>
+</html>
