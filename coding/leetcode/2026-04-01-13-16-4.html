@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #4 - 寻找两个正序数组的中位数</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); max-width: 1000px; margin: 0 auto; padding: 40px 20px; line-height: 1.8; }
+    .section { background: var(--surface); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .section h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    pre { background: #0d1117; border-radius: 12px; padding: 20px; overflow-x: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px; }
+    .code-line { display: flex; padding: 3px 0; cursor: pointer; transition: all 0.2s; border-radius: 4px; }
+    .code-line:hover { background: rgba(255,255,255,0.08); }
+    .code-line.active { background: rgba(99, 102, 241, 0.35); border-left: 4px solid #6366f1; margin-left: -4px; padding-left: 4px; }
+    .line-number { color: #484f58; min-width: 45px; text-align: right; padding-right: 16px; user-select: none; }
+    .line-content { flex: 1; }
+    .viz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; }
+    @media (max-width: 768px) { .viz-container { grid-template-columns: 1fr; } }
+    .viz-steps { max-height: 500px; overflow-y: auto; }
+    .viz-step { padding: 14px; margin: 10px 0; border-radius: 10px; background: #334155; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .viz-step:hover { transform: translateX(4px); border-color: rgba(99, 102, 241, 0.5); }
+    .viz-step.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.25); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+    .viz-step-title { font-weight: 600; color: #a5b4fc; margin-bottom: 6px; }
+    .viz-step-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .problem-card { background: var(--bg); border-radius: 12px; padding: 18px; border: 1px solid #475569; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+    .problem-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2); }
+    .problem-card h4 { margin: 0 0 8px 0; color: #e2e8f0; }
+    .problem-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+    .difficulty { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 10px; }
+    .difficulty-hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .difficulty-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .difficulty-easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .keyword { color: #ff7b72; } .function { color: #d2a8ff; } .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } .comment { color: #8b949e; } .class { color: #ffa657; }
+    .variable { color: #79c0ff; } .operator { color: #ff7b72; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    th { color: var(--primary); font-weight: 600; background: rgba(99, 102, 241, 0.1); }
+    .highlight-box { background: rgba(99, 102, 241, 0.15); border-left: 4px solid var(--primary); padding: 16px; border-radius: 8px; margin: 16px 0; }
+    .state-display { background: #0d1117; border-radius: 8px; padding: 12px 16px; margin-top: 10px; font-family: monospace; font-size: 12px; }
+    .state-var { color: #79c0ff; }
+    .state-val { color: #a5d6ff; }
+    h1 { font-size: 2.2rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 32px; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #4 <span class="difficulty difficulty-hard">Hard</span></h1>
+  <p class="subtitle">寻找两个正序数组的中位数</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定两个大小分别为 <code>m</code> 和 <code>n</code> 的正序（从小到大）数组 <code>nums1</code> 和 <code>nums2</code>。请你找出并返回这两个正序数组的 <strong>中位数</strong> 。</p>
+    <p>算法的时间复杂度应该为 <code>O(log(m+n))</code>。</p>
+    
+    <div class="highlight-box">
+      <strong>💡 核心考点：</strong>二分查找的经典变体。将"找中位数"转化为"找第k小的数"，在较小的数组中进行二分，每次排除一半不可能的元素。
+    </div>
+    
+    <p><strong>示例 1：</strong></p>
+    <pre style="background:#1e293b;padding:12px;border-radius:8px;">输入：nums1 = [1,3], nums2 = [2]
+输出：2.00000
+解释：合并数组 = [1,2,3] ，中位数 2</pre>
+    
+    <p><strong>示例 2：</strong></p>
+    <pre style="background:#1e293b;padding:12px;border-radius:8px;">输入：nums1 = [1,2], nums2 = [3,4]
+输出：2.50000
+解释：合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5</pre>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程</h2>
+    <p style="color:#94a3b8;margin-bottom:16px;">点击左侧步骤或右侧代码行，查看对应关系。观察二分查找如何在两个数组中快速定位中位数。</p>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3 style="margin-top:0;color:#a5b4fc;">Python 实现</h3>
+        <pre><code id="codeBlock"></code></pre>
+      </div>
+    </div>
+    
+    <div class="highlight-box">
+      <strong>🎯 核心思想：</strong>将找中位数转化为"找第k小的数"。在较小的数组A中取前k/2个元素，在数组B中也取前k/2个元素，比较两个部分的最后一个元素，较小的那部分不可能包含第k小的数，可以排除。
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <tr>
+        <th>方法</th>
+        <th>时间复杂度</th>
+        <th>空间复杂度</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>合并数组法</td>
+        <td>O(m+n)</td>
+        <td>O(m+n)</td>
+        <td>不符合题目要求，但简单直观</td>
+      </tr>
+      <tr>
+        <td>双指针法</td>
+        <td>O(m+n)</td>
+        <td>O(1)</td>
+        <td>只需遍历到中间位置，但仍是线性</td>
+      </tr>
+      <tr style="background:rgba(99,102,241,0.1);">
+        <td><strong>二分查找法</strong></td>
+        <td><strong>O(log(m+n))</strong></td>
+        <td><strong>O(1)</strong></td>
+        <td><strong>✅ 最优解法</strong></td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>💡 解题技巧总结</h2>
+    <ul>
+      <li><strong>转化思维：</strong>中位数 = 合并后第 (m+n)/2 或 (m+n)/2+1 小的数</li>
+      <li><strong>二分技巧：</strong>永远选择较短的数组进行二分，提高效率</li>
+      <li><strong>边界处理：</strong>注意数组为空、越界等特殊情况</li>
+      <li><strong>k的处理：</strong>奇偶长度统一处理，递归/迭代找第k小的数</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/kth-smallest-element-in-a-sorted-matrix/" class="problem-card" target="_blank">
+        <h4>#378 有序矩阵中第 K 小的元素</h4>
+        <p>同样是二分查找找第k小，扩展到二维矩阵</p>
+      </a>
+      <a href="https://leetcode.cn/problems/median-of-a-row-wise-sorted-matrix/" class="problem-card" target="_blank">
+        <h4>#1037 矩阵中的行有序第 K 小元素</h4>
+        <p>基于本题思路，处理多行有序矩阵</p>
+      </a>
+      <a href="https://leetcode.cn/problems/kth-smallest-element-in-a-bst/" class="problem-card" target="_blank">
+        <h4>#230 二叉搜索树中第K小的元素</h4>
+        <p>中序遍历天然有序，找第k小的经典题</p>
+      </a>
+      <a href="https://leetcode.cn/problems/k-closest-points-to-origin/" class="problem-card" target="_blank">
+        <h4>#973 最接近原点的 K 个点</h4>
+        <p>Top K问题，可用堆或快排变形</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 代码内容
+    const codeLines = [
+      { num: 1, content: '<span class="keyword">class</span> <span class="class">Solution</span>:' },
+      { num: 2, content: '    <span class="keyword">def</span> <span class="function">findMedianSortedArrays</span>(self, nums1: List[<span class="keyword">int</span>], nums2: List[<span class="keyword">int</span>]) -> <span class="keyword">float</span>:' },
+      { num: 3, content: '        <span class="comment"># 确保 nums1 是较短的数组，在短数组上进行二分</span>' },
+      { num: 4, content: '        <span class="keyword">if</span> len(nums1) > len(nums2):' },
+      { num: 5, content: '            nums1, nums2 = nums2, nums1' },
+      { num: 6, content: '        ' },
+      { num: 7, content: '        m, n = len(nums1), len(nums2)' },
+      { num: 8, content: '        total_left = (m + n + <span class="number">1</span>) // <span class="number">2</span>  <span class="comment"># 左半部分需要的元素个数</span>' },
+      { num: 9, content: '        ' },
+      { num: 10, content: '        <span class="comment"># 在 nums1 上进行二分查找</span>' },
+      { num: 11, content: '        left, right = <span class="number">0</span>, m' },
+      { num: 12, content: '        ' },
+      { num: 13, content: '        <span class="keyword">while</span> left < right:' },
+      { num: 14, content: '            <span class="comment"># i: nums1 中选取的元素个数</span>' },
+      { num: 15, content: '            i = (left + right) // <span class="number">2</span>' },
+      { num: 16, content: '            j = total_left - i  <span class="comment"># nums2 中需要选取的元素个数</span>' },
+      { num: 17, content: '            ' },
+      { num: 18, content: '            <span class="comment"># 比较分割线左右两侧的元素</span>' },
+      { num: 19, content: '            <span class="keyword">if</span> nums1[i] < nums2[j - <span class="number">1</span>]:' },
+      { num: 20, content: '                <span class="comment"># nums1[i] 太小，需要向右移动分割线</span>' },
+      { num: 21, content: '                left = i + <span class="number">1</span>' },
+      { num: 22, content: '            <span class="keyword">else</span>:' },
+      { num: 23, content: '                <span class="comment"># 找到正确位置或需要向左移动</span>' },
+      { num: 24, content: '                right = i' },
+      { num: 25, content: '        ' },
+      { num: 26, content: '        <span class="comment"># 确定最终分割线位置</span>' },
+      { num: 27, content: '        i = left' },
+      { num: 28, content: '        j = total_left - i' },
+      { num: 29, content: '        ' },
+      { num: 30, content: '        <span class="comment"># 计算左半部分的最大值</span>' },
+      { num: 31, content: '        nums1_left_max = float(<span class="string">\'-inf\'</span>) <span class="keyword">if</span> i == <span class="number">0</span> <span class="keyword">else</span> nums1[i - <span class="number">1</span>]' },
+      { num: 32, content: '        nums2_left_max = float(<span class="string">\'-inf\'</span>) <span class="keyword">if</span> j == <span class="number">0</span> <span class="keyword">else</span> nums2[j - <span class="number">1</span>]' },
+      { num: 33, content: '        max_of_left = max(nums1_left_max, nums2_left_max)' },
+      { num: 34, content: '        ' },
+      { num: 35, content: '        <span class="comment"># 如果总长度是奇数，中位数就是左半部分最大值</span>' },
+      { num: 36, content: '        <span class="keyword">if</span> (m + n) % <span class="number">2</span> == <span class="number">1</span>:' },
+      { num: 37, content: '            <span class="keyword">return</span> max_of_left' },
+      { num: 38, content: '        ' },
+      { num: 39, content: '        <span class="comment"># 计算右半部分的最小值</span>' },
+      { num: 40, content: '        nums1_right_min = float(<span class="string">\'inf\'</span>) <span class="keyword">if</span> i == m <span class="keyword">else</span> nums1[i]' },
+      { num: 41, content: '        nums2_right_min = float(<span class="string">\'inf\'</span>) <span class="keyword">if</span> j == n <span class="keyword">else</span> nums2[j]' },
+      { num: 42, content: '        min_of_right = min(nums1_right_min, nums2_right_min)' },
+      { num: 43, content: '        ' },
+      { num: 44, content: '        <span class="comment"># 偶数长度时，中位数是左右两部分平均</span>' },
+      { num: 45, content: '        <span class="keyword">return</span> (max_of_left + min_of_right) / <span class="number">2.0</span>' }
+    ];
+
+    // 步骤与代码行映射
+    const steps = [
+      { title: "初始化与数组长度判断", desc: "首先确保 nums1 是较短的数组。这样我们可以在较短的数组上进行二分查找，提高效率。", line: 4, state: { nums1: "[1,3]", nums2: "[2]", m: 2, n: 1 } },
+      { title: "计算分割线目标", desc: "计算左半部分需要的元素个数 total_left。对于总数为 m+n 的两个数组，左半部分需要 (m+n+1)//2 个元素。", line: 8, state: { total_left: 2, "说明": "(2+1+1)//2 = 2" } },
+      { title: "二分查找初始化", desc: "在 nums1 上进行二分查找。left=0 表示从 nums1 取 0 个元素，right=m 表示从 nums1 取 m 个元素。", line: 11, state: { left: 0, right: 2 } },
+      { title: "二分循环开始", desc: "进入二分查找循环，条件是 left < right。每次迭代缩小搜索范围。", line: 13, state: { "当前迭代": "第1次" } },
+      { title: "计算分割线位置", desc: "计算从 nums1 取 i 个元素，则 nums2 需要取 j = total_left - i 个元素。", line: 15, state: { i: 1, j: 1 } },
+      { title: "比较分割线元素", desc: "比较 nums1[i] 和 nums2[j-1]，判断分割线位置是否正确。nums1[i] 应 >= nums2[j-1] 才满足条件。", line: 19, state: { "nums1[i]": "3", "nums2[j-1]": "2" } },
+      { title: "调整分割线位置", desc: "如果 nums1[i] < nums2[j-1]，说明 nums1 取的元素太少，分割线需要右移。", line: 21, state: { left: 2, "说明": "3 >= 2，条件不满足，走else分支" } },
+      { title: "向左移动分割线", desc: "当 nums1[i] >= nums2[j-1] 时，说明分割线可能偏右，需要向左移动寻找正确位置。", line: 24, state: { right: 1, "说明": "right更新为i=1" } },
+      { title: "循环继续判断", desc: "检查 left < right 是否仍然成立，决定是否继续二分。", line: 13, state: { left: 0, right: 1, "继续循环?": "是" } },
+      { title: "重新计算分割线", desc: "新的迭代中重新计算 i 和 j 的值。", line: 15, state: { i: 0, j: 2 } },
+      { title: "比较分割线元素", desc: "再次比较分割线两侧的元素。nums1[0] = 1，nums2[1] = 2。", line: 19, state: { "nums1[i]": "1", "nums2[j-1]": "2", "1 < 2?": "是" } },
+      { title: "向右移动分割线", desc: "由于 1 < 2，nums1 取的元素太少，分割线需要右移，left = i + 1。", line: 21, state: { left: 1, "说明": "left更新为1" } },
+      { title: "确定最终分割线", desc: "循环结束，最终分割线位置为 i = left。此时已经找到正确的分割位置。", line: 27, state: { i: 1, j: 1 } },
+      { title: "计算左半部分最大值", desc: "计算分割线左侧的最大值，即左半部分的最后一个元素。", line: 33, state: { nums1_left_max: 1, nums2_left_max: 2, max_of_left: 2 } },
+      { title: "判断奇偶长度", desc: "检查总长度是奇数还是偶数。如果是奇数，中位数就是左半部分的最大值。", line: 36, state: { "m+n": 3, "奇数?": "是" } },
+      { title: "返回中位数", desc: "总长度为奇数，直接返回左半部分的最大值作为中位数。", line: 37, state: { "结果": 2.0 } }
+    ];
+
+    // 渲染代码
+    const codeBlock = document.getElementById('codeBlock');
+    codeLines.forEach(({num, content}) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.dataset.line = num;
+      lineDiv.innerHTML = `<span class="line-number">${num}</span><span class="line-content">${content}</span>`;
+      lineDiv.addEventListener('click', () => selectLine(num));
+      codeBlock.appendChild(lineDiv);
+    });
+
+    // 渲染步骤
+    const vizSteps = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'viz-step';
+      stepDiv.dataset.idx = idx;
+      stepDiv.dataset.line = step.line;
+      
+      let stateHtml = '';
+      if (step.state) {
+        stateHtml = '<div class="state-display">';
+        Object.entries(step.state).forEach(([k, v]) => {
+          stateHtml += `<span class="state-var">${k}</span>: <span class="state-val">${v}</span>  `;
+        });
+        stateHtml += '</div>';
+      }
+      
+      stepDiv.innerHTML = `
+        <div class="viz-step-title">${step.title}</div>
+        <div class="viz-step-desc">${step.desc}</div>
+        ${stateHtml}
+      `;
+      stepDiv.addEventListener('click', () => selectStep(idx));
+      vizSteps.appendChild(stepDiv);
+    });
+
+    let currentStep = 0;
+
+    function selectStep(idx) {
+      currentStep = idx;
+      const step = steps[idx];
+      
+      // 更新步骤高亮
+      document.querySelectorAll('.viz-step').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      
+      // 更新代码高亮
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.remove('active');
+      });
+      const codeLine = document.querySelector(`.code-line[data-line="${step.line}"]`);
+      if (codeLine) {
+        codeLine.classList.add('active');
+        codeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function selectLine(lineNum) {
+      // 找到对应的步骤
+      const stepIdx = steps.findIndex(s => s.line === lineNum);
+      if (stepIdx !== -1) {
+        selectStep(stepIdx);
+      } else {
+        // 只高亮代码行
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.viz-step').forEach(el => el.classList.remove('active'));
+        const codeLine = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+        if (codeLine) codeLine.classList.add('active');
+      }
+    }
+
+    // 初始化选中第一步
+    selectStep(0);
+  </script>
+</body>
+</html>
