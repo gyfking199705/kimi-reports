@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode #128 - 最长连续序列</title>
+  <style>
+    :root { 
+      --primary: #6366f1; 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #22d3ee;
+      --success: #4ade80;
+      --warning: #fbbf24;
+    }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 40px 20px;
+      line-height: 1.7;
+    }
+    h1 { 
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+    }
+    .section { 
+      background: var(--surface); 
+      border-radius: 16px; 
+      padding: 28px; 
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .section h2 { 
+      color: var(--primary); 
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .difficulty {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 12px;
+    }
+    .difficulty.medium { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+    .difficulty.hard { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+    .difficulty.easy { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+    pre { 
+      background: #0d1117; 
+      border-radius: 12px; 
+      padding: 20px; 
+      overflow-x: auto;
+      border: 1px solid #30363d;
+    }
+    .code-line { 
+      display: flex; 
+      padding: 3px 0; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+      padding-left: 3px;
+    }
+    .code-line:hover { 
+      background: rgba(255,255,255,0.05);
+      border-left-color: #475569;
+    }
+    .code-line.active { 
+      background: rgba(99, 102, 241, 0.25); 
+      border-left: 3px solid var(--primary);
+    }
+    .line-number { 
+      color: #484f58; 
+      min-width: 40px; 
+      text-align: right; 
+      padding-right: 16px;
+      user-select: none;
+      font-family: 'SF Mono', monospace;
+    }
+    .line-content { font-family: 'SF Mono', monospace; }
+    .viz-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1.2fr; 
+      gap: 24px; 
+      margin: 20px 0; 
+    }
+    .viz-steps { 
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .viz-step { 
+      padding: 16px; 
+      margin: 10px 0; 
+      border-radius: 10px; 
+      background: #334155; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .viz-step:hover { 
+      border-color: #475569;
+      transform: translateX(4px);
+    }
+    .viz-step.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+    .viz-step h4 {
+      margin: 0 0 8px 0;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+    .viz-step p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .state-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .state-box span { color: var(--success); }
+    .problem-card { 
+      background: var(--bg); 
+      border-radius: 12px; 
+      padding: 18px; 
+      border: 1px solid #475569; 
+      transition: all 0.2s; 
+      text-decoration: none; 
+      color: inherit; 
+      display: block;
+      margin: 10px 0;
+    }
+    .problem-card:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+    }
+    .problem-card h4 { margin: 0 0 8px 0; color: var(--accent); }
+    .problem-card p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+    .keyword { color: #ff7b72; } 
+    .function { color: #d2a8ff; } 
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; } 
+    .comment { color: #8b949e; } 
+    .class { color: #ffa657; }
+    .builtin { color: #7ee787; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #475569;
+    }
+    th { color: var(--accent); font-weight: 600; }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .highlight {
+      background: rgba(99, 102, 241, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .example {
+      background: rgba(0,0,0,0.3);
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 12px 0;
+      border-left: 3px solid var(--primary);
+    }
+    .example strong { color: var(--accent); }
+    .algo-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+    .algo-step {
+      padding: 10px 18px;
+      background: #334155;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+    .algo-step.arrow { background: transparent; padding: 10px 4px; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+</head>
+<body>
+  <h1>LeetCode #128 - 最长连续序列<span class="difficulty medium">Medium</span></h1>
+  <p class="subtitle">Longest Consecutive Sequence | 哈希表优化的经典之作</p>
+  
+  <div class="section">
+    <h2>📋 题目描述</h2>
+    <p>给定一个未排序的整数数组 <code>nums</code> ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。</p>
+    
+    <div class="example">
+      <strong>示例 1:</strong><br>
+      输入: nums = [100, 4, 200, 1, 3, 2]<br>
+      输出: 4<br>
+      解释: 最长连续序列是 [1, 2, 3, 4]，长度为 4
+    </div>
+    
+    <div class="example">
+      <strong>示例 2:</strong><br>
+      输入: nums = [0, 3, 7, 2, 5, 8, 4, 6, 0, 1]<br>
+      输出: 9
+    </div>
+    
+    <p><strong>要求：</strong>设计并实现时间复杂度为 <span class="highlight">O(n)</span> 的算法。</p>
+    
+    <div class="algo-flow">
+      <div class="algo-step">🏁 构建哈希集合</div>
+      <div class="algo-step arrow">→</div>
+      <div class="algo-step">🔍 寻找序列起点</div>
+      <div class="algo-step arrow">→</div>
+      <div class="algo-step">📏 扩展序列长度</div>
+      <div class="algo-step arrow">→</div>
+      <div class="algo-step">📊 更新最大长度</div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>💡 核心思路</h2>
+    <p><strong>关键洞察：</strong>不是每个数字都要去向后查找，只有当它是「序列起点」时才扩展。</p>
+    <p>如何判断序列起点？<code class="highlight">num - 1</code> 不在集合中，说明没有更小的相邻数，这就是起点。</p>
+    <p>这样每个元素最多被访问两次（一次作为起点判断，一次在序列扩展中），保证 O(n) 复杂度。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎬 算法执行过程（点击步骤或代码行查看对应关系）</h2>
+    <div class="viz-container">
+      <div class="viz-steps" id="vizSteps">
+        <!-- 步骤由JS生成 -->
+      </div>
+      <div class="code-container">
+        <h3>Python 实现</h3>
+        <pre><code id="codeBlock">
+<div class="code-line" data-line="1"><span class="line-number">1</span><span class="line-content"><span class="keyword">class</span> <span class="class">Solution</span>:</span></div>
+<div class="code-line" data-line="2"><span class="line-number">2</span><span class="line-content">    <span class="keyword">def</span> <span class="function">longestConsecutive</span>(<span class="keyword">self</span>, nums: <span class="builtin">list</span>[<span class="builtin">int</span>]) -> <span class="builtin">int</span>:</span></div>
+<div class="code-line" data-line="3"><span class="line-number">3</span><span class="line-content">        <span class="comment"># 去重 + O(1) 查询</span></span></div>
+<div class="code-line" data-line="4"><span class="line-number">4</span><span class="line-content">        num_set = <span class="builtin">set</span>(nums)</span></div>
+<div class="code-line" data-line="5"><span class="line-number">5</span><span class="line-content">        longest = <span class="number">0</span></span></div>
+<div class="code-line" data-line="6"><span class="line-number">6</span><span class="line-content">        </span></div>
+<div class="code-line" data-line="7"><span class="line-number">7</span><span class="line-content">        <span class="keyword">for</span> num <span class="keyword">in</span> num_set:</span></div>
+<div class="code-line" data-line="8"><span class="line-number">8</span><span class="line-content">            <span class="comment"># 只从序列起点开始</span></span></div>
+<div class="code-line" data-line="9"><span class="line-number">9</span><span class="line-content">            <span class="keyword">if</span> num - <span class="number">1</span> <span class="keyword">not in</span> num_set:</span></div>
+<div class="code-line" data-line="10"><span class="line-number">10</span><span class="line-content">                current_num = num</span></div>
+<div class="code-line" data-line="11"><span class="line-number">11</span><span class="line-content">                current_streak = <span class="number">1</span></span></div>
+<div class="code-line" data-line="12"><span class="line-number">12</span><span class="line-content">                </span></div>
+<div class="code-line" data-line="13"><span class="line-number">13</span><span class="line-content">                <span class="comment"># 向后扩展序列</span></span></div>
+<div class="code-line" data-line="14"><span class="line-number">14</span><span class="line-content">                <span class="keyword">while</span> current_num + <span class="number">1</span> <span class="keyword">in</span> num_set:</span></div>
+<div class="code-line" data-line="15"><span class="line-number">15</span><span class="line-content">                    current_num += <span class="number">1</span></span></div>
+<div class="code-line" data-line="16"><span class="line-number">16</span><span class="line-content">                    current_streak += <span class="number">1</span></span></div>
+<div class="code-line" data-line="17"><span class="line-number">17</span><span class="line-content">                </span></div>
+<div class="code-line" data-line="18"><span class="line-number">18</span><span class="line-content">                longest = <span class="builtin">max</span>(longest, current_streak)</span></div>
+<div class="code-line" data-line="19"><span class="line-number">19</span><span class="line-content">        </span></div>
+<div class="code-line" data-line="20"><span class="line-number">20</span><span class="line-content">        <span class="keyword">return</span> longest</span></div>
+        </code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2>📊 复杂度分析</h2>
+    <table>
+      <tr>
+        <th>复杂度类型</th>
+        <th>值</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>时间复杂度</td>
+        <td><strong>O(n)</strong></td>
+        <td>每个数字最多入/出集合一次，序列扩展总次数有限</td>
+      </tr>
+      <tr>
+        <td>空间复杂度</td>
+        <td><strong>O(n)</strong></td>
+        <td>哈希集合存储所有不重复数字</td>
+      </tr>
+    </table>
+    
+    <p><strong>为何是 O(n) 不是 O(n²)？</strong></p>
+    <p>虽然外层是遍历，内层有 while 循环，但 <code class="highlight">num - 1 not in set</code> 的条件保证了：只有序列起点才会触发 while。每个连续序列内的数字只会被 while 访问一次。总的时间 = 遍历 O(n) + 序列扩展 O(n) = O(n)。</p>
+  </div>
+  
+  <div class="section">
+    <h2>🎯 面试要点</h2>
+    <ul>
+      <li>这是「时间换空间」的反面：用 <strong>O(n) 空间</strong>换取 <strong>O(n) 时间</strong></li>
+      <li>排序解法是 O(n log n)，不满足题目要求</li>
+      <li>关键在于「序列起点」的判断，避免重复计算</li>
+      <li>问：如果要求返回序列本身而不是长度？答：记录起点即可</li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h2>🔗 类似题目推荐（点击跳转LeetCode）</h2>
+    <div class="problem-grid">
+      <a href="https://leetcode.cn/problems/two-sum/" target="_blank" class="problem-card">
+        <h4>#1 两数之和</h4>
+        <p>哈希表入门经典，用空间换时间的典范</p>
+      </a>
+      <a href="https://leetcode.cn/problems/contains-duplicate/" target="_blank" class="problem-card">
+        <h4>#217 存在重复元素</h4>
+        <p>集合的基础应用，判断元素是否存在</p>
+      </a>
+      <a href="https://leetcode.cn/problems/valid-sudoku/" target="_blank" class="problem-card">
+        <h4>#36 有效的数独</h4>
+        <p>哈希表在行、列、宫格中的运用</p>
+      </a>
+      <a href="https://leetcode.cn/problems/intersection-of-two-arrays/" target="_blank" class="problem-card">
+        <h4>#349 两个数组的交集</h4>
+        <p>集合的交运算应用</p>
+      </a>
+      <a href="https://leetcode.cn/problems/group-anagrams/" target="_blank" class="problem-card">
+        <h4>#49 字母异位词分组</h4>
+        <p>哈希表+排序的复合技巧</p>
+      </a>
+      <a href="https://leetcode.cn/problems/top-k-frequent-elements/" target="_blank" class="problem-card">
+        <h4>#347 前 K 个高频元素</h4>
+        <p>哈希表统计频率 + 堆/桶排序</p>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // 步骤与代码行映射（基于示例 [100, 4, 200, 1, 3, 2]）
+    const steps = [
+      {
+        title: "初始化",
+        desc: "将数组转换为集合 num_set = {1, 2, 3, 4, 100, 200}，longest = 0",
+        line: 4,
+        state: { set: "{1,2,3,4,100,200}", longest: 0 }
+      },
+      {
+        title: "遍历 num = 1",
+        desc: "1-1=0 不在集合中，说明1是序列起点，准备扩展",
+        line: 7,
+        state: { num: 1, "起点?": "✓ 0∉set" }
+      },
+      {
+        title: "开始扩展序列",
+        desc: "current_num = 1, current_streak = 1",
+        line: 10,
+        state: { current: 1, streak: 1 }
+      },
+      {
+        title: "扩展: 2 在集合中",
+        desc: "current_num = 2, current_streak = 2",
+        line: 14,
+        state: { current: 2, streak: 2 }
+      },
+      {
+        title: "扩展: 3 在集合中",
+        desc: "current_num = 3, current_streak = 3",
+        line: 14,
+        state: { current: 3, streak: 3 }
+      },
+      {
+        title: "扩展: 4 在集合中",
+        desc: "current_num = 4, current_streak = 4",
+        line: 14,
+        state: { current: 4, streak: 4 }
+      },
+      {
+        title: "序列结束",
+        desc: "5 不在集合中，while 结束，更新 longest = max(0, 4) = 4",
+        line: 18,
+        state: { longest: 4, 序列: "[1,2,3,4]" }
+      },
+      {
+        title: "遍历 num = 2",
+        desc: "2-1=1 在集合中，跳过（不是起点，避免重复计算）",
+        line: 9,
+        state: { num: 2, "起点?": "✗ 1∈set" }
+      },
+      {
+        title: "遍历 num = 3",
+        desc: "3-1=2 在集合中，跳过",
+        line: 9,
+        state: { num: 3, "起点?": "✗ 2∈set" }
+      },
+      {
+        title: "遍历 num = 4",
+        desc: "4-1=3 在集合中，跳过",
+        line: 9,
+        state: { num: 4, "起点?": "✗ 3∈set" }
+      },
+      {
+        title: "遍历 num = 100",
+        desc: "100-1=99 不在集合中，是新起点",
+        line: 9,
+        state: { num: 100, "起点?": "✓ 99∉set" }
+      },
+      {
+        title: "扩展: 100 的序列",
+        desc: "101 不在集合，序列长度为1，longest 保持 4",
+        line: 18,
+        state: { current: 100, streak: 1, longest: 4 }
+      },
+      {
+        title: "遍历 num = 200",
+        desc: "200-1=199 不在集合中，是新起点",
+        line: 9,
+        state: { num: 200, "起点?": "✓ 199∉set" }
+      },
+      {
+        title: "扩展: 200 的序列",
+        desc: "201 不在集合，序列长度为1，longest 保持 4",
+        line: 18,
+        state: { current: 200, streak: 1, longest: 4 }
+      },
+      {
+        title: "返回结果",
+        desc: "遍历完成，返回 longest = 4",
+        line: 20,
+        state: { result: 4 }
+      }
+    ];
+
+    // 生成步骤HTML
+    const stepsContainer = document.getElementById('vizSteps');
+    steps.forEach((step, idx) => {
+      const div = document.createElement('div');
+      div.className = 'viz-step';
+      div.dataset.idx = idx;
+      div.dataset.line = step.line;
+      
+      let stateHtml = '';
+      for (let [k, v] of Object.entries(step.state)) {
+        stateHtml += `<span>${k}=${v}</span> `;
+      }
+      
+      div.innerHTML = `
+        <h4>${idx + 1}. ${step.title}</h4>
+        <p>${step.desc}</p>
+        <div class="state-box">${stateHtml}</div>
+      `;
+      stepsContainer.appendChild(div);
+    });
+
+    // 代码行元素
+    const codeLines = document.querySelectorAll('.code-line');
+    const vizSteps = document.querySelectorAll('.viz-step');
+
+    // 高亮函数
+    function highlightStep(idx) {
+      vizSteps.forEach(s => s.classList.remove('active'));
+      codeLines.forEach(l => l.classList.remove('active'));
+      
+      if (idx !== null) {
+        vizSteps[idx].classList.add('active');
+        const lineNum = steps[idx].line;
+        const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+        if (lineEl) lineEl.classList.add('active');
+        vizSteps[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function highlightLine(lineNum) {
+      vizSteps.forEach(s => s.classList.remove('active'));
+      codeLines.forEach(l => l.classList.remove('active'));
+      
+      const lineEl = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+      if (lineEl) lineEl.classList.add('active');
+      
+      // 找到对应的步骤
+      const matchingStep = Array.from(vizSteps).find(s => 
+        parseInt(s.dataset.line) === lineNum
+      );
+      if (matchingStep) {
+        matchingStep.classList.add('active');
+        matchingStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // 绑定事件
+    vizSteps.forEach((step, idx) => {
+      step.addEventListener('click', () => highlightStep(idx));
+    });
+
+    codeLines.forEach(line => {
+      line.addEventListener('click', () => {
+        const lineNum = parseInt(line.dataset.line);
+        highlightLine(lineNum);
+      });
+    });
+
+    // 初始高亮第一步
+    highlightStep(0);
+  </script>
+</body>
+</html>
